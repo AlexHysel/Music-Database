@@ -12,6 +12,23 @@ class MusicManager
         await Context.SaveChangesAsync();
     }
 
+    async public Task DisplayTracksAsync()
+    {
+        var tracks = Context.Tracks.AsNoTracking().Select(x => new
+        {
+            x.Title,
+            AlbumTitle = x.Album.Title,
+            ArtistsNames = x.Artists.Select(x => x.Name).ToArray()
+        });
+        foreach (var track in tracks)
+        {
+            string artists = "";
+            foreach (string artist in track.ArtistsNames)
+                artists = artists + ", " + artist;
+            Console.WriteLine($"{track.Title} ({track.AlbumTitle}) by {track.ArtistsNames}");
+        }
+    }
+
     async public Task EditTrackAsync(Guid trackId, string? newTitle = null, Genre? newGenre = null)
     {
         Track trackChanges = new() { Id = trackId};

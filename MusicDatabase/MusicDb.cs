@@ -23,11 +23,6 @@ class MusicDb : DbContext
 
         // ALBUM
         modelBuilder.Entity<Album>()
-            .HasMany(a => a.Artists)
-            .WithMany(a => a.Albums)
-            .UsingEntity(j => j.ToTable("AlbumArtists"));
-
-        modelBuilder.Entity<Album>()
             .Property(a => a.Type)
             .HasConversion<string>();
 
