@@ -20,18 +20,30 @@ class MusicDb : DbContext
         modelBuilder.Entity<Artist>()
             .HasIndex(a => a.Name)
             .IsUnique();
+        
+        modelBuilder.Entity<Artist>()
+            .HasMany(a => a.Albums)
+            .WithOne(a => a.Artist)
+            .HasForeignKey(a => a.ArtistId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // ALBUM
         modelBuilder.Entity<Album>()
             .Property(a => a.Type)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Album>()
+            .HasMany(a => a.Tracks)
+            .WithOne(t => t.Album)
+            .HasForeignKey(t => t.AlbumId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // TRACK
         modelBuilder.Entity<Track>()
             .HasMany(t => t.Artists)
             .WithMany(a => a.Tracks)
             .UsingEntity(j => j.ToTable("TrackArtists"));
-
+        
         modelBuilder.Entity<Track>()
             .Property(t => t.Genre)
             .HasConversion<string>();
@@ -55,6 +67,12 @@ class MusicDb : DbContext
             .HasMany(u => u.FavoriteAlbums)
             .WithMany()
             .UsingEntity(j => j.ToTable("UserAlbums"));
+        
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Playlists)
+            .WithOne(p => p.Creator)
+            .HasForeignKey(p => p.CreatorId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // PLAYLIST
         modelBuilder.Entity<Playlist>()
