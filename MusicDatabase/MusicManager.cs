@@ -1,7 +1,7 @@
-using System.Diagnostics.Metrics;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
+// DATA ACCESS LAYER
 class MusicManager
 {
     private readonly MusicDb _context;
@@ -62,9 +62,8 @@ class MusicManager
         else
         {
             _context.Tracks.Remove(track);
-            await _context.SaveChangesAsync();
             Logging.Success($"{track.Title} ({track.Id}) removed.");
-            if (!track.Album.Tracks.Any())
+            if (!track.Album.Tracks.Any(t => t != track))
                 await RemoveAlbumAsync((a) => a == track.Album);
         }
     }
@@ -133,7 +132,7 @@ class MusicManager
         {
             _context.Albums.Remove(album);
             Logging.Success($"{album.Title} ({album.Id}) removed.");
-            if (!album.Artist.Albums.Any())
+            if (!album.Artist.Albums.Any(a => a != album))
                 await RemoveArtistAsync((a) => a == album.Artist);
         }
     }
@@ -161,17 +160,9 @@ class MusicManager
     }
 
     // ARTIST
-    async public Task DisplayArtistAsync()
+    public IQueryable<ArtistDTO> GetArtists()
     {
-        Console.WriteLine("=== ARTISTS ===");
-
-        var artists = await _context.Artists.AsNoTracking().Select(a => new
-        {
-            a.Name,
-            a.Id
-        }).ToArrayAsync();
-        foreach (var artist in artists)
-            Console.WriteLine($"{artist.Name} ({artist.Id})");
+        return _context.Artists.Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
     }
 
     async public Task<Artist> EnsureArtistCreated(string name)
@@ -194,7 +185,6 @@ class MusicManager
         else
         {
             _context.Artists.Remove(artist);
-            await _context.SaveChangesAsync();
             Logging.Success($"{artist.Name} ({artist.Id}) removed.");
         }
     }
