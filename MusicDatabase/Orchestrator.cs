@@ -32,7 +32,8 @@ class Orchestrator
         Album album = await _manager.EnsureAlbumCreated(albumTitle, await _manager.EnsureArtistCreated(artistName));
 
         List<Artist> artists = [await _manager.EnsureArtistCreated(artistName)];
-            foreach (string name in others)
+        foreach (string name in others)
+            if (!string.IsNullOrEmpty(name))
                 artists.Add(await _manager.EnsureArtistCreated(name));
 
         Track track = new() {Title = title, Album = album, Artists = artists, Genre = genre};

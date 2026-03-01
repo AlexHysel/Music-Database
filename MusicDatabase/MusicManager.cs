@@ -152,6 +152,8 @@ class MusicManager
     {
         Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Name == name);
         if (artist == null)
+            artist = _context.Artists.Local.FirstOrDefault(a => a.Name == name);
+        if (artist == null)
         {
             artist = new() {Name = name};
             await _context.Artists.AddAsync(artist);
