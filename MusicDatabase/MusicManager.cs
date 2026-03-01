@@ -16,30 +16,22 @@ class MusicManager
         return await _context.Tracks.FirstOrDefaultAsync(filter);
     }
 
+    public IQueryable<TrackDTO> GetTracks()
+    {
+        return _context.Tracks.Select(t => 
+        new TrackDTO(t.Title, t.Album.Title, t.Artists.Select(a => a.Name).ToArray(), t.Genre.ToString()));
+    }
+
+    public IQueryable<TrackDTO> GetTracks(Expression<Func<Track, bool>> filter)
+    {
+        return _context.Tracks.Where(filter).Select(t => 
+        new TrackDTO(t.Title, t.Album.Title, t.Artists.Select(a => a.Name).ToArray(), t.Genre.ToString()));
+    }
+
     async public Task AddTrackAsync(Track track)
     {
         await _context.Tracks.AddAsync(track);
         Logging.Success($"Track ({track.Id}) added.");
-    }
-
-    async public Task DisplayTracksAsync()
-    {
-        Console.WriteLine("=== TRACKS ===");
-
-        var tracks = _context.Tracks.AsNoTracking().Select(x => new
-        {
-            x.Title,
-            AlbumTitle = x.Album.Title,
-            ArtistsNames = x.Artists.Select(x => x.Name).ToArray()
-        });
-        foreach (var track in tracks)
-        {
-            string artists = track.ArtistsNames[0];
-            for (int i = 1; i < track.ArtistsNames.Count(); i++)
-                artists = artists + ", " + track.ArtistsNames[i];
-            Console.WriteLine($"{track.Title} ({track.AlbumTitle}) by {artists}");
-        }
-        Console.WriteLine();
     }
 
     async public Task EditTrackAsync(Guid trackId, string? newTitle = null, Genre? newGenre = null)
@@ -69,14 +61,9 @@ class MusicManager
     }
 
     // USER
-    async public Task DisplayUsersAsync()
+    public IQueryable<UserDTO> GetUsers()
     {
-        Console.WriteLine("=== USERS ===");
-
-        string[] users = await _context.Users.AsNoTracking().Select(u => u.Name).ToArrayAsync();
-        foreach (string name in users)
-            Console.WriteLine(name);
-        Console.WriteLine();
+        return _context.Users.Select(u => new UserDTO(u.Name, u.Id.ToString()));
     }
 
     async public Task RemoveUserAsync(Expression<Func<User, bool>> filter)
@@ -108,20 +95,6 @@ class MusicManager
     }
 
     // ALBUM
-    async public Task DisplayAlbumsAsync()
-    {
-        Console.WriteLine("=== ALBUMS ===");
-
-        var albums = await _context.Albums.AsNoTracking().Select(a => new
-        {
-            a.Title,
-            ArtistName = a.Artist.Name,
-            a.Type,
-        }).ToArrayAsync();
-        foreach (var album in albums)
-            Console.WriteLine($"{album.Title} ({album.Type}) by {album.ArtistName}");
-    }
-
     async public Task RemoveAlbumAsync(Expression<Func<Album, bool>> filter)
     {
         Album? album = await _context.Albums.Include(a => a.Artist).ThenInclude(a => a.Albums).FirstOrDefaultAsync(filter);
@@ -135,6 +108,11 @@ class MusicManager
             if (!album.Artist.Albums.Any(a => a != album))
                 await RemoveArtistAsync((a) => a == album.Artist);
         }
+    }
+
+    public IQueryable<AlbumDTO> GetAlbums()
+    {
+        return _context.Albums.Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Type.ToString()));
     }
 
     async public Task AddAlbumAsync(Album album)
@@ -163,6 +141,11 @@ class MusicManager
     public IQueryable<ArtistDTO> GetArtists()
     {
         return _context.Artists.Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
+    }
+
+    public IQueryable<ArtistDTO> GetArtists(Expression<Func<Artist, bool>> filter)
+    {
+        return _context.Artists.Where(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
     }
 
     async public Task<Artist> EnsureArtistCreated(string name)

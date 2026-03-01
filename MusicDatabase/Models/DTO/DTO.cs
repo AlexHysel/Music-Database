@@ -14,3 +14,8 @@ public record ArtistDTO(
     string Name,
     string Id
 );
+
+public record UserDTO(
+    string Name,
+    string Id
+);

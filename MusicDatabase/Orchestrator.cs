@@ -1,4 +1,5 @@
 // BUSINESS LOGIC LAYER
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 class Orchestrator
@@ -7,111 +8,79 @@ class Orchestrator
 
     public Orchestrator(MusicManager manager) => _manager = manager;
 
-    public async Task AddTrackAsync()
+    //TRACK
+    public async Task RemoveTrackAsync(string title, string albumTitle)
     {
-        Console.Write("Title: ");
-        string title = Console.ReadLine().Trim();
+        await _manager.RemoveTrackAsync(t => t.Album.Title == albumTitle && t.Title == title);
+        await _manager.SaveChangesAsync();
+    }
+    
+    public async Task<TrackDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
+    {
+        IQueryable<TrackDTO> request = _manager.GetTracks(filter);
+        return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
+    }
 
-        Console.Write("Album Artist Name: ");
-        string artistName = Console.ReadLine().Trim();
+    public async Task<TrackDTO[]> GetTracksAsync(int size, int page)
+    {
+        IQueryable<TrackDTO> request = _manager.GetTracks();
+        return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
+    }
 
-        Console.Write("Other Artists Name: ");
-        string? others = Console.ReadLine().Trim();
+    public async Task AddTrackAsync(string title, string artistName, string[] others, string albumTitle, Genre genre)
+    {
+        Album album = await _manager.EnsureAlbumCreated(albumTitle, await _manager.EnsureArtistCreated(artistName));
+
         List<Artist> artists = [await _manager.EnsureArtistCreated(artistName)];
-        if (!string.IsNullOrEmpty(others))
-            foreach (string name in others.Split(','))
+            foreach (string name in others)
                 artists.Add(await _manager.EnsureArtistCreated(name));
 
-        Console.Write("Album Title: ");
-        string albumTitle = Console.ReadLine().Trim();
-        Album album = await _manager.EnsureAlbumCreated(albumTitle, artists[0]);
-        
-        Track track = new() {Title = title, Album = album, Artists = artists, Genre = Genre.DARKSYNTH};
+        Track track = new() {Title = title, Album = album, Artists = artists, Genre = genre};
         await _manager.AddTrackAsync(track);
         await _manager.SaveChangesAsync();
     }
 
-    public async Task AddUserAsync()
+    //ALBUM
+    public async Task RemoveAlbumAsync(string title, string artistName)
     {
-        Console.Write("Name: ");
-        string name = Console.ReadLine().Trim();
-        Console.Write("Password: ");
-        string password = Console.ReadLine().Trim();
-
-        await _manager.AddUserAsync(name, password);
-    }
-
-    public async Task DisplayTracksAsync()
-    {
-        await _manager.DisplayTracksAsync();
-    }
-
-    public async Task DisplayAlbumsAsync()
-    {
-        await _manager.DisplayAlbumsAsync();
-    }
-
-    public async Task DisplayArtistsAsync()
-    {
-        try 
-        {
-            Console.Write("Page size: ");
-            int size = Convert.ToInt32(Console.ReadLine().Trim());
-            Console.Write("Page number: ");
-            int page = Convert.ToInt32(Console.ReadLine().Trim());
-            IQueryable<ArtistDTO> request = _manager.GetArtists();
-            var artists = await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
-            foreach (var artist in artists)
-                Console.WriteLine($"{artist.Name} ({artist.Id})");
-        }
-        catch
-        {
-            Logging.Error("Page number and size should be numbers");
-        }
-    }
-
-    public async Task DisplayUsersAsync()
-    {
-        await _manager.DisplayUsersAsync();
-    }
-
-    public async Task RemoveTrackAsync()
-    {
-        Console.Write("Title: ");
-        string title = Console.ReadLine().Trim();
-        Console.Write("Album Title: ");
-        string albumTitle = Console.ReadLine().Trim();
-
-        await _manager.RemoveTrackAsync(t => t.Album.Title == albumTitle && t.Title == title);
-        await _manager.SaveChangesAsync();
-    }
-
-    public async Task RemoveAlbumAsync()
-    {
-        Console.Write("Title: ");
-        string title = Console.ReadLine().Trim();
-        Console.Write("Artist: ");
-        string artistName = Console.ReadLine().Trim();
-
         await _manager.RemoveAlbumAsync(a => a.Artist.Name == artistName && a.Title == title);
         await _manager.SaveChangesAsync();
     }
 
-    public async Task RemoveArtistAsync()
+    public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page)
     {
-        Console.Write("Name: ");
-        string name = Console.ReadLine().Trim();
+        var request = _manager.GetAlbums();
+        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
 
+    //ARTIST
+    public async Task RemoveArtistAsync(string name)
+    {
         await _manager.RemoveArtistAsync(a => a.Name == name);
         await _manager.SaveChangesAsync();
     }
 
-    public async Task RemoveUserAsync()
+    public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page)
     {
-        Console.Write("Name: ");
-        string name = Console.ReadLine().Trim();
+        var request = _manager.GetArtists();
+        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
 
+    //USER
+    public async Task RemoveUserAsync(string name)
+    {
         await _manager.RemoveUserAsync(u => u.Name == name);
         await _manager.SaveChangesAsync();
+    }
+
+    public async Task<UserDTO[]> GetUsersAsync(int size, int page)
+    {
+        var request = _manager.GetUsers();
+        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
+
+    public async Task AddUserAsync(string name, string password)
+    {
+        await _manager.AddUserAsync(name, password);
     }
 }

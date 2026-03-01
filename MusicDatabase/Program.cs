@@ -27,40 +27,76 @@ using (var db = new MusicDb())
 
             //User
             case "signin":
-                await _orchestrator.AddUserAsync();
+                await SignIn();
                 break;
             case "userlist":
-                await _orchestrator.DisplayUsersAsync();
+                Console.Write("Page Size: ");
+                int size = Convert.ToInt32(Console.ReadLine().Trim());
+                Console.Write("Page Number: ");
+                int page = Convert.ToInt32(Console.ReadLine().Trim());
+
+                await DisplayUsersAsync(size, page);
                 break;
             case "removeuser":
-                await _orchestrator.RemoveUserAsync();
+                Console.Write("Name: ");
+                string name = Console.ReadLine().Trim();
+                await _orchestrator.RemoveUserAsync(name);
                 break;
 
             //Track
             case "tracklist":
-                await _orchestrator.DisplayTracksAsync();
+                Console.Write("Page size: ");
+                size = Convert.ToInt32(Console.ReadLine().Trim());
+                Console.Write("Page number: ");
+                page = Convert.ToInt32(Console.ReadLine().Trim());
+
+                await DisplayTracksAsync(size, page);
                 break;
             case "addtrack":
-                await _orchestrator.AddTrackAsync();
+                string title = ReadRequiredString("Title: ");
+                string artistName = ReadRequiredString("Main Artist Name: ");
+                string albumTitle = ReadRequiredString("Album Title: ");
+                Console.Write("Other Artists Name: ");
+                string[] others = Console.ReadLine().Trim().Split(',');
+                Console.Write("Genre: ");
+                Genre genre;
+                Enum.TryParse(Console.ReadLine(), true, out genre);
+                await _orchestrator.AddTrackAsync(title, artistName, others, albumTitle, genre);
                 break;
             case "rmtrack":
-                await _orchestrator.RemoveTrackAsync();
+                Console.Write("Title: ");
+                title = Console.ReadLine().Trim();
+                Console.Write("Album Title: ");
+                albumTitle = Console.ReadLine().Trim();
+                await _orchestrator.RemoveTrackAsync(title, albumTitle);
                 break;
-                
+ 
             //Album
             case "albumlist":
-                await _orchestrator.DisplayAlbumsAsync();
+                Console.Write("Page size: ");
+                size = Convert.ToInt32(Console.ReadLine().Trim());
+                Console.Write("Page number: ");
+                page = Convert.ToInt32(Console.ReadLine().Trim());
+
+                await DisplayAlbumsAsync(size, page);
                 break;
             case "rmalbum":
-                await _orchestrator.RemoveAlbumAsync();
+                await RmAlbum();
                 break;
             
             //Artist
             case "artistlist":
-                await _orchestrator.DisplayArtistsAsync();
+                Console.Write("Page size: ");
+                size = Convert.ToInt32(Console.ReadLine().Trim());
+                Console.Write("Page number: ");
+                page = Convert.ToInt32(Console.ReadLine().Trim());
+            
+                await DisplayArtistsAsync(size, page);
                 break;
             case "rmartist":
-                await _orchestrator.RemoveArtistAsync();
+                Console.Write("Name: ");
+                name = Console.ReadLine().Trim();
+                await _orchestrator.RemoveArtistAsync(name);
                 break;
 
             default:
@@ -69,6 +105,69 @@ using (var db = new MusicDb())
         }
     }
     while (!userInput.Equals("quit"));
+
+    async Task RmAlbum()
+    {
+        Console.Write("Title: ");
+        string title = Console.ReadLine().Trim();
+        if (string.IsNullOrEmpty(title))
+            Logging.Error("Title can't be empty.");
+        else
+        {
+            Console.Write("Artist: ");
+            string artistName = Console.ReadLine().Trim();
+            if (string.IsNullOrEmpty(artistName))
+                Logging.Error("Artist can't be empty");
+            else
+                await _orchestrator.RemoveAlbumAsync(title, artistName);
+        }
+    }
+
+    async Task SignIn()
+    {
+        Console.Write("Name: ");
+        string name = Console.ReadLine().Trim();
+        Console.Write("Password: ");
+        string password = Console.ReadLine().Trim();
+        await _orchestrator.AddUserAsync(name, password);       
+    }
+
+    async Task DisplayUsersAsync(int size, int page)
+    {
+        UserDTO[] users = await _orchestrator.GetUsersAsync(size, page);
+        int skipped = size * --page;
+        for (int i = 0; i < users.Length; i++)
+            Console.WriteLine($"{skipped + i + 1}. {users[i].Name} ({users[i].Id})");
+    }
+
+    async Task DisplayAlbumsAsync(int size, int page)
+    {
+        AlbumDTO[] albums = await _orchestrator.GetAlbumsAsync(size, page);
+        int skipped = size * --page;
+        for (int i = 0; i < albums.Length; i++)
+            Console.WriteLine($"{skipped + i + 1}. {albums[i].Title} ({albums[i].Type}) by {albums[i].ArtistName}");
+    }
+
+    async Task DisplayTracksAsync(int size, int page)
+    {
+        TrackDTO[] tracks = await _orchestrator.GetTracksAsync(size, page);
+        int skipped = size * --page;
+        for (int i = 0; i < tracks.Length; i++)
+        {
+            string artists = "";
+            foreach (string artist in tracks[i].ArtistNames)
+                artists += " " + artist;
+            Console.WriteLine($"{skipped + i + 1}. {tracks[i].Title} by{artists}");
+        }
+    }
+
+    async Task DisplayArtistsAsync(int size, int page)
+    {
+        ArtistDTO[] artists = await _orchestrator.GetArtistsAsync(size, page);
+        int skipped = size * --page;
+        for (int i = 0; i < artists.Length; i++)
+            Console.WriteLine($"{skipped + i + 1}. {artists[i].Name} ({artists[i].Id})");
+    }
 }   
 
 void DisplayHelp()
@@ -82,4 +181,17 @@ void DisplayHelp()
     Console.WriteLine("rmalbum [title]");
     Console.WriteLine("tracklist");
     Console.WriteLine("rmtrack [title]");
+}
+
+string ReadRequiredString(string prompt)
+{
+    Console.Write(prompt);
+    while (true)
+    {
+        string? answer = Console.ReadLine();
+        if (string.IsNullOrEmpty(answer))
+            Logging.Error("Invalid value.");
+        else
+            return answer.Trim();
+    }
 }
