@@ -47,7 +47,10 @@ class MusicManager
 
     async public Task RemoveTrackAsync(Expression<Func<Track, bool>> filter)
     {
-        Track? track = await _context.Tracks.Include(t => t.Album).ThenInclude(a => a.Tracks).FirstOrDefaultAsync(filter);
+        Track? track = await _context.Tracks
+            .Include(t => t.Artists)
+            .Include(t => t.Album)
+            .FirstOrDefaultAsync(filter);
 
         if (track == null)
             Logging.Warning("Track not found");
@@ -55,7 +58,7 @@ class MusicManager
         {
             _context.Tracks.Remove(track);
             Logging.Success($"{track.Title} ({track.Id}) removed.");
-            if (!track.Album.Tracks.Any(t => t != track))
+            if (!await _context.Tracks.AnyAsync(t => t.Album == track.Album && t != track))
                 await RemoveAlbumAsync((a) => a == track.Album);
         }
     }
@@ -69,6 +72,7 @@ class MusicManager
     async public Task RemoveUserAsync(Expression<Func<User, bool>> filter)
     {
         User? user = await _context.Users.FirstOrDefaultAsync(filter);
+
         if (user == null)
             Logging.Warning("User not found.");
         else

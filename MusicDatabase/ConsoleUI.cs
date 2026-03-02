@@ -1,5 +1,7 @@
 // PRESENTATION LAYER
 
+using System.Linq.Expressions;
+
 class ConsoleUI(Orchestrator orchestrator)
 {
     Orchestrator _orchestrator = orchestrator;
@@ -11,7 +13,7 @@ class ConsoleUI(Orchestrator orchestrator)
         do
         {
             userInput = ReadLine("\n: ");
-            string[] parts = userInput.Split(' ');
+            string[] parts = userInput.Split(' ', 2);
             switch (parts[0])
             {
                 case "help":
@@ -36,7 +38,10 @@ class ConsoleUI(Orchestrator orchestrator)
                 case "tracklist":
                     size = Convert.ToInt32(ReadLine("Page size: "));
                     page = Convert.ToInt32(ReadLine("Page number: "));
-                    await DisplayTracksAsync(size, page);
+                    if (parts.Length > 1)
+                        await DisplayTracksAsync(size, page, DefineFilter(parts[1]));
+                    else
+                        await DisplayTracksAsync(size, page, t => true);
                     break;
                 case "addtrack":
                     string title = ReadLine("Title: ");
@@ -57,7 +62,7 @@ class ConsoleUI(Orchestrator orchestrator)
                 case "albumlist":
                     size = Convert.ToInt32(ReadLine("Page size: "));
                     page = Convert.ToInt32(ReadLine("Page number: "));
-                    await DisplayAlbumsAsync(size, page);
+                    await DisplayAlbumsAsync(size, page, parts);
                     break;
                 case "rmalbum":
                     await RmAlbum();
@@ -125,17 +130,18 @@ class ConsoleUI(Orchestrator orchestrator)
             Console.WriteLine($"{skipped + i + 1}. {users[i].Name} ({users[i].Id})");
     }
 
-    async Task DisplayAlbumsAsync(int size, int page)
+    async Task DisplayAlbumsAsync(int size, int page, string[] parts)
     {
+
         AlbumDTO[] albums = await _orchestrator.GetAlbumsAsync(size, page);
         int skipped = size * --page;
         for (int i = 0; i < albums.Length; i++)
             Console.WriteLine($"{skipped + i + 1}. {albums[i].Title} ({albums[i].Type}) by {albums[i].ArtistName}");
     }
 
-    async Task DisplayTracksAsync(int size, int page)
+    async Task DisplayTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
     {
-        TrackDTO[] tracks = await _orchestrator.GetTracksAsync(size, page);
+        TrackDTO[] tracks = await _orchestrator.GetTracksAsync(size, page, filter);
         int skipped = size * --page;
         for (int i = 0; i < tracks.Length; i++)
         {
@@ -169,5 +175,21 @@ class ConsoleUI(Orchestrator orchestrator)
     {
         Console.Write(text);
         return Console.ReadLine()?.Trim() ?? "";
+    }
+
+    static Expression<Func<Track, bool>> DefineFilter(string filter)
+    {
+        string[] pair = filter.Split('=');
+        pair[0] = pair[0].ToLower();
+
+        if (pair.Length == 2)
+            switch (pair[0])
+            {
+                case "artist":
+                    return t => t.Artists.Any(a => a.Name == pair[1]);
+                case "genre":
+                    return t => t.Genre == Enum.Parse<Genre>(pair[1], true);
+            }
+        return t => true;
     }
 }
