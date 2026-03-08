@@ -8,7 +8,12 @@ class MusicManager
 
     public MusicManager(MusicDb context) => _context = context;
 
-    async public Task SaveChangesAsync() => await _context.SaveChangesAsync();
+    async public Task SaveChangesAsync()
+    {
+        var updatedAlbums = _context.ChangeTracker.Entries<Album>()
+            .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added);
+        await _context.SaveChangesAsync();
+    }
 
     // TRACK
     async public Task<Track?> GetTrackAsync(Expression<Func<Track, bool>> filter)
@@ -47,19 +52,43 @@ class MusicManager
 
     async public Task RemoveTrackAsync(Expression<Func<Track, bool>> filter)
     {
-        Track? track = await _context.Tracks
-            .Include(t => t.Artists)
-            .Include(t => t.Album)
-            .FirstOrDefaultAsync(filter);
+        var trackData = await _context.Tracks
+            .Where(filter)
+                .Select(
+                t => new
+                {
+                    t.Id,
+                    t.Title,
+                    AlbumId = t.Album.Id,
+                    ArtistsIDs = t.Artists.Select(a => a.Id)
+                }
+            ).FirstOrDefaultAsync();
 
-        if (track == null)
-            Logging.Warning("Track not found");
-        else
+        if (trackData == null)
         {
-            _context.Tracks.Remove(track);
-            Logging.Success($"{track.Title} ({track.Id}) removed.");
-            if (!await _context.Tracks.AnyAsync(t => t.Album == track.Album && t != track))
-                await RemoveAlbumAsync((a) => a == track.Album);
+            Logging.Warning("Track not found");
+            return;
+        }
+        
+        using var transaciton = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await _context.Tracks
+                .Where(t => t.Id == trackData.Id)
+                .ExecuteDeleteAsync();
+            await _context.Artists
+                .Where(a => trackData.ArtistsIDs.Contains(a.Id))
+                .Where(a => a.Tracks.Count == 0)
+                .ExecuteDeleteAsync();
+            if (await _context.Tracks.CountAsync(t => t.AlbumId == trackData.AlbumId) == 0)
+                await RemoveAlbumAsync(a => a.Id == trackData.AlbumId);
+            Logging.Success($"{trackData.Title} ({trackData.Id}) removed.");
+            await transaciton.CommitAsync();
+        }
+        catch
+        {
+            await transaciton.RollbackAsync();
+            Logging.Error("Removing failed.");
         }
     }
 
@@ -135,7 +164,7 @@ class MusicManager
         Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Artist.Id == artist.Id && a.Title == title);
         if (album == null)
         {
-            album = new() {Title = title, Artist = artist};
+            album = new() {Title = title, Artist = artist, Type = AlbumType.Single};
             await _context.Albums.AddAsync(album);
         }
         return album;

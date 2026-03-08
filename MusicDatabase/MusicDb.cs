@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 class MusicDb : DbContext
 {
@@ -30,7 +31,8 @@ class MusicDb : DbContext
         // ALBUM
         modelBuilder.Entity<Album>()
             .Property(a => a.Type)
-            .HasConversion<string>();
+            .HasConversion<string>()
+            .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
 
         modelBuilder.Entity<Album>()
             .HasMany(a => a.Tracks)
