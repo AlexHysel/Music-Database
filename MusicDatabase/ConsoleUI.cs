@@ -1,6 +1,8 @@
 // PRESENTATION LAYER
 
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 class ConsoleUI(Orchestrator orchestrator)
 {
@@ -18,6 +20,12 @@ class ConsoleUI(Orchestrator orchestrator)
             {
                 case "help":
                     DisplayHelp();
+                    break;
+                case "find":
+                    if (parts.Count() == 2)
+                        await Find(parts[1]);
+                    else
+                        Logging.Error("Wrong syntax.");
                     break;
 
                 //User
@@ -38,10 +46,7 @@ class ConsoleUI(Orchestrator orchestrator)
                 case "tracklist":
                     size = Convert.ToInt32(ReadLine("Page size: "));
                     page = Convert.ToInt32(ReadLine("Page number: "));
-                    if (parts.Length > 1)
-                        await DisplayTracksAsync(size, page, DefineFilter(parts[1]));
-                    else
-                        await DisplayTracksAsync(size, page, t => true);
+                    await DisplayTracksAsync(size, page, TrackFilter(parts[1]));
                     break;
                 case "addtrack":
                     string title = ReadLine("Title: ");
@@ -62,7 +67,7 @@ class ConsoleUI(Orchestrator orchestrator)
                 case "albumlist":
                     size = Convert.ToInt32(ReadLine("Page size: "));
                     page = Convert.ToInt32(ReadLine("Page number: "));
-                    await DisplayAlbumsAsync(size, page, parts);
+                    await DisplayAlbumsAsync(size, page, AlbumFilter(parts[1]));
                     break;
                 case "rmalbum":
                     await RmAlbum();
@@ -130,10 +135,10 @@ class ConsoleUI(Orchestrator orchestrator)
             Console.WriteLine($"{skipped + i + 1}. {users[i].Name} ({users[i].Id})");
     }
 
-    async Task DisplayAlbumsAsync(int size, int page, string[] parts)
+    async Task DisplayAlbumsAsync(int size, int page, Expression<Func<Album, bool>> filter)
     {
 
-        AlbumDTO[] albums = await _orchestrator.GetAlbumsAsync(size, page);
+        AlbumDTO[] albums = await _orchestrator.GetAlbumsAsync(size, page, filter);
         int skipped = size * --page;
         for (int i = 0; i < albums.Length; i++)
             Console.WriteLine($"{skipped + i + 1}. {albums[i].Title} ({albums[i].Type}) by {albums[i].ArtistName}");
@@ -177,7 +182,7 @@ class ConsoleUI(Orchestrator orchestrator)
         return Console.ReadLine()?.Trim() ?? "";
     }
 
-    static Expression<Func<Track, bool>> DefineFilter(string filter)
+    static Expression<Func<Track, bool>> TrackFilter(string filter)
     {
         string[] pair = filter.Split('=');
         pair[0] = pair[0].ToLower();
@@ -190,6 +195,45 @@ class ConsoleUI(Orchestrator orchestrator)
                 case "genre":
                     return t => t.Genre == Enum.Parse<Genre>(pair[1], true);
             }
+            Logging.Warning("Wrong filter.");
         return t => true;
+    }
+
+    static Expression<Func<Album, bool>> AlbumFilter(string filter)
+    {
+        string[] pair = filter.Split('=');
+        pair[0] = pair[0].ToLower();
+
+        if (pair.Length == 2)
+            switch (pair[0])
+            {
+                case "artist":
+                    return a => a.Artist.Name == pair[1];
+            }
+            Logging.Warning("Wrong filter.");
+        return t => true;
+    }
+
+    async Task Find(string search)
+    {
+        search = $"%{search}%";
+        ArtistDTO[] artists = await _orchestrator.GetArtistsAsync(a => EF.Functions.ILike(a.Name, search));
+        AlbumDTO[] albums = await _orchestrator.GetAlbumsAsync(a => EF.Functions.ILike(a.Title, search));
+        TrackDTO[] tracks = await _orchestrator.GetTracksAsync(a => EF.Functions.ILike(a.Title, search));
+        UserDTO[] users = await _orchestrator.GetUsersAsync(a => EF.Functions.ILike(a.Name, search));
+        
+        Console.WriteLine("=== Results ===");
+        Console.WriteLine($"- ({artists.Count()}) Artists:");
+        foreach (var artist in artists)
+            Console.WriteLine(artist.Name);
+        Console.WriteLine($"\n- ({albums.Count()}) Albums:");
+        foreach (var album in albums)
+            Console.WriteLine($"{album.Title} by {album.ArtistName}");
+        Console.WriteLine($"\n- ({tracks.Count()}) Tracks:");
+        foreach (var track in tracks)
+            Console.WriteLine($"{track.Title} from {track.AlbumTitle}");
+        Console.WriteLine($"\n- ({users.Count()}) Users:");
+        foreach (var user in users)
+            Console.WriteLine(user.Name);
     }
 }

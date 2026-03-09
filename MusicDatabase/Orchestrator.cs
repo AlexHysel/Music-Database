@@ -21,6 +21,11 @@ class Orchestrator
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 
+    public async Task<TrackDTO[]> GetTracksAsync(Expression<Func<Track, bool>> filter)
+    {
+        return await _manager.GetTracks(filter).ToArrayAsync();
+    }
+
     public async Task<TrackDTO[]> GetTracksAsync(int size, int page)
     {
         IQueryable<TrackDTO> request = _manager.GetTracks();
@@ -48,10 +53,21 @@ class Orchestrator
         await _manager.SaveChangesAsync();
     }
 
+    public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page, Expression<Func<Album, bool>> filter)
+    {
+        var request = _manager.GetAlbums(filter);
+        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
+
     public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page)
     {
         var request = _manager.GetAlbums();
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
+    
+    public async Task<AlbumDTO[]> GetAlbumsAsync(Expression<Func<Album, bool>> filter)
+    {
+        return await _manager.GetAlbums(filter).ToArrayAsync();
     }
 
     //ARTIST
@@ -67,6 +83,17 @@ class Orchestrator
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
+    public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page, Expression<Func<Artist, bool>> filter)
+    {
+        var request = _manager.GetArtists(filter);
+        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
+
+    public async Task<ArtistDTO[]> GetArtistsAsync(Expression<Func<Artist, bool>> filter)
+    {
+        return await _manager.GetArtists(filter).ToArrayAsync();
+    }
+
     //USER
     public async Task RemoveUserAsync(string name)
     {
@@ -78,6 +105,11 @@ class Orchestrator
     {
         var request = _manager.GetUsers();
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
+    }
+
+    public async Task<UserDTO[]> GetUsersAsync(Expression<Func<User, bool>> filter)
+    {
+        return await _manager.GetUsers(filter).ToArrayAsync();
     }
 
     public async Task AddUserAsync(string name, string password)

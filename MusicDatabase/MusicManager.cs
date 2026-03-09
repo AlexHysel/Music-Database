@@ -98,6 +98,11 @@ class MusicManager
         return _context.Users.Select(u => new UserDTO(u.Name, u.Id.ToString()));
     }
 
+    public IQueryable<UserDTO> GetUsers(Expression<Func<User, bool>> filter)
+    {
+        return _context.Users.Where(filter).Select(u => new UserDTO(u.Name, u.Id.ToString()));
+    }
+
     async public Task RemoveUserAsync(Expression<Func<User, bool>> filter)
     {
         User? user = await _context.Users.FirstOrDefaultAsync(filter);
@@ -146,6 +151,11 @@ class MusicManager
     public IQueryable<AlbumDTO> GetAlbums()
     {
         return _context.Albums.Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Type.ToString()));
+    }
+
+    public IQueryable<AlbumDTO> GetAlbums(Expression<Func<Album, bool>> filter)
+    {
+        return _context.Albums.Where(filter).Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Type.ToString()));
     }
 
     async public Task AddAlbumAsync(Album album)
