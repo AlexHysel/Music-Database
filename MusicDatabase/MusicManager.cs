@@ -103,6 +103,13 @@ class MusicManager
         return _context.Users.Where(filter).Select(u => new UserDTO(u.Name, u.Id.ToString()));
     }
 
+    public async Task<UserDTO?> GetUserAsync(string name)
+    {
+        return await _context.Users.Where(u => u.Name == name)
+            .Select(u => new UserDTO(u.Name, u.Password))
+            .FirstOrDefaultAsync();
+    }
+
     async public Task RemoveUserAsync(Expression<Func<User, bool>> filter)
     {
         User? user = await _context.Users.FirstOrDefaultAsync(filter);
@@ -115,6 +122,13 @@ class MusicManager
             await _context.SaveChangesAsync();
             Logging.Success($"{user.Name} ({user.Id}) removed.");
         }
+    }
+
+    async public Task<bool> AuthenticateUser(string name, string password)
+    {
+        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Name == name);
+        if (user == null) return false;
+        return user.Password.Equals(password);
     }
 
     async public Task AddUserAsync(string name, string password)

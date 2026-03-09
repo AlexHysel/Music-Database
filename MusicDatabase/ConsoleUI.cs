@@ -11,10 +11,11 @@ class ConsoleUI(Orchestrator orchestrator)
     public async Task Run()
     {
         Console.WriteLine("=== MusicDatabase ===");
+        UserDTO profile = new("", "");
         string userInput;
         do
         {
-            userInput = ReadLine("\n: ");
+            userInput = ReadLine($"\n{profile.Name}: ");
             string[] parts = userInput.Split(' ', 2);
             switch (parts[0])
             {
@@ -31,6 +32,15 @@ class ConsoleUI(Orchestrator orchestrator)
                 //User
                 case "signin":
                     await SignIn();
+                    break;
+                case "login":
+                    profile = await LogIn();
+                    break;
+                case "logout":
+                    if (profile.Name.Equals(""))
+                        Logging.Error("You are not logged in");
+                    else
+                        profile = new("", "");
                     break;
                 case "userlist":
                     int size = Convert.ToInt32(ReadLine("Page size: "));
@@ -166,7 +176,10 @@ class ConsoleUI(Orchestrator orchestrator)
     static void DisplayHelp()
     {
         Console.WriteLine("===== COMMANDS =====");
+        Console.WriteLine("find [name]");
         Console.WriteLine("signin");
+        Console.WriteLine("login");
+        Console.WriteLine("logout");
         Console.WriteLine("userlist");
         Console.WriteLine("rmuser");
         Console.WriteLine("login");
@@ -235,5 +248,23 @@ class ConsoleUI(Orchestrator orchestrator)
         Console.WriteLine($"\n- ({users.Count()}) Users:");
         foreach (var user in users)
             Console.WriteLine(user.Name);
+    }
+
+    async Task<UserDTO> LogIn()
+    {
+        Console.Write("Name: ");
+        string? name = Console.ReadLine();
+        if (name != null)
+        {
+            Console.Write("Password: ");
+            string? password = Console.ReadLine();
+            if (password != null)
+                return await _orchestrator.LogInAsync(name, password);
+            else
+                Logging.Error("Password cannot be empty.");
+        }
+        else
+            Logging.Error("Name cannot be empty.");
+        return new("", "");
     }
 }

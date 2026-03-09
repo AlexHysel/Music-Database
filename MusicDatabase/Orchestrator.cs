@@ -116,4 +116,15 @@ class Orchestrator
     {
         await _manager.AddUserAsync(name, password);
     }
+
+    public async Task<UserDTO> LogInAsync(string name, string password)
+    {
+        if (await _manager.AuthenticateUser(name, password))
+        {
+            UserDTO? user = await _manager.GetUserAsync(name);
+            if (user != null)
+                return user;
+        }
+        return new UserDTO("", "");
+    }
 }
