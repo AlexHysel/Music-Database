@@ -1,7 +1,6 @@
 // PRESENTATION LAYER
 
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 class ConsoleUI(Orchestrator orchestrator)
@@ -77,7 +76,10 @@ class ConsoleUI(Orchestrator orchestrator)
                 case "albumlist":
                     size = Convert.ToInt32(ReadLine("Page size: "));
                     page = Convert.ToInt32(ReadLine("Page number: "));
-                    await DisplayAlbumsAsync(size, page, AlbumFilter(parts[1]));
+                    if (parts.Length == 2)
+                        await DisplayAlbumsAsync(size, page, AlbumFilter(parts[1]));
+                    else
+                        await DisplayAlbumsAsync(size, page);
                     break;
                 case "rmalbum":
                     await RmAlbum();
