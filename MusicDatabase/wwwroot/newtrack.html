@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Add New Track</title>
+    </head>
+    <body>
+        <h1>Add New Track</h1>
+        <script src='auth.js'></script>
+        <div id="username"></div>
+        <script>
+            if (getUsername()){
+                document.getElementById('username').textContent = `${getUsername()}`;
+            }
+        </script>
+        <form id="trackInfo">
+            <label>Track Title</label>
+            <input type="text" id="trackTitle" name="Title" required><br><br>
+            <label>Album Title</label>
+            <input type="text" id="albumTitle" name="Album" required><br><br>
+            <label>Artist</label>
+            <input type="text" id="artist" name="Artist" required><br><br>
+            <div id="otherArtists"></div>
+            <button type="button" id="addArtist">Add Another Artist</button><br><br>
+            <label>Genre</label>
+            <select id="genre" name="Genre" required>
+                <option value="Rock">Rock</option>
+                <option value="Metal">Metal</option>
+                <option value="Darksynth">Darksynth</option>
+                <option value="Ambient">Ambient</option>
+            </select>
+            <input type="submit" value="Add Track">
+        </form>
+        <script>
+            document.getElementById('addArtist').addEventListener('click', () => {
+                let input = document.createElement('input');
+                input.type = 'text';
+                input.required = true;
+                let removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.textContent = 'Remove';
+                removeBtn.id = 'removeArtist';
+                removeBtn.addEventListener('click', (event) =>{
+                    event.target.parentElement.remove();
+                })
+                let field = document.createElement('div');
+                field.id = 'field';
+                field.appendChild(input);
+                field.appendChild(removeBtn);
+                let doc = document.getElementById('otherArtists');
+                doc.appendChild(field);
+            })
+            document.getElementById('trackInfo').addEventListener('submit', async (event) => {
+                event.preventDefault();
+                let title = document.getElementById('trackTitle').value;
+                let album = document.getElementById('albumTitle').value;
+                let artist = document.getElementById('artist').value;
+                let inputs = document.getElementById('otherArtists').querySelectorAll('input');
+                let others = Array.from(inputs).map(input => input.value)
+                let genre = document.getElementById('genre').value;
+                
+                let response = await fetch('http://localhost:5000/tracks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({title, albumTitle: album, artist, others, genre})
+                })
+                if (response.ok){
+                    alert('Track added successfully!');
+                } else {
+                    alert('Failed to add track. Please try again.');
+                }
+            })
+        </script>
+    </body>
+</html>

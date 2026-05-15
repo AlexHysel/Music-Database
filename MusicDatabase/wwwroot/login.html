@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Login</title>
+    </head>
+    <body>
+        <h1>Log In</h1>
+        <form id="loginForm">
+            
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" value="Login">
+        </form>
+        <input type="button" value="Don't have an account?" onclick="window.location.href='signup.html'">
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async (event) => {
+                event.preventDefault();
+                let username = document.getElementById('username').value;
+                let password = document.getElementById('password').value;
+                let response = await fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: username, password })
+                });
+                if (response.ok) {
+                    let result = await response.json();
+                    alert('Login successful!');
+                    localStorage.setItem('token', result.token);
+                } else {
+                    alert('Login failed. Please check your credentials and try again.');
+                }
+            });
+        </script>
+    </body>
+</html>

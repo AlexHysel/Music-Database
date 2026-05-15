@@ -1,13 +1,17 @@
-public record TrackDTO(string Title,
+public record TrackDTO(
+    string Title,
     string AlbumTitle,
-    string[] ArtistNames,
+    string ArtistName,
+    string[] OthersNames,
     string Genre
 );
 
 public record AlbumDTO(
     string Title,
     string ArtistName,
-    string Type
+    string[] Tracks,
+    string Type,
+    string Id
 );
 
 public record ArtistDTO(
@@ -17,5 +21,10 @@ public record ArtistDTO(
 
 public record UserDTO(
     string Name,
+    string Role,
     string Id
+);
+
+public record AuthDTO(
+    string Token
 );

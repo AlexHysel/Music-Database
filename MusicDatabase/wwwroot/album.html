@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title id="pageTitle">Album:</title>
+    </head>
+        <h1 id="albumTitle"></h1>
+        <div id="trackList"></div>
+    <body>
+        <script>
+            window.onload = async () => {
+                let params = new URLSearchParams(window.location.search);
+                let id = params.get('id');
+                let response = await fetch(`http://localhost:5000/album?id=${id}`, {
+                    method: 'GET',
+                });
+                if (response.ok){
+                    let album = await response.json();
+                    let title = album.title;
+                    let artist = album.artistName;
+                    let tracks = album.tracks;
+
+                    document.getElementById('pageTitle').textContent = `${title} by ${artist}`;
+                    document.getElementById('albumTitle').textContent = title;
+                    tracks.forEach(t => {
+                        trackTitle = document.createElement('h3');
+                        trackTitle.textContent = t;
+                        document.getElementById('trackList').appendChild(trackTitle);
+                    });
+                }
+            }
+        </script>
+    </body>
+</html>

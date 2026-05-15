@@ -24,13 +24,13 @@ class MusicManager
     public IQueryable<TrackDTO> GetTracks()
     {
         return _context.Tracks.Select(t => 
-        new TrackDTO(t.Title, t.Album.Title, t.Artists.Select(a => a.Name).ToArray(), t.Genre.ToString()));
+        new TrackDTO(t.Title, t.Album.Title, t.Album.Artist.Name, t.Others.Select(a => a.Name).ToArray(), t.Genre.ToString()));
     }
 
     public IQueryable<TrackDTO> GetTracks(Expression<Func<Track, bool>> filter)
     {
         return _context.Tracks.Where(filter).Select(t => 
-        new TrackDTO(t.Title, t.Album.Title, t.Artists.Select(a => a.Name).ToArray(), t.Genre.ToString()));
+        new TrackDTO(t.Title, t.Album.Title, t.Album.Artist.Name, t.Others.Select(a => a.Name).ToArray(), t.Genre.ToString()));
     }
 
     async public Task AddTrackAsync(Track track)
@@ -60,68 +60,65 @@ class MusicManager
                     t.Id,
                     t.Title,
                     AlbumId = t.Album.Id,
-                    ArtistsIDs = t.Artists.Select(a => a.Id)
+                    ArtistsIDs = t.Others.Select(a => a.Id),
+                    ArtistIDs = t.Artist.Id
                 }
             ).FirstOrDefaultAsync();
-
-        if (trackData == null)
+        if (trackData != null)
         {
-            Logging.Warning("Track not found");
-            return;
-        }
-        
-        using var transaciton = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            await _context.Tracks
-                .Where(t => t.Id == trackData.Id)
-                .ExecuteDeleteAsync();
-            await _context.Artists
-                .Where(a => trackData.ArtistsIDs.Contains(a.Id))
-                .Where(a => a.Tracks.Count == 0)
-                .ExecuteDeleteAsync();
-            if (await _context.Tracks.CountAsync(t => t.AlbumId == trackData.AlbumId) == 0)
-                await RemoveAlbumAsync(a => a.Id == trackData.AlbumId);
-            Logging.Success($"{trackData.Title} ({trackData.Id}) removed.");
-            await transaciton.CommitAsync();
-        }
-        catch
-        {
-            await transaciton.RollbackAsync();
-            Logging.Error("Removing failed.");
+            using var transaciton = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                await _context.Tracks
+                    .Where(t => t.Id == trackData.Id)
+                    .ExecuteDeleteAsync();
+                await _context.Artists
+                    .Where(a => trackData.ArtistsIDs.Contains(a.Id))
+                    .Where(a => a.Tracks.Count == 0)
+                    .ExecuteDeleteAsync();
+                await _context.Artists
+                    .Where(a => a.Id == trackData.ArtistIDs)
+                    .Where(a => a.Tracks.Count == 0)
+                    .ExecuteDeleteAsync();
+                if (await _context.Tracks.CountAsync(t => t.AlbumId == trackData.AlbumId) == 0)
+                    await RemoveAlbumAsync(a => a.Id == trackData.AlbumId);
+                await transaciton.CommitAsync();
+            }
+            catch
+            {
+                await transaciton.RollbackAsync();
+            }
         }
     }
 
     // USER
-    public IQueryable<UserDTO> GetUsers()
+    public IQueryable<User> GetUsers()
     {
-        return _context.Users.Select(u => new UserDTO(u.Name, u.Id.ToString()));
+        return _context.Users;
     }
 
-    public IQueryable<UserDTO> GetUsers(Expression<Func<User, bool>> filter)
+    public IQueryable<User> GetUsers(Expression<Func<User, bool>> filter)
     {
-        return _context.Users.Where(filter).Select(u => new UserDTO(u.Name, u.Id.ToString()));
+        return _context.Users.Where(filter);
     }
 
-    public async Task<UserDTO?> GetUserAsync(string name)
+    public async Task<User?> GetUserAsync(Expression<Func<User, bool>> filter)
     {
-        return await _context.Users.Where(u => u.Name == name)
-            .Select(u => new UserDTO(u.Name, u.Password))
-            .FirstOrDefaultAsync();
+        User? user = await _context.Users.FirstOrDefaultAsync(filter);
+        return user;
     }
 
-    async public Task RemoveUserAsync(Expression<Func<User, bool>> filter)
+    async public Task<bool> RemoveUserAsync(Expression<Func<User, bool>> filter)
     {
         User? user = await _context.Users.FirstOrDefaultAsync(filter);
 
-        if (user == null)
-            Logging.Warning("User not found.");
-        else
+        if (user != null)
         {
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
-            Logging.Success($"{user.Name} ({user.Id}) removed.");
+            return true;
         }
+        return false;
     }
 
     async public Task<bool> AuthenticateUser(string name, string password)
@@ -131,45 +128,53 @@ class MusicManager
         return user.Password.Equals(password);
     }
 
-    async public Task AddUserAsync(string name, string password)
+    async public Task<bool> HasUserAsync(string name)
     {
-        User user = new() {Name = name, Password = password};
+        return await _context.Users.AnyAsync(u => u.Name == name);
+    }
+
+    async public Task<bool> AddUserAsync(string name, UserRole role, string password)
+    {
+        if (await _context.Users.AnyAsync(u => u.Name == name))
+            return false;
+        
+        User user = new() {Name = name, Password = password, Role = role};
         await _context.Users.AddAsync(user);
-        try
-        {
-            await _context.SaveChangesAsync();
-            Logging.Success($"User {name} created.");
-        } 
-        catch
-        {
-            Logging.Error($"User {name} already exists.");
-        }
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     // ALBUM
-    async public Task RemoveAlbumAsync(Expression<Func<Album, bool>> filter)
+    async public Task<bool> RemoveAlbumAsync(Expression<Func<Album, bool>> filter)
     {
-        Album? album = await _context.Albums.Include(a => a.Artist).ThenInclude(a => a.Albums).FirstOrDefaultAsync(filter);
+        Album? album = await _context.Albums
+            .Include(a => a.Artist)
+            .ThenInclude(a => a.Albums)
+            .FirstOrDefaultAsync(filter);
 
-        if (album == null)
-            Logging.Warning("Album not found.");
-        else
+        if (album != null)
         {
             _context.Albums.Remove(album);
-            Logging.Success($"{album.Title} ({album.Id}) removed.");
             if (!album.Artist.Albums.Any(a => a != album))
                 await RemoveArtistAsync((a) => a == album.Artist);
+            return true;
         }
+        return false;
     }
 
-    public IQueryable<AlbumDTO> GetAlbums()
+    public IQueryable<Album> GetAlbums()
     {
-        return _context.Albums.Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Type.ToString()));
+        return _context.Albums;
     }
 
-    public IQueryable<AlbumDTO> GetAlbums(Expression<Func<Album, bool>> filter)
+    public IQueryable<Album> GetAlbums(Expression<Func<Album, bool>> filter)
     {
-        return _context.Albums.Where(filter).Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Type.ToString()));
+        return _context.Albums.Where(filter);
+    }
+
+    public async Task<Album?> GetAlbumAsync(Expression<Func<Album, bool>> filter)
+    {
+        return await _context.Albums.Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(filter);
     }
 
     async public Task AddAlbumAsync(Album album)
@@ -195,14 +200,14 @@ class MusicManager
     }
 
     // ARTIST
-    public IQueryable<ArtistDTO> GetArtists()
+    public IQueryable<Artist> GetArtists()
     {
-        return _context.Artists.Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
+        return _context.Artists;
     }
 
-    public IQueryable<ArtistDTO> GetArtists(Expression<Func<Artist, bool>> filter)
+    public IQueryable<Artist> GetArtists(Expression<Func<Artist, bool>> filter)
     {
-        return _context.Artists.Where(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
+        return _context.Artists.Where(filter);
     }
 
     async public Task<Artist> EnsureArtistCreated(string name)

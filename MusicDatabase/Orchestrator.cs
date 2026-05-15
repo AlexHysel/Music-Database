@@ -1,12 +1,20 @@
 // BUSINESS LOGIC LAYER
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 class Orchestrator
 {
     private readonly MusicManager _manager;
+    private readonly IConfiguration _config;
 
-    public Orchestrator(MusicManager manager) => _manager = manager;
+    public Orchestrator(MusicManager manager, IConfiguration config) {
+        _manager = manager;
+        _config = config;
+    }
 
     //TRACK
     public async Task RemoveTrackAsync(string title, string albumTitle)
@@ -32,16 +40,18 @@ class Orchestrator
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 
-    public async Task AddTrackAsync(string title, string artistName, string[] others, string albumTitle, Genre genre)
+    public async Task AddTrackAsync(string title, string artistName, string[]? others, string albumTitle, Genre genre)
     {
         Album album = await _manager.EnsureAlbumCreated(albumTitle, await _manager.EnsureArtistCreated(artistName));
 
-        List<Artist> artists = [await _manager.EnsureArtistCreated(artistName)];
-        foreach (string name in others)
-            if (!string.IsNullOrEmpty(name))
-                artists.Add(await _manager.EnsureArtistCreated(name));
+        Artist artist = await _manager.EnsureArtistCreated(artistName);
+        List<Artist> artists = [];
+        if (others != null)
+            foreach (string name in others)
+                if (!string.IsNullOrEmpty(name))
+                    artists.Add(await _manager.EnsureArtistCreated(name));
 
-        Track track = new() {Title = title, Album = album, Artists = artists, Genre = genre};
+        Track track = new() {Title = title, Artist = artist, Album = album, Others = artists, Genre = genre};
         await _manager.AddTrackAsync(track);
         await _manager.SaveChangesAsync();
     }
@@ -55,19 +65,33 @@ class Orchestrator
 
     public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page, Expression<Func<Album, bool>> filter)
     {
-        var request = _manager.GetAlbums(filter);
+        var request = _manager.GetAlbums(filter)
+            .Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Tracks.Select(t => t.Title).ToArray(), a.Type.ToString(), a.Id.ToString()));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
     public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page)
     {
-        var request = _manager.GetAlbums();
+        var request = _manager.GetAlbums()
+            .Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Tracks.Select(t => t.Title).ToArray(), a.Type.ToString(), a.Id.ToString()));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
     
     public async Task<AlbumDTO[]> GetAlbumsAsync(Expression<Func<Album, bool>> filter)
     {
-        return await _manager.GetAlbums(filter).ToArrayAsync();
+        return await _manager.GetAlbums(filter).Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Tracks.Select(t => t.Title).ToArray(), a.Type.ToString(), a.Id.ToString())).ToArrayAsync();
+    }
+
+    public async Task<Result<AlbumDTO?>> GetAlbumAsync(Expression<Func<Album, bool>> filter)
+    {
+        Album? album = await _manager.GetAlbumAsync(filter);
+        if (album != null)
+        {
+            AlbumDTO albumDto = new(album.Title, album.Artist.Name, [.. album.Tracks.Select(t => t.Title)], album.Type.ToString(), album.Id.ToString());
+            return Result<AlbumDTO?>.Ok(albumDto);
+        }
+        else
+            return Result<AlbumDTO?>.Fail("Album not found");
     }
 
     //ARTIST
@@ -79,19 +103,20 @@ class Orchestrator
 
     public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page)
     {
-        var request = _manager.GetArtists();
+        var request = _manager.GetArtists().Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
     public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page, Expression<Func<Artist, bool>> filter)
     {
-        var request = _manager.GetArtists(filter);
+        var request = _manager.GetArtists(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
     public async Task<ArtistDTO[]> GetArtistsAsync(Expression<Func<Artist, bool>> filter)
     {
-        return await _manager.GetArtists(filter).ToArrayAsync();
+        return await _manager.GetArtists(filter)
+            .Select(a => new ArtistDTO(a.Name, a.Id.ToString())).ToArrayAsync();
     }
 
     //USER
@@ -103,28 +128,64 @@ class Orchestrator
 
     public async Task<UserDTO[]> GetUsersAsync(int size, int page)
     {
-        var request = _manager.GetUsers();
+        var request = _manager.GetUsers()
+            .Select(u => new UserDTO(u.Name, u.Role.ToString(), u.Id.ToString()));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
     public async Task<UserDTO[]> GetUsersAsync(Expression<Func<User, bool>> filter)
     {
-        return await _manager.GetUsers(filter).ToArrayAsync();
+        return await _manager.GetUsers(filter)
+            .Select(u => new UserDTO(u.Name, u.Role.ToString(), u.Id.ToString())).ToArrayAsync();
     }
 
-    public async Task AddUserAsync(string name, string password)
+    public async Task<UserDTO?> GetUserAsync(Expression<Func<User, bool>> filter)
     {
-        await _manager.AddUserAsync(name, password);
+        User? user = await _manager.GetUserAsync(filter);
+        return user != null ? new UserDTO(user.Name, user.Role.ToString(), user.Id.ToString()) : null;
+    }
+    
+    public async Task<Result> AddUserAsync(string name, string role, string password)
+    {
+        if (await _manager.HasUserAsync(name))
+            return Result.Fail("User with this name already exists");
+        else
+        {
+            await _manager.AddUserAsync(name, Enum.Parse<UserRole>(role), password);
+            return Result.Ok();
+        }
     }
 
-    public async Task<UserDTO> LogInAsync(string name, string password)
+    public async Task<AuthDTO?> LogInAsync(string name, string password)
     {
+        AuthDTO? auth = null;
+        string key = _config["Jwt:Key"]!;
+        Console.WriteLine($"Login attempt for user: {name}");
         if (await _manager.AuthenticateUser(name, password))
         {
-            UserDTO? user = await _manager.GetUserAsync(name);
-            if (user != null)
-                return user;
+            Console.WriteLine("User authenticated successfully");
+            string role = (await _manager.GetUserAsync(u => u.Name == name))!.Role.ToString();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity([
+                    new Claim(ClaimTypes.Name, name),
+                    new Claim(ClaimTypes.Role, role)
+                ]),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Issuer = "MusicDatabase",
+                Audience = "MusicDatabase",
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    SecurityAlgorithms.HmacSha256)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+            Console.WriteLine($"Token generated: {tokenString.Substring(0, Math.Min(50, tokenString.Length))}...");
+            auth = new AuthDTO(tokenString);
         }
-        return new UserDTO("", "");
+        else
+            Console.WriteLine("User authentication failed");
+        return auth;
     }
 }

@@ -10,10 +10,7 @@ class MusicDb : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Playlist> Playlists => Set<Playlist>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=music_db;Username=postgres;Password=6891");
-    }
+    public MusicDb(DbContextOptions<MusicDb> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,8 +39,12 @@ class MusicDb : DbContext
 
         // TRACK
         modelBuilder.Entity<Track>()
-            .HasMany(t => t.Artists)
-            .WithMany(a => a.Tracks)
+            .HasOne(t => t.Artist)
+            .WithMany(a => a.Tracks);
+
+        modelBuilder.Entity<Track>()
+            .HasMany(t => t.Others)
+            .WithMany()
             .UsingEntity(j => j.ToTable("TrackArtists"));
         
         modelBuilder.Entity<Track>()
@@ -54,6 +55,10 @@ class MusicDb : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Name)
             .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasConversion<string>();
 
         modelBuilder.Entity<User>()
             .HasMany(u => u.FavoriteTracks)

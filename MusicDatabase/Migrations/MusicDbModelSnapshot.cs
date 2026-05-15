@@ -16,7 +16,7 @@ namespace MusicDatabase.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -80,15 +80,15 @@ namespace MusicDatabase.Migrations
 
             modelBuilder.Entity("ArtistTrack", b =>
                 {
-                    b.Property<Guid>("ArtistsId")
+                    b.Property<Guid>("OthersId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TracksId")
+                    b.Property<Guid>("TrackId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("ArtistsId", "TracksId");
+                    b.HasKey("OthersId", "TrackId");
 
-                    b.HasIndex("TracksId");
+                    b.HasIndex("TrackId");
 
                     b.ToTable("TrackArtists", (string)null);
                 });
@@ -152,6 +152,9 @@ namespace MusicDatabase.Migrations
                     b.Property<Guid>("AlbumId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Genre")
                         .IsRequired()
                         .HasColumnType("text");
@@ -163,6 +166,8 @@ namespace MusicDatabase.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AlbumId");
+
+                    b.HasIndex("ArtistId");
 
                     b.ToTable("Tracks");
                 });
@@ -193,6 +198,10 @@ namespace MusicDatabase.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -234,13 +243,13 @@ namespace MusicDatabase.Migrations
                 {
                     b.HasOne("Artist", null)
                         .WithMany()
-                        .HasForeignKey("ArtistsId")
+                        .HasForeignKey("OthersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Track", null)
                         .WithMany()
-                        .HasForeignKey("TracksId")
+                        .HasForeignKey("TrackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -294,7 +303,15 @@ namespace MusicDatabase.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Artist", "Artist")
+                        .WithMany("Tracks")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Album");
+
+                    b.Navigation("Artist");
                 });
 
             modelBuilder.Entity("TrackUser", b =>
@@ -320,6 +337,8 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Artist", b =>
                 {
                     b.Navigation("Albums");
+
+                    b.Navigation("Tracks");
                 });
 
             modelBuilder.Entity("User", b =>
