@@ -16,6 +16,19 @@ class Orchestrator
         _config = config;
     }
 
+    public async Task<SearchResultDTO> Search(string title)
+    {
+        ArtistDTO[] artists = await _manager.GetArtists(a => a.Name.Contains(title))
+            .Select(a => new ArtistDTO(a.Name, a.Id.ToString())).ToArrayAsync();
+        AlbumDTO[] albums = await _manager.GetAlbums(a => a.Title.Contains(title))
+            .Select(a => new AlbumDTO(a.Title, a.Artist.Name, a.Tracks.Select(t => t.Title).ToArray(), a.Type.ToString(), a.Id.ToString())).ToArrayAsync();
+        TrackDTO[] tracks = await _manager.GetTracks(a => a.Title.Contains(title))
+            .Select(a => new TrackDTO(a.Title, a.Album.Title, a.Artist.Name, a.Others.Select(o => o.Name).ToArray(), a.Genre.ToString())).ToArrayAsync();
+        UserDTO[] users = await _manager.GetUsers(u => u.Name.Contains(title))
+            .Select(a => new UserDTO(a.Name, a.Role.ToString(), a.Id.ToString())).ToArrayAsync();
+        return new SearchResultDTO(artists, albums, tracks, users);
+    }
+
     //TRACK
     public async Task RemoveTrackAsync(string title, string albumTitle)
     {
@@ -25,18 +38,22 @@ class Orchestrator
     
     public async Task<TrackDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
     {
-        IQueryable<TrackDTO> request = _manager.GetTracks(filter);
+        IQueryable<TrackDTO> request = _manager.GetTracks(filter)
+            .Select(t => new TrackDTO(t.Title, t.Album.Title, t.Artist.Name, t.Others.Select(o => o.Name).ToArray(), t.Genre.ToString()));
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 
     public async Task<TrackDTO[]> GetTracksAsync(Expression<Func<Track, bool>> filter)
     {
-        return await _manager.GetTracks(filter).ToArrayAsync();
+        IQueryable<TrackDTO> request = _manager.GetTracks(filter)
+            .Select(t => new TrackDTO(t.Title, t.Album.Title, t.Artist.Name, t.Others.Select(o => o.Name).ToArray(), t.Genre.ToString()));
+        return await request.ToArrayAsync();
     }
 
     public async Task<TrackDTO[]> GetTracksAsync(int size, int page)
     {
-        IQueryable<TrackDTO> request = _manager.GetTracks();
+        IQueryable<TrackDTO> request = _manager.GetTracks()
+            .Select(t => new TrackDTO(t.Title, t.Album.Title, t.Artist.Name, t.Others.Select(o => o.Name).ToArray(), t.Genre.ToString()));
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 

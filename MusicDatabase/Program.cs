@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
@@ -108,6 +108,11 @@ app.Use(async (context, next) =>
 });
 
 // ===== GET =====
+
+app.MapGet("/search", async (Orchestrator o, string title) =>
+{
+    return await o.Search(title);
+});
 
 app.MapGet("/tracks", async (Orchestrator o, int page = 1, int size = 20) =>
 {

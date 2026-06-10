@@ -21,16 +21,14 @@ class MusicManager
         return await _context.Tracks.FirstOrDefaultAsync(filter);
     }
 
-    public IQueryable<TrackDTO> GetTracks()
+    public IQueryable<Track> GetTracks()
     {
-        return _context.Tracks.Select(t => 
-        new TrackDTO(t.Title, t.Album.Title, t.Album.Artist.Name, t.Others.Select(a => a.Name).ToArray(), t.Genre.ToString()));
+        return _context.Tracks;
     }
 
-    public IQueryable<TrackDTO> GetTracks(Expression<Func<Track, bool>> filter)
+    public IQueryable<Track> GetTracks(Expression<Func<Track, bool>> filter)
     {
-        return _context.Tracks.Where(filter).Select(t => 
-        new TrackDTO(t.Title, t.Album.Title, t.Album.Artist.Name, t.Others.Select(a => a.Name).ToArray(), t.Genre.ToString()));
+        return _context.Tracks.Where(filter);
     }
 
     async public Task AddTrackAsync(Track track)
