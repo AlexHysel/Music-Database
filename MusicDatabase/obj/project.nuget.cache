@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "/I9584PvUEo=",
+  "dgSpecHash": "2HHAtTxKWzI=",
   "success": true,
   "projectFilePath": "/home/alexhysel/Projects/Music-Database/MusicDatabase/MusicDatabase.csproj",
   "expectedPackageFiles": [
@@ -55,7 +55,7 @@
     "/home/alexhysel/.nuget/packages/system.composition.runtime/7.0.0/system.composition.runtime.7.0.0.nupkg.sha512",
     "/home/alexhysel/.nuget/packages/system.composition.typedparts/7.0.0/system.composition.typedparts.7.0.0.nupkg.sha512",
     "/home/alexhysel/.nuget/packages/system.identitymodel.tokens.jwt/8.17.0/system.identitymodel.tokens.jwt.8.17.0.nupkg.sha512",
-    "/home/alexhysel/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.4/microsoft.aspnetcore.app.ref.10.0.4.nupkg.sha512"
+    "/home/alexhysel/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.8/microsoft.aspnetcore.app.ref.10.0.8.nupkg.sha512"
   ],
   "logs": []
 }

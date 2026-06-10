@@ -138,4 +138,4 @@
 /home/alexhysel/Projects/Music-Database/MusicDatabase/obj/Debug/net10.0/compressed/gm9cgirhhc-{0}-0wpy5ydbmh-0wpy5ydbmh.gz
 /home/alexhysel/Projects/Music-Database/MusicDatabase/obj/Debug/net10.0/compressed/xyid3686ou-{0}-t6r3rmm7xf-t6r3rmm7xf.gz
 /home/alexhysel/Projects/Music-Database/MusicDatabase/obj/Debug/net10.0/compressed/k15el9fi3z-{0}-fgja4gd4sl-fgja4gd4sl.gz
-/home/alexhysel/Projects/Music-Database/MusicDatabase/obj/Debug/net10.0/compressed/vz2oegmb9b-{0}-isp8jjeg94-isp8jjeg94.gz
+/home/alexhysel/Projects/Music-Database/MusicDatabase/obj/Debug/net10.0/compressed/vz2oegmb9b-{0}-rvq0upz3o0-rvq0upz3o0.gz
