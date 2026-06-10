@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title id="title">Track</title>
+    </head>
+
+    <body>
+        <h1 id="trackTitle"></h1>
+        <a id="artistName"></a>
+        <a id="albumTitle"></a>
+        <p id="trackGenre"></p>
+        <script>
+            window.onload = async () => {
+                let params = new URLSearchParams(window.location.search);
+                let trackId = params.get('id');
+                let response = await fetch(`http://localhost:5000/track?id=${trackId}`);
+                if (response.ok){
+                    let track = await response.json();
+                    let title = track.title;
+                    let artistName = track.artistName;
+                    let albumTitle = track.albumTitle;
+                    let genre = track.genre;
+                    document.getElementById('trackTitle').textContent = title;
+                    document.getElementById('title').textContent = title;
+                    document.getElementById('artistName').textContent = artistName;
+                    document.getElementById('albumTitle').textContent = albumTitle;
+                    document.getElementById('trackGenre').textContent = genre;
+                }
+                else
+                    alert('Track not found');
+            }
+        </script>
+    </body>
+</html>

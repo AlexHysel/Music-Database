@@ -119,6 +119,15 @@ app.MapGet("/tracks", async (Orchestrator o, int page = 1, int size = 20) =>
     return await o.GetTracksAsync(size, page);
 });
 
+app.MapGet("/track", async (Orchestrator o, Guid id) =>
+{
+    Result<TrackDTO> result = await o.GetTrackAsync(id);
+    if (result.Success)
+        return Results.Ok(result.Data);
+    else
+        return Results.NotFound("Track not found");
+});
+
 app.MapGet("/album", async (Orchestrator o, Guid id) =>
 {
     Result<AlbumDTO?> result = await o.GetAlbumAsync(a => a.Id == id);

@@ -3,7 +3,8 @@ public record TrackDTO(
     string AlbumTitle,
     string ArtistName,
     string[] OthersNames,
-    string Genre
+    string Genre,
+    string Id
 );
 
 public record AlbumDTO(
