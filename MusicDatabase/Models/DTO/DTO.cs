@@ -28,3 +28,10 @@ public record UserDTO(
 public record AuthDTO(
     string Token
 );
+
+public record SearchResultDTO(
+    ArtistDTO[] Artists,
+    AlbumDTO[] Albums,
+    TrackDTO[] Tracks,
+    UserDTO[] Users
+);
