@@ -5,10 +5,65 @@
         <title>Search</title>
     </head>
     <body>
-        <div id="search">
-            <input id="searchLine" type="text">
-            <input type="submit">
+        <div id='search'>
+            <input id='searchLine' type='text'>
+            <input id='searchButton', type='submit'>
         </div>
-        
+        <div>
+            <h2>Artists</h2>
+            <div id='foundArtists'></div>
+        </div>
+        <div>
+            <h2>Albums</h2>
+            <div id='foundAlbums'></div>
+        </div>
+        <div>
+            <h2>Tracks</h2>
+            <div id='foundTracks'></div>
+        </div>
+        <div>
+            <h2>Users</h2>
+            <div id='foundUsers'></div>
+        </div>
+        <script>
+            document.getElementById('searchButton').addEventListener('click', async (event) => {
+                event.preventDefault();
+                let searchLine = document.getElementById('searchLine').value;
+                let response = await fetch(`http://localhost:5000/search?searchLine=${searchLine}`);
+                if (response.ok){
+                    let result = await response.json();
+                    document.getElementById('foundArtists').innerHTML = ''
+                    for (artist of result.artists){
+                        let artistName = document.createElement('a');
+                        artistName.textContent = artist.name;
+                        artistName.href = `http://localhost:5000/artist.html?id=${artist.id}`
+                        document.getElementById('foundArtists').appendChild(artistName);
+                    }
+                    document.getElementById('foundAlbums').innerHTML = ''
+                    for (album of result.albums){
+                        let albumTitle = document.createElement('a');
+                        albumTitle.textContent = album.title;
+                        albumTitle.href = `http://localhost:5000/album.html?id=${album.id}`
+                        document.getElementById('foundAlbums').appendChild(albumTitle);
+                    }
+                    document.getElementById('foundTracks').innerHTML = ''
+                    for (track of result.tracks){
+                        let trackTitle = document.createElement('a');
+                        trackTitle.textContent = track.title;
+                        trackTitle.href = `http://localhost:5000/track.html?id=${track.id}`
+                        document.getElementById('foundTracks').appendChild(trackTitle);
+                    }
+                    document.getElementById('foundUsers').innerHTML = ''
+                    for (user of result.users){
+                        let userName = document.createElement('a');
+                        userName.textContent = user.name;
+                        userName.href = `http://localhost:5000/user.html?id=${user.id}`
+                        document.getElementById('foundUsers').appendChild(userName);
+                    }
+                } else {
+                    alert("Something went wrong :(")
+                }
+            });
+        </script>
     </body>
 </html>

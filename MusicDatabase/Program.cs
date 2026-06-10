@@ -109,9 +109,9 @@ app.Use(async (context, next) =>
 
 // ===== GET =====
 
-app.MapGet("/search", async (Orchestrator o, string title) =>
+app.MapGet("/search", async (Orchestrator o, string searchLine) =>
 {
-    return await o.Search(title);
+    return await o.Search(searchLine);
 });
 
 app.MapGet("/tracks", async (Orchestrator o, int page = 1, int size = 20) =>
