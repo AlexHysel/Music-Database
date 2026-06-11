@@ -1,4 +1,4 @@
-class Playlist
+public class Playlist
 {
     public Guid Id {get; set;}
     public string Title {get; set;}

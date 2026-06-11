@@ -1,4 +1,4 @@
-enum AlbumType
+public enum AlbumType
 {
     Album,
     EP,
