@@ -11,9 +11,7 @@
             window.onload = async () => {
                 let params = new URLSearchParams(window.location.search);
                 let id = params.get('id');
-                let response = await fetch(`http://localhost:5000/album?id=${id}`, {
-                    method: 'GET',
-                });
+                let response = await fetch(`http://localhost:5000/album?id=${id}`)
                 if (response.ok){
                     let album = await response.json();
                     let title = album.title;
