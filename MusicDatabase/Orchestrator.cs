@@ -35,7 +35,7 @@ class Orchestrator
         await _manager.RemoveTrackAsync(t => t.Album.Title == albumTitle && t.Title == title);
         await _manager.SaveChangesAsync();
     }
-    
+
     public async Task<TrackDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
     {
         IQueryable<TrackDTO> request = _manager.GetTracks(filter)

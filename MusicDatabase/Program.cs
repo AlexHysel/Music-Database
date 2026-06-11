@@ -109,15 +109,9 @@ app.Use(async (context, next) =>
 
 // ===== GET =====
 
-app.MapGet("/search", async (Orchestrator o, string searchLine) =>
-{
-    return await o.Search(searchLine);
-});
+app.MapGet("/search", async (Orchestrator o, string searchLine) => await o.Search(searchLine));
 
-app.MapGet("/tracks", async (Orchestrator o, int page = 1, int size = 20) =>
-{
-    return await o.GetTracksAsync(size, page);
-});
+app.MapGet("/tracks", async (Orchestrator o, int page = 1, int size = 20) => await o.GetTracksAsync(size, page));
 
 app.MapGet("/track", async (Orchestrator o, Guid id) =>
 {
@@ -137,20 +131,11 @@ app.MapGet("/album", async (Orchestrator o, Guid id) =>
         return Results.NotFound("Album not found");
 });
 
-app.MapGet("/albums", async (Orchestrator o, int page = 1, int size = 20) =>
-{
-    return await o.GetAlbumsAsync(size, page);
-});
+app.MapGet("/albums", async (Orchestrator o, int page = 1, int size = 20) => await o.GetAlbumsAsync(size, page));
 
-app.MapGet("/artists", async (Orchestrator o, int page = 1, int size = 20) =>
-{
-    return await o.GetArtistsAsync(size, page);
-});
+app.MapGet("/artists", async (Orchestrator o, int page = 1, int size = 20) => await o.GetArtistsAsync(size, page));
 
-app.MapGet("/users", async (Orchestrator o, int page = 1, int size = 20) =>
-{
-    return await o.GetUsersAsync(size, page);
-});
+app.MapGet("/users", async (Orchestrator o, int page = 1, int size = 20) => await o.GetUsersAsync(size, page));
 
 // ===== POST =====
 app.MapPost("/tracks", async (Orchestrator o, AddTrackRequest info) =>
@@ -177,19 +162,10 @@ app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
 });
 
 // ===== DELETE =====
-app.MapDelete("/tracks", async (Orchestrator o, string title, string album) =>
-{
-    await o.RemoveTrackAsync(title, album);
-}).RequireAuthorization(policy => policy.RequireRole("Admin"));
+app.MapDelete("/tracks", async (Orchestrator o, string title, string album) => await o.RemoveTrackAsync(title, album)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-app.MapDelete("/albums", async (Orchestrator o, string title, string artist) =>
-{
-    await o.RemoveAlbumAsync(title, artist);
-}).RequireAuthorization(policy => policy.RequireRole("Admin"));
+app.MapDelete("/albums", async (Orchestrator o, string title, string artist) => await o.RemoveAlbumAsync(title, artist)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-app.MapDelete("/artists", async (Orchestrator o, string artist) =>
-{
-    await o.RemoveArtistAsync(artist);
-}).RequireAuthorization(policy => policy.RequireRole("Admin"));
+app.MapDelete("/artists", async (Orchestrator o, string artist) => await o.RemoveArtistAsync(artist)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.Run();
