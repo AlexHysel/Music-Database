@@ -145,7 +145,10 @@ class Orchestrator
 
     public async Task<Result<ArtistDetailDTO>> GetArtistAsync(Expression<Func<Artist, bool>> filter)
     {
-        Artist? artist = await _manager.GetArtists(filter).FirstOrDefaultAsync();
+        Artist? artist = await _manager.GetArtists()
+            .Include(a => a.Tracks)
+            .Include(a => a.Albums)
+            .FirstOrDefaultAsync(filter);
         if (artist == null)
             return Result<ArtistDetailDTO>.Fail("Artist not found");
         else
