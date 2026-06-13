@@ -18,13 +18,13 @@ class Orchestrator
 
     public async Task<SearchResultDTO> Search(string title)
     {
-        ArtistDTO[] artists = await _manager.GetArtists(a => a.Name.Contains(title))
+        ArtistDTO[] artists = await _manager.GetArtists().Where(a => a.Name.Contains(title))
             .Select(a => ArtistDTO.FromArtist(a)).ToArrayAsync();
-        AlbumDTO[] albums = await _manager.GetAlbums(a => a.Title.Contains(title))
+        AlbumDTO[] albums = await _manager.GetAlbums().Where(a => a.Title.Contains(title))
             .Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
-        TrackDTO[] tracks = await _manager.GetTracks(a => a.Title.Contains(title))
+        TrackDTO[] tracks = await _manager.GetTracks().Where(a => a.Title.Contains(title))
             .Select(t => TrackDTO.FromTrack(t)).ToArrayAsync();
-        UserDTO[] users = await _manager.GetUsers(u => u.Name.Contains(title))
+        UserDTO[] users = await _manager.GetUsers().Where(u => u.Name.Contains(title))
             .Select(u => UserDTO.FromUser(u)).ToArrayAsync();
         return new SearchResultDTO(artists, albums, tracks, users);
     }
@@ -38,14 +38,14 @@ class Orchestrator
 
     public async Task<TrackDetailDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
     {
-        IQueryable<TrackDetailDTO> request = _manager.GetTracks(filter)
+        IQueryable<TrackDetailDTO> request = _manager.GetTracks().Where(filter)
             .Select(t => TrackDetailDTO.FromTrack(t));
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 
     public async Task<TrackDetailDTO[]> GetTracksAsync(Expression<Func<Track, bool>> filter)
     {
-        IQueryable<TrackDetailDTO> request = _manager.GetTracks(filter)
+        IQueryable<TrackDetailDTO> request = _manager.GetTracks().Where(filter)
             .Select(t => TrackDetailDTO.FromTrack(t));
         return await request.ToArrayAsync();
     }
@@ -99,7 +99,7 @@ class Orchestrator
 
     public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page, Expression<Func<Album, bool>> filter)
     {
-        var request = _manager.GetAlbums(filter)
+        var request = _manager.GetAlbums().Where(filter)
             .Select(a => AlbumDTO.FromAlbum(a));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
@@ -113,7 +113,7 @@ class Orchestrator
     
     public Task<AlbumDTO[]> GetAlbumsAsync(Expression<Func<Album, bool>> filter)
     {
-        return _manager.GetAlbums(filter).Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
+        return _manager.GetAlbums().Where(filter).Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
     }
 
     public async Task<Result<AlbumDetailDTO?>> GetAlbumAsync(Expression<Func<Album, bool>> filter)
@@ -157,13 +157,13 @@ class Orchestrator
 
     public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page, Expression<Func<Artist, bool>> filter)
     {
-        var request = _manager.GetArtists(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
+        var request = _manager.GetArtists().Where(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
     public Task<ArtistDTO[]> GetArtistsAsync(Expression<Func<Artist, bool>> filter)
     {
-        return _manager.GetArtists(filter)
+        return _manager.GetArtists().Where(filter)
             .Select(a => new ArtistDTO(a.Name, a.Id.ToString())).ToArrayAsync();
     }
 
@@ -183,7 +183,7 @@ class Orchestrator
 
     public Task<UserDTO[]> GetUsersAsync(Expression<Func<User, bool>> filter)
     {
-        return _manager.GetUsers(filter)
+        return _manager.GetUsers().Where(filter)
             .Select(u => new UserDTO(u.Name, u.Role.ToString(), u.Id.ToString())).ToArrayAsync();
     }
 
