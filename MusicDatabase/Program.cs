@@ -133,6 +133,15 @@ app.MapGet("/album", async (Orchestrator o, Guid id) =>
 
 app.MapGet("/albums", async (Orchestrator o, int page = 1, int size = 20) => await o.GetAlbumsAsync(size, page));
 
+app.MapGet("artist", async (Orchestrator o, Guid id) =>
+{
+    Result<ArtistDetailDTO> result = await o.GetArtistAsync(a => a.Id == id);
+    if (result.Success)
+        return Results.Ok(result.Data);
+    else
+        return Results.NotFound();
+});
+
 app.MapGet("/artists", async (Orchestrator o, int page = 1, int size = 20) => await o.GetArtistsAsync(size, page));
 
 app.MapGet("/users", async (Orchestrator o, int page = 1, int size = 20) => await o.GetUsersAsync(size, page));

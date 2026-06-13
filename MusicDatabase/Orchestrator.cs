@@ -143,6 +143,15 @@ class Orchestrator
         return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
     }
 
+    public async Task<Result<ArtistDetailDTO>> GetArtistAsync(Expression<Func<Artist, bool>> filter)
+    {
+        Artist? artist = await _manager.GetArtists(filter).FirstOrDefaultAsync();
+        if (artist == null)
+            return Result<ArtistDetailDTO>.Fail("Artist not found");
+        else
+            return Result<ArtistDetailDTO>.Ok(ArtistDetailDTO.FromArtist(artist));
+    }
+
     public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page, Expression<Func<Artist, bool>> filter)
     {
         var request = _manager.GetArtists(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
