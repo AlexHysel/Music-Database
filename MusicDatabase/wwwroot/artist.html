@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title id="title">Artist</title>
+    </head>
+
+    <body>
+        <h1 id="artistName"></h1>
+        <script>
+            window.onload = async () => {
+                let params = new URLSearchParams(window.location.search);
+                let id = params.get('id');
+                let response = await fetch(`http://localhost:5000/artist?id=${id}`);
+                if (response.ok){
+                    let artist = await response.json();
+                    document.getElementById('artistName').textContent = artist.name;
+                    document.getElementById('title').textContent = artist.name;
+                } else {
+                    alert('not found');
+                }
+            }
+        </script>
+    </body>
+</html>
