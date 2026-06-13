@@ -22,8 +22,8 @@ class Orchestrator
             .Select(a => ArtistDTO.FromArtist(a)).ToArrayAsync();
         AlbumDTO[] albums = await _manager.GetAlbums(a => a.Title.Contains(title))
             .Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
-        TrackDTO[] tracks = await _manager.GetTracks(a => a.Title.Contains(title))
-            .Select(t => TrackDTO.FromTrack(t)).ToArrayAsync();
+        TrackDetailDTO[] tracks = await _manager.GetTracks(a => a.Title.Contains(title))
+            .Select(t => TrackDetailDTO.FromTrack(t)).ToArrayAsync();
         UserDTO[] users = await _manager.GetUsers(u => u.Name.Contains(title))
             .Select(u => UserDTO.FromUser(u)).ToArrayAsync();
         return new SearchResultDTO(artists, albums, tracks, users);
@@ -36,24 +36,24 @@ class Orchestrator
         await _manager.SaveChangesAsync();
     }
 
-    public async Task<TrackDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
+    public async Task<TrackDetailDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
     {
-        IQueryable<TrackDTO> request = _manager.GetTracks(filter)
-            .Select(t => TrackDTO.FromTrack(t));
+        IQueryable<TrackDetailDTO> request = _manager.GetTracks(filter)
+            .Select(t => TrackDetailDTO.FromTrack(t));
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 
-    public async Task<TrackDTO[]> GetTracksAsync(Expression<Func<Track, bool>> filter)
+    public async Task<TrackDetailDTO[]> GetTracksAsync(Expression<Func<Track, bool>> filter)
     {
-        IQueryable<TrackDTO> request = _manager.GetTracks(filter)
-            .Select(t => TrackDTO.FromTrack(t));
+        IQueryable<TrackDetailDTO> request = _manager.GetTracks(filter)
+            .Select(t => TrackDetailDTO.FromTrack(t));
         return await request.ToArrayAsync();
     }
 
-    public async Task<TrackDTO[]> GetTracksAsync(int size, int page)
+    public async Task<TrackDetailDTO[]> GetTracksAsync(int size, int page)
     {
-        IQueryable<TrackDTO> request = _manager.GetTracks()
-            .Select(t => TrackDTO.FromTrack(t));
+        IQueryable<TrackDetailDTO> request = _manager.GetTracks()
+            .Select(t => TrackDetailDTO.FromTrack(t));
         return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
     }
 
@@ -73,7 +73,7 @@ class Orchestrator
         await _manager.SaveChangesAsync();
     }
 
-    public async Task<Result<TrackDTO>> GetTrackAsync(Guid id)
+    public async Task<Result<TrackDetailDTO>> GetTrackAsync(Guid id)
     {
         Track? track = await _manager.GetTracks()
             .Include(t => t.Album)
@@ -82,11 +82,11 @@ class Orchestrator
             .FirstOrDefaultAsync(t => t.Id == id);
         if (track == null)
         {
-            return Result<TrackDTO>.Fail("Track not found");
+            return Result<TrackDetailDTO>.Fail("Track not found");
         }
         else
         {
-            return Result<TrackDTO>.Ok(TrackDTO.FromTrack(track));
+            return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
         }
     }
 

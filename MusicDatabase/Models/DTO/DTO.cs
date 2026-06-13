@@ -2,6 +2,19 @@ using System.Linq;
 
 public record TrackDTO(
     string Title,
+    string Id)
+{
+    public static TrackDTO FromTrack(Track track)
+    {
+        return new TrackDTO(
+            track.Title,
+            track.Id.ToString()
+        );
+    }
+}
+
+public record TrackDetailDTO(
+    string Title,
     string AlbumTitle,
     string AlbumId,
     string ArtistName,
@@ -11,9 +24,9 @@ public record TrackDTO(
     string Genre,
     string Id)
 {
-    public static TrackDTO FromTrack(Track track)
+    public static TrackDetailDTO FromTrack(Track track)
     {
-        return new TrackDTO(
+        return new TrackDetailDTO(
             track.Title,
             track.Album?.Title ?? string.Empty,
             track.Album?.Id.ToString() ?? string.Empty,
@@ -30,7 +43,8 @@ public record AlbumDTO(
     string Title,
     string ArtistName,
     string ArtistId,
-    string[] Tracks,
+    string[] TrackTitles,
+    string[] TrackIds,
     string Type,
     string Id)
 {
@@ -41,6 +55,7 @@ public record AlbumDTO(
             album.Artist?.Name ?? string.Empty,
             album.Artist?.Id.ToString() ?? string.Empty,
             album.Tracks?.Select(t => t.Title).ToArray() ?? new string[0],
+            album.Tracks?.Select(t => t.Id.ToString()).ToArray() ?? new string[0],
             album.Type.ToString(),
             album.Id.ToString());
     }

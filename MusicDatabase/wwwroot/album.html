@@ -5,6 +5,7 @@
         <title id="pageTitle">Album:</title>
     </head>
         <h1 id="albumTitle"></h1>
+        <a id="albumArtist"></a>
         <div id="trackList"></div>
     <body>
         <script>
@@ -16,10 +17,13 @@
                     let album = await response.json();
                     let title = album.title;
                     let artist = album.artistName;
+                    let artistId = album.artistId;
                     let tracks = album.tracks;
 
                     document.getElementById('pageTitle').textContent = `${title} by ${artist}`;
                     document.getElementById('albumTitle').textContent = title;
+                    document.getElementById('albumArtist').textContent = artist
+                    document.getElementById('albumArtist').href = `http://localhost:5000/artist?id=${artistId}`
                     tracks.forEach(t => {
                         trackTitle = document.createElement('h3');
                         trackTitle.textContent = t;
