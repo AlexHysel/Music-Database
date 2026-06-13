@@ -4,6 +4,6 @@ public class Album
     public string Title {get; set;}
     public Guid ArtistId {get; set;}
     public Artist Artist {get; set;}
-    public List<Track> Tracks {get; set;}
+    public List<Track> Tracks {get; set; } = new List<Track>();
     public AlbumType Type {get; set;}
 }

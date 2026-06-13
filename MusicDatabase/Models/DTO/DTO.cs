@@ -53,7 +53,7 @@ public record AlbumDTO(
             album.Title,
             album.Artist?.Name ?? string.Empty,
             album.Artist?.Id.ToString() ?? string.Empty,
-            album.Tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            album.Tracks == null ? new TrackDTO[0] : album.Tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             album.Type.ToString(),
             album.Id.ToString());
     }

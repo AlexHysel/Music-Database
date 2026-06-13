@@ -25,8 +25,9 @@
                     document.getElementById('albumArtist').textContent = artist
                     document.getElementById('albumArtist').href = `http://localhost:5000/artist?id=${artistId}`
                     tracks.forEach(t => {
-                        trackTitle = document.createElement('h3');
-                        trackTitle.textContent = t;
+                        trackTitle = document.createElement('a');
+                        trackTitle.textContent = t.title;
+                        trackTitle.href = `http://localhost:5000/track?id=${t.id}`;
                         document.getElementById('trackList').appendChild(trackTitle);
                     });
                 }
