@@ -17,17 +17,13 @@
                 let response = await fetch(`http://localhost:5000/track?id=${trackId}`);
                 if (response.ok){
                     let track = await response.json();
-                    let title = track.title;
-                    let artistName = track.artistName;
-                    let albumTitle = track.albumTitle;
-                    let genre = track.genre;
-                    document.getElementById('trackTitle').textContent = title;
-                    document.getElementById('title').textContent = title;
-                    document.getElementById('artistName').textContent = artistName;
-                    document.getElementById('artistName').href = `http://localhost:5000/artist.html?id=${track.artistId}`;
-                    document.getElementById('albumTitle').textContent = albumTitle;
-                    document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.albumId}`;
-                    document.getElementById('trackGenre').textContent = genre;
+                    document.getElementById('trackTitle').textContent = track.title;
+                    document.getElementById('title').textContent = track.title;
+                    document.getElementById('artistName').textContent = track.artist.name;
+                    document.getElementById('artistName').href = `http://localhost:5000/artist.html?id=${track.artist.id}`;
+                    document.getElementById('albumTitle').textContent = track.album.title;
+                    document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.album.id}`;
+                    document.getElementById('trackGenre').textContent = track.genre;
                 }
                 else
                     alert('Track not found');

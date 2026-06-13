@@ -15,16 +15,11 @@
                 let response = await fetch(`http://localhost:5000/album?id=${id}`)
                 if (response.ok){
                     let album = await response.json();
-                    let title = album.title;
-                    let artist = album.artistName;
-                    let artistId = album.artistId;
-                    let tracks = album.tracks;
-
-                    document.getElementById('pageTitle').textContent = `${title} by ${artist}`;
-                    document.getElementById('albumTitle').textContent = title;
-                    document.getElementById('albumArtist').textContent = artist
-                    document.getElementById('albumArtist').href = `http://localhost:5000/artist.html?id=${artistId}`
-                    tracks.forEach(t => {
+                    document.getElementById('pageTitle').textContent = `${album.title} by ${album.artist.name}`;
+                    document.getElementById('albumTitle').textContent = album.title;
+                    document.getElementById('albumArtist').textContent = album.artist.name;
+                    document.getElementById('albumArtist').href = `http://localhost:5000/artist.html?id=${album.artist.id}`;
+                    album.tracks.forEach(t => {
                         trackTitle = document.createElement('a');
                         trackTitle.textContent = t.title;
                         trackTitle.href = `http://localhost:5000/track.html?id=${t.id}`;
