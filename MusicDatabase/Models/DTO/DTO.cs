@@ -13,8 +13,7 @@ public record TrackDTO(
 
 public record TrackDetailDTO(
     string Title,
-    string AlbumTitle,
-    string AlbumId,
+    AlbumDTO Album,
     string ArtistName,
     string ArtistId,
     string[] OthersNames,
@@ -26,8 +25,7 @@ public record TrackDetailDTO(
     {
         return new TrackDetailDTO(
             track.Title,
-            track.Album?.Title ?? string.Empty,
-            track.Album?.Id.ToString() ?? string.Empty,
+            AlbumDTO.FromAlbum(track.Album),
             track.Artist?.Name ?? string.Empty,
             track.Artist?.Id.ToString() ?? string.Empty,
             track.Others?.Select(o => o.Name).ToArray() ?? new string[0],
@@ -81,8 +79,7 @@ public record ArtistDTO(
 
 public record ArtistDetailDTO(
     string Name,
-    string[] AlbumsTitles,
-    string[] AlbumsIds,
+    AlbumDTO[] Albums,
     TrackDTO[] Tracks,
     string Id)
 {
@@ -92,8 +89,7 @@ public record ArtistDetailDTO(
         var tracks = artist.Tracks ?? new List<Track>();
         return new ArtistDetailDTO(
             artist.Name,
-            albums.Select(a => a.Title).ToArray(),
-            albums.Select(a => a.Id.ToString()).ToArray(),
+            albums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
             tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             artist.Id.ToString());
     }
