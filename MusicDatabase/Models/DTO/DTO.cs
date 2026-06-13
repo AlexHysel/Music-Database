@@ -39,15 +39,27 @@ public record TrackDetailDTO(
 
 public record AlbumDTO(
     string Title,
+    string Id)
+{
+    public static AlbumDTO FromAlbum(Album album){
+        return new AlbumDTO(
+            album.Title,
+            album.Id.ToString()
+        );
+    }
+}
+
+public record AlbumDetailDTO(
+    string Title,
     string ArtistName,
     string ArtistId,
     TrackDTO[] Tracks,
     string Type,
     string Id)
 {
-    public static AlbumDTO FromAlbum(Album album)
+    public static AlbumDetailDTO FromAlbum(Album album)
     {
-        return new AlbumDTO(
+        return new AlbumDetailDTO(
             album.Title,
             album.Artist?.Name ?? string.Empty,
             album.Artist?.Id.ToString() ?? string.Empty,

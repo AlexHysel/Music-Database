@@ -116,17 +116,17 @@ class Orchestrator
         return _manager.GetAlbums(filter).Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
     }
 
-    public async Task<Result<AlbumDTO?>> GetAlbumAsync(Expression<Func<Album, bool>> filter)
+    public async Task<Result<AlbumDetailDTO?>> GetAlbumAsync(Expression<Func<Album, bool>> filter)
     {
         Album? album = await _manager.GetAlbumAsync(filter);
         if (album != null)
         {
-            AlbumDTO albumDto = AlbumDTO.FromAlbum(album);
-            return Result<AlbumDTO?>.Ok(albumDto);
+            AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
+            return Result<AlbumDetailDTO?>.Ok(albumDto);
         }
         else
         {
-            return Result<AlbumDTO?>.Fail("Album not found");
+            return Result<AlbumDetailDTO?>.Fail("Album not found");
         }
     }
 

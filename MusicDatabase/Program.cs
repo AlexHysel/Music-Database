@@ -124,7 +124,7 @@ app.MapGet("/track", async (Orchestrator o, Guid id) =>
 
 app.MapGet("/album", async (Orchestrator o, Guid id) =>
 {
-    Result<AlbumDTO?> result = await o.GetAlbumAsync(a => a.Id == id);
+    Result<AlbumDetailDTO?> result = await o.GetAlbumAsync(a => a.Id == id);
     if (result.Success)
         return Results.Ok(result.Data);
     else
