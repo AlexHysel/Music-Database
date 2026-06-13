@@ -23,11 +23,11 @@
                     document.getElementById('pageTitle').textContent = `${title} by ${artist}`;
                     document.getElementById('albumTitle').textContent = title;
                     document.getElementById('albumArtist').textContent = artist
-                    document.getElementById('albumArtist').href = `http://localhost:5000/artist?id=${artistId}`
+                    document.getElementById('albumArtist').href = `http://localhost:5000/artist.html?id=${artistId}`
                     tracks.forEach(t => {
                         trackTitle = document.createElement('a');
                         trackTitle.textContent = t.title;
-                        trackTitle.href = `http://localhost:5000/track?id=${t.id}`;
+                        trackTitle.href = `http://localhost:5000/track.html?id=${t.id}`;
                         document.getElementById('trackList').appendChild(trackTitle);
                     });
                 }
