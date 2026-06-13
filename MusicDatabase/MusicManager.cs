@@ -18,17 +18,12 @@ class MusicManager
     // TRACK
     async public Task<Track?> GetTrackAsync(Expression<Func<Track, bool>> filter)
     {
-        return await _context.Tracks.FirstOrDefaultAsync(filter);
+        return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(filter);
     }
 
     public IQueryable<Track> GetTracks()
     {
-        return _context.Tracks;
-    }
-
-    public IQueryable<Track> GetTracks(Expression<Func<Track, bool>> filter)
-    {
-        return _context.Tracks.Where(filter);
+        return _context.Tracks.AsNoTracking();
     }
 
     async public Task AddTrackAsync(Track track)
@@ -92,17 +87,12 @@ class MusicManager
     // USER
     public IQueryable<User> GetUsers()
     {
-        return _context.Users;
-    }
-
-    public IQueryable<User> GetUsers(Expression<Func<User, bool>> filter)
-    {
-        return _context.Users.Where(filter);
+        return _context.Users.AsNoTracking();
     }
 
     public async Task<User?> GetUserAsync(Expression<Func<User, bool>> filter)
     {
-        User? user = await _context.Users.FirstOrDefaultAsync(filter);
+        User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(filter);
         return user;
     }
 
@@ -121,7 +111,7 @@ class MusicManager
 
     async public Task<bool> AuthenticateUser(string name, string password)
     {
-        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Name == name);
+        User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
         if (user == null) return false;
         return user.Password.Equals(password);
     }
@@ -162,17 +152,12 @@ class MusicManager
 
     public IQueryable<Album> GetAlbums()
     {
-        return _context.Albums;
-    }
-
-    public IQueryable<Album> GetAlbums(Expression<Func<Album, bool>> filter)
-    {
-        return _context.Albums.Where(filter);
+        return _context.Albums.AsNoTracking();
     }
 
     public async Task<Album?> GetAlbumAsync(Expression<Func<Album, bool>> filter)
     {
-        return await _context.Albums.Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(filter);
+        return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(filter);
     }
 
     async public Task AddAlbumAsync(Album album)
@@ -200,12 +185,7 @@ class MusicManager
     // ARTIST
     public IQueryable<Artist> GetArtists()
     {
-        return _context.Artists;
-    }
-
-    public IQueryable<Artist> GetArtists(Expression<Func<Artist, bool>> filter)
-    {
-        return _context.Artists.Where(filter);
+        return _context.Artists.AsNoTracking();
     }
 
     async public Task<Artist> EnsureArtistCreated(string name)
