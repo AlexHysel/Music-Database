@@ -30,9 +30,9 @@ class Orchestrator
     }
 
     //TRACK
-    public async Task RemoveTrackAsync(string title, string albumTitle)
+    public async Task RemoveTrackAsync(Guid id)
     {
-        await _manager.RemoveTrackAsync(t => t.Album.Title == albumTitle && t.Title == title);
+        await _manager.RemoveTrackAsync(t => t.Id == id);
         await _manager.SaveChangesAsync();
     }
 
@@ -91,9 +91,9 @@ class Orchestrator
     }
 
     //ALBUM
-    public async Task RemoveAlbumAsync(string title, string artistName)
+    public async Task RemoveAlbumAsync(Guid id)
     {
-        await _manager.RemoveAlbumAsync(a => a.Artist.Name == artistName && a.Title == title);
+        await _manager.RemoveAlbumAsync(a => a.Id == id);
         await _manager.SaveChangesAsync();
     }
 
@@ -131,9 +131,9 @@ class Orchestrator
     }
 
     //ARTIST
-    public async Task RemoveArtistAsync(string name)
+    public async Task RemoveArtistAsync(Guid id)
     {
-        await _manager.RemoveArtistAsync(a => a.Name == name);
+        await _manager.RemoveArtistAsync(a => a.Id == id);
         await _manager.SaveChangesAsync();
     }
 

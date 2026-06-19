@@ -171,10 +171,10 @@ app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
 });
 
 // ===== DELETE =====
-app.MapDelete("/tracks", async (Orchestrator o, string title, string album) => await o.RemoveTrackAsync(title, album)).RequireAuthorization(policy => policy.RequireRole("Admin"));
+app.MapDelete("/track", async (Orchestrator o, Guid id) => await o.RemoveTrackAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-app.MapDelete("/albums", async (Orchestrator o, string title, string artist) => await o.RemoveAlbumAsync(title, artist)).RequireAuthorization(policy => policy.RequireRole("Admin"));
+app.MapDelete("/album", async (Orchestrator o, Guid id) => await o.RemoveAlbumAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-app.MapDelete("/artists", async (Orchestrator o, string artist) => await o.RemoveArtistAsync(artist)).RequireAuthorization(policy => policy.RequireRole("Admin"));
+app.MapDelete("/artist", async (Orchestrator o, Guid id) => await o.RemoveArtistAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.Run();
