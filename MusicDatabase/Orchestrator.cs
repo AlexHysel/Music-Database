@@ -187,10 +187,17 @@ public class Orchestrator
             .Select(u => new UserDTO(u.Name, u.Role.ToString(), u.Id.ToString())).ToArrayAsync();
     }
 
-    public async Task<UserDTO?> GetUserAsync(Expression<Func<User, bool>> filter)
+    public async Task<Result<UserDTO>> GetUserAsync(Guid id)
     {
-        User? user = await _manager.GetUserAsync(filter);
-        return user != null ? new UserDTO(user.Name, user.Role.ToString(), user.Id.ToString()) : null;
+        User? user = await _manager.GetUserAsync(u => u.Id == id);
+        if (user == null)
+        {
+            return Result<UserDTO>.Fail("User not found");
+        }
+        else
+        {
+            return Result<UserDTO>.Ok(UserDTO.FromUser(user));
+        }
     }
     
     public async Task<Result> AddUserAsync(string name, string role, string password)
