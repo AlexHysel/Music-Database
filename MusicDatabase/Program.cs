@@ -10,6 +10,7 @@ builder.Services.AddDbContext<MusicDb>(opt => opt.UseNpgsql(builder.Configuratio
 builder.Services.AddScoped<MusicManager>();
 builder.Services.AddScoped<Orchestrator>();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddControllers();
 builder.Services.AddCors((options) =>
 {
     options.AddDefaultPolicy(policy =>
@@ -86,6 +87,7 @@ app.UseCors();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 
 var key = builder.Configuration["Jwt:Key"]!;
 Console.WriteLine($"Validation key: {key}");
@@ -113,15 +115,6 @@ app.MapGet("/search", async (Orchestrator o, string searchLine) => await o.Searc
 
 app.MapGet("/tracks", async (Orchestrator o, int page = 1, int size = 20) => await o.GetTracksAsync(size, page));
 
-app.MapGet("/track", async (Orchestrator o, Guid id) =>
-{
-    Result<TrackDetailDTO> result = await o.GetTrackAsync(id);
-    if (result.Success)
-        return Results.Ok(result.Data);
-    else
-        return Results.NotFound("Track not found");
-});
-
 app.MapGet("/album", async (Orchestrator o, Guid id) =>
 {
     Result<AlbumDetailDTO?> result = await o.GetAlbumAsync(a => a.Id == id);
@@ -147,12 +140,6 @@ app.MapGet("/artists", async (Orchestrator o, int page = 1, int size = 20) => aw
 app.MapGet("/users", async (Orchestrator o, int page = 1, int size = 20) => await o.GetUsersAsync(size, page));
 
 // ===== POST =====
-app.MapPost("/tracks", async (Orchestrator o, AddTrackRequest info) =>
-{
-    Enum.TryParse(info.Genre, true, out Genre result);
-    await o.AddTrackAsync(info.Title, info.Artist, info.Others, info.AlbumTitle, result);
-}).RequireAuthorization(policy => policy.RequireRole("Admin"));
-
 app.MapPost("/login", async (Orchestrator o, LogInRequest request) =>
 {
     AuthDTO? auth = await o.LogInAsync(request.Name, request.Password);
@@ -171,8 +158,6 @@ app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
 });
 
 // ===== DELETE =====
-app.MapDelete("/track", async (Orchestrator o, Guid id) => await o.RemoveTrackAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
-
 app.MapDelete("/album", async (Orchestrator o, Guid id) => await o.RemoveAlbumAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.MapDelete("/artist", async (Orchestrator o, Guid id) => await o.RemoveArtistAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));

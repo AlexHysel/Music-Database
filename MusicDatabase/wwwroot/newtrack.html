@@ -59,7 +59,7 @@
                 let others = Array.from(inputs).map(input => input.value)
                 let genre = document.getElementById('genre').value;
                 
-                let response = await fetch('http://localhost:5000/tracks', {
+                let response = await fetch('http://localhost:5000/track', {
                     method: 'POST',
                     headers: {
                         'Content-Type':'application/json',

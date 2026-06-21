@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 // DATA ACCESS LAYER
-class MusicManager
+public class MusicManager
 {
     private readonly MusicDb _context;
 

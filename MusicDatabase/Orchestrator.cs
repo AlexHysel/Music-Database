@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-class Orchestrator
+public class Orchestrator
 {
     private readonly MusicManager _manager;
     private readonly IConfiguration _config;
