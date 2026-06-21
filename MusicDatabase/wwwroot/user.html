@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+<html>
+    <body>
+        <script>
+            window.onload = async (event) => {
+                let params = URLSearchParams(window.location.search);
+                let id = params.get('id');
+                let response = await fetch(`http://localhost:5000/user?id=${id}`);
+                if (response.ok)
+                {
+                    let user = await response.json();
+                    document.title = user.name;
+                }
+            }
+        </script>
+    </body>
+</html>
