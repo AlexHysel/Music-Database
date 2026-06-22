@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-
-    </head>
     <body>
         <h1 id="username"></h1>
         <h2 id="userRole"></h2>
+        <div id="adminPanel"></div>
+        <script src='auth.js'></script>
         <script>
             window.onload = async (event) => {
                 let params = new URLSearchParams(window.location.search);
@@ -18,6 +17,27 @@
                     document.title = user.name;
                     document.getElementById("username").textContent = user.name;
                     document.getElementById("userRole").textContent = user.role;
+                    let payload = getPayload();
+                    if (payload){
+                        let removeBtn = document.createElement('button');
+                        removeBtn.addEventListener('click', async (event) => {
+                            let response = await fetch(`http://localhost:5000/user?id=${id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type':'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                },
+                                body: JSON.stringify(id)
+                            });
+                            if (response.ok){
+                                alert('Removed successfully.');
+                            } else {
+                                alert('NotFound');
+                            }
+                        });
+                        removeBtn.textContent = 'Remove';
+                        document.getElementById('adminPanel').appendChild(removeBtn);
+                    }
                 }
             }
         </script>

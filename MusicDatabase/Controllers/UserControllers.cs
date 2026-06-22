@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -20,5 +21,13 @@ public class UserController : ControllerBase
         {
             return NotFound(result.Message);
         }
+    }
+
+    [HttpDelete]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete([FromQuery] Guid id)
+    {
+        await _orchestrator.RemoveUserAsync(id);
+        return NoContent();
     }
 }

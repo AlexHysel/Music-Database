@@ -168,10 +168,12 @@ public class Orchestrator
     }
 
     //USER
-    public async Task RemoveUserAsync(string name)
+    public async Task RemoveUserAsync(Guid id)
     {
-        await _manager.RemoveUserAsync(u => u.Name == name);
-        await _manager.SaveChangesAsync();
+        if (await _manager.RemoveUserAsync(u => u.Id == id))
+        {
+            await _manager.SaveChangesAsync();
+        }
     }
 
     public async Task<UserDTO[]> GetUsersAsync(int size, int page)
