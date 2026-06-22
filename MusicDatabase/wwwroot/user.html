@@ -6,6 +6,7 @@
     </head>
     <body>
         <h1 id="username"></h1>
+        <h2 id="userRole"></h2>
         <script>
             window.onload = async (event) => {
                 let params = new URLSearchParams(window.location.search);
@@ -16,6 +17,7 @@
                     let user = await response.json();
                     document.title = user.name;
                     document.getElementById("username").textContent = user.name;
+                    document.getElementById("userRole").textContent = user.role;
                 }
             }
         </script>
