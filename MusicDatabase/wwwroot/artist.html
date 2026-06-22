@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <title id="title">Artist</title>
-    </head>
-
     <body>
         <h1 id="artistName"></h1>
+        <div id="albumList"></div>
         <script>
             window.onload = async () => {
                 let params = new URLSearchParams(window.location.search);
@@ -15,7 +12,15 @@
                 if (response.ok){
                     let artist = await response.json();
                     document.getElementById('artistName').textContent = artist.name;
-                    document.getElementById('title').textContent = artist.name;
+                    document.title = artist.name;
+                    artist.albums.forEach(a => {
+                        let album = document.createElement('div');
+                        let title = document.createElement('a');
+                        title.href = `http://localhost:5000/album.html?id=${a.id}`;
+                        title.textContent = a.title;
+                        album.appendChild(title);
+                        document.getElementById('albumList').appendChild(album);
+                    }); 
                 } else {
                     alert('not found');
                 }

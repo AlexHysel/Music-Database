@@ -122,15 +122,6 @@ app.MapGet("/album", async (Orchestrator o, Guid id) =>
         return Results.NotFound("Album not found");
 });
 
-app.MapGet("artist", async (Orchestrator o, Guid id) =>
-{
-    Result<ArtistDetailDTO> result = await o.GetArtistAsync(a => a.Id == id);
-    if (result.Success)
-        return Results.Ok(result.Data);
-    else
-        return Results.NotFound();
-});
-
 // ===== POST =====
 app.MapPost("/login", async (Orchestrator o, LogInRequest request) =>
 {
@@ -151,7 +142,5 @@ app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
 
 // ===== DELETE =====
 app.MapDelete("/album", async (Orchestrator o, Guid id) => await o.RemoveAlbumAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
-
-app.MapDelete("/artist", async (Orchestrator o, Guid id) => await o.RemoveArtistAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.Run();
