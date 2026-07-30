@@ -27,7 +27,10 @@ public class UserController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        await _orchestrator.RemoveUserAsync(id);
-        return NoContent();
+        Result result = await _orchestrator.RemoveUserAsync(id);
+        if (result.Success)
+            return NoContent();
+        else
+            return NotFound(result.Message);
     }
 }

@@ -30,10 +30,15 @@ public class Orchestrator
     }
 
     //TRACK
-    public async Task RemoveTrackAsync(Guid id)
+    public async Task<Result> RemoveTrackAsync(Guid id)
     {
-        await _manager.RemoveTrackAsync(t => t.Id == id);
-        await _manager.SaveChangesAsync();
+        if (await _manager.RemoveTrackAsync(t => t.Id == id))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Track not found");
     }
 
     public async Task<TrackDetailDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
@@ -91,10 +96,15 @@ public class Orchestrator
     }
 
     //ALBUM
-    public async Task RemoveAlbumAsync(Guid id)
+    public async Task<Result> RemoveAlbumAsync(Guid id)
     {
-        await _manager.RemoveAlbumAsync(a => a.Id == id);
-        await _manager.SaveChangesAsync();
+        if (await _manager.RemoveAlbumAsync(a => a.Id == id))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Album not found");
     }
 
     public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page, Expression<Func<Album, bool>> filter)
@@ -125,16 +135,19 @@ public class Orchestrator
             return Result<AlbumDetailDTO?>.Ok(albumDto);
         }
         else
-        {
             return Result<AlbumDetailDTO?>.Fail("Album not found");
-        }
     }
 
     //ARTIST
-    public async Task RemoveArtistAsync(Guid id)
+    public async Task<Result> RemoveArtistAsync(Guid id)
     {
-        await _manager.RemoveArtistAsync(a => a.Id == id);
-        await _manager.SaveChangesAsync();
+        if (await _manager.RemoveArtistAsync(a => a.Id == id))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Artist not found");
     }
 
     public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page)
@@ -168,12 +181,15 @@ public class Orchestrator
     }
 
     //USER
-    public async Task RemoveUserAsync(Guid id)
+    public async Task<Result> RemoveUserAsync(Guid id)
     {
         if (await _manager.RemoveUserAsync(u => u.Id == id))
         {
             await _manager.SaveChangesAsync();
+            return Result.Ok();
         }
+        else
+            return Result.Fail("User not found");
     }
 
     public async Task<UserDTO[]> GetUsersAsync(int size, int page)
@@ -193,21 +209,15 @@ public class Orchestrator
     {
         User? user = await _manager.GetUserAsync(u => u.Id == id);
         if (user == null)
-        {
             return Result<UserDTO>.Fail("User not found");
-        }
         else
-        {
             return Result<UserDTO>.Ok(UserDTO.FromUser(user));
-        }
     }
     
     public async Task<Result> AddUserAsync(string name, string role, string password)
     {
         if (await _manager.HasUserAsync(name))
-        {
             return Result.Fail("User with this name already exists");
-        }
         else
         {
             await _manager.AddUserAsync(name, Enum.Parse<UserRole>(role), password);

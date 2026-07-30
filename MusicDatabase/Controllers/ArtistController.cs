@@ -23,8 +23,10 @@ public class ArtistController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        //todo: Add result to understand was artist removed or not
-        await _orchestrator.RemoveArtistAsync(id);
-        return Ok();
+        Result result = await _orchestrator.RemoveArtistAsync(id);
+        if (result.Success)
+            return Ok();
+        else
+            return NotFound(result.Message);
     }
 }

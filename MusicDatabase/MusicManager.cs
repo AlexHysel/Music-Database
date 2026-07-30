@@ -43,7 +43,7 @@ public class MusicManager
         await _context.SaveChangesAsync();
     }
 
-    async public Task RemoveTrackAsync(Expression<Func<Track, bool>> filter)
+    async public Task<bool> RemoveTrackAsync(Expression<Func<Track, bool>> filter)
     {
         var trackData = await _context.Tracks
             .Where(filter)
@@ -81,7 +81,9 @@ public class MusicManager
             {
                 await transaciton.RollbackAsync();
             }
+            return true;
         }
+        return false;
     }
 
     // USER
@@ -201,17 +203,16 @@ public class MusicManager
         return artist;
     }
 
-    async public Task RemoveArtistAsync(Expression<Func<Artist, bool>> filter)
+    async public Task<bool> RemoveArtistAsync(Expression<Func<Artist, bool>> filter)
     {
         Artist? artist = await _context.Artists.FirstOrDefaultAsync(filter);
 
-        if (artist == null)
-            Logging.Warning("Artist not found.");
-        else
+        if (artist != null)
         {
             _context.Artists.Remove(artist);
-            Logging.Success($"{artist.Name} ({artist.Id}) removed.");
+            return true;
         }
+        return false;
     }
 
     async public Task AddArtistAsync(Artist artist)

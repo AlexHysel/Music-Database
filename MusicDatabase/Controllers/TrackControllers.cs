@@ -32,7 +32,10 @@ public class TrackController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        await _orchestrator.RemoveTrackAsync(id);
-        return NoContent();
+        Result result = await _orchestrator.RemoveTrackAsync(id);
+        if (result.Success)
+            return NoContent();
+        else
+            return NotFound(result.Message);
     }
 }
