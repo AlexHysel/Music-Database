@@ -11,6 +11,7 @@
         <a id="albumTitle"></a>
         <p id="trackGenre"></p>
         <div id="adminPanel"></div>
+        <script src='auth.js'></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let trackId = params.get('id');
@@ -25,32 +26,28 @@
                     document.getElementById('albumTitle').textContent = track.album.title;
                     document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.album.id}`;
                     document.getElementById('trackGenre').textContent = track.genre;
-                    let token = localStorage.getItem('token');
-                    if (token)
+                    let payload = getPayload(token);
+                    if (payload.role == 'Admin')
                     {
-                        let payload = JSON.parse(atob(token.split('.')[1]));
-                        if (payload.role == 'Admin')
-                        {
-                            let removeBtn = document.createElement('button');
-                            removeBtn.id = 'removeTrack';
-                            removeBtn.textContent = 'Remove';
-                            removeBtn.addEventListener('click', async (event) => {
-                                let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
-                                    method: 'DELETE',
-                                    headers: {
-                                        'Content-Type':'application/json',
-                                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                    },
-                                    body: JSON.stringify(trackId)
-                                });
-                                if (response.ok){
-                                    alert('Removed successfully');
-                                } else {
-                                    alert('Track was not removed');
-                                }
+                        let removeBtn = document.createElement('button');
+                        removeBtn.id = 'removeTrack';
+                        removeBtn.textContent = 'Remove';
+                        removeBtn.addEventListener('click', async (event) => {
+                            let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type':'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                },
+                                body: JSON.stringify(trackId)
                             });
-                            document.getElementById('adminPanel').appendChild(removeBtn);
-                        }
+                            if (response.ok){
+                                alert('Removed successfully');
+                            } else {
+                                alert('Track was not removed');
+                            }
+                        });
+                        document.getElementById('adminPanel').appendChild(removeBtn);
                     }
                 }
                 else
