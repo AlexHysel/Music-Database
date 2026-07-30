@@ -20,7 +20,30 @@
                         title.textContent = a.title;
                         album.appendChild(title);
                         document.getElementById('albumList').appendChild(album);
-                    }); 
+                        let payload = getPayload();
+                        if (payload.role == 'Admin')
+                        {
+                            let removeBtn = document.createElement('button');
+                            removeBtn.id = 'removeAlbum';
+                            removeBtn.textContent = 'Remove';
+                            removeBtn.addEventListener('click', async (event) => {
+                                let response = await fetch(`http://localhost:5000/album?id=${a.id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Content-Type':'application/json',
+                                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                    },
+                                    body: JSON.stringify(a.id)
+                                });
+                                if (response.ok){
+                                    alert('Removed successfully');
+                                } else {
+                                    alert('Album was not removed');
+                                }
+                            });
+                            album.appendChild(removeBtn);
+                        }
+                    });
                 } else {
                     alert('not found');
                 }

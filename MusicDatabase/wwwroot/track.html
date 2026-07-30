@@ -26,7 +26,7 @@
                     document.getElementById('albumTitle').textContent = track.album.title;
                     document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.album.id}`;
                     document.getElementById('trackGenre').textContent = track.genre;
-                    let payload = getPayload(token);
+                    let payload = getPayload();
                     if (payload.role == 'Admin')
                     {
                         let removeBtn = document.createElement('button');
