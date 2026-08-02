@@ -32,15 +32,16 @@ public class MusicManager
         Logging.Success($"Track ({track.Id}) added.");
     }
 
-    async public Task EditTrackAsync(Guid trackId, string? newTitle = null, Genre? newGenre = null)
+    async public Task<bool> UpdateTrackAsync(Track track)
     {
-        Track trackChanges = new() { Id = trackId};
-        _context.Attach(trackChanges);
-        if (newTitle != null)
-            trackChanges.Title = newTitle;
-        if (newGenre != null)
-            trackChanges.Genre = newGenre.Value;
-        await _context.SaveChangesAsync();
+        if (await _context.Tracks.AnyAsync(t => t.Id == track.Id))
+        {
+            Track trackChanges = new() { Id = track.Id};
+            _context.Attach(trackChanges);
+            trackChanges = track;
+            return true;
+        }
+        return false;
     }
 
     async public Task<bool> RemoveTrackAsync(Expression<Func<Track, bool>> filter)

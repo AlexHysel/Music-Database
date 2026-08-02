@@ -7,7 +7,9 @@
         <h1 id="albumTitle"></h1>
         <a id="albumArtist"></a>
         <div id="trackList"></div>
+        <div id="adminPanel"></div>
     <body>
+        <script src='auth.js'></script>
         <script>
             window.onload = async () => {
                 let params = new URLSearchParams(window.location.search);
@@ -46,6 +48,7 @@
                                 alert('Album was not removed');
                             }
                         });
+                        document.getElementById('adminPanel').appendChild(removeBtn);
                     }
                 }
             }

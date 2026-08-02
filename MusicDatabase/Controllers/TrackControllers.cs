@@ -38,4 +38,15 @@ public class TrackController : ControllerBase
         else
             return NotFound(result.Message);
     }
+
+    [HttpPut]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Put([FromQuery] Guid id, [FromBody] TrackDetailDTO info)
+    {
+        Result result = await _orchestrator.UpdateTrackAsync(info);
+        if (result.Success)
+            return Ok();
+        else
+            return NotFound(result.Message);
+    }
 }
