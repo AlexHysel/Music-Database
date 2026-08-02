@@ -1,57 +1,140 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <title id="title">Track</title>
-    </head>
-
     <body>
         <h1 id="trackTitle"></h1>
         <a id="artistName"></a>
         <a id="albumTitle"></a>
         <p id="trackGenre"></p>
-        <div id="adminPanel"></div>
+        <div id="adminPanel">
+            <form id="newTrackInfo" style="display: none">
+                <input type="text" placeholder="Title" id="newTitle" required></input>
+                <input type="text" placeholder="Artist" id="newArtist" required></input>
+                <input type="text" placeholder="Album" id="newAlbum" required></input>
+                <select id="newGenre" required>
+                    <option value="Rock">Rock</option>
+                    <option value="Metal">Metal</option>
+                    <option value="Darksynth">Darksynth</option>
+                    <option value="Ambient">Ambient</option>
+                </select>
+                <input type="submit" value="Save" id="saveButton">
+                <input type="button" value="Cancel" id="cancelButton">
+            </form>
+            <input type="button" value="Update" id="updateButton">
+            <input type="button" value="Remove" id="removeButton">
+        </div>
         <script src='auth.js'></script>
         <script>
+            function editMode(){
+                document.getElementById('trackTitle').style.display = 'none';
+                document.getElementById('artistName').style.display = 'none';
+                document.getElementById('albumTitle').style.display = 'none';
+                document.getElementById('trackGenre').style.display = 'none';
+                
+                document.getElementById('newTrackInfo').style.display = 'inline';
+                document.getElementById('removeButton').style.display = 'none';
+                document.getElementById('updateButton').style.display = 'none';
+            }
+            
+            function viewMode(){
+                document.getElementById('trackTitle').style.display = 'inline';
+                document.getElementById('artistName').style.display = 'inline';
+                document.getElementById('albumTitle').style.display = 'inline';
+                document.getElementById('trackGenre').style.display = 'inline';
+
+                document.getElementById('newTrackInfo').style.display = 'none';
+                document.getElementById('removeButton').style.display = 'inline';
+                document.getElementById('updateButton').style.display = 'inline';
+            }
+
+            function createRemoveButtonEvent(trackId){
+                document.getElementById('removeButton').addEventListener('click', async (event) => {
+                    let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify(trackId)
+                    });
+                    if (response.ok){
+                        alert('Removed successfully');
+                    } else {
+                        alert('Track was not removed');
+                    }
+                });
+            }
+
+            function createUpdateButtonEvent(){
+                document.getElementById('updateButton').addEventListener('click', async (event) => {
+                    editMode();
+                });
+            }
+
+            function createCancelButtonEvent(){
+                document.getElementById('cancelButton').addEventListener('click', async (event) => {
+                    viewMode();
+                });
+            }
+
+            function createSaveButtonEvent(trackId){
+                document.getElementById('saveButton').addEventListener('click', async (event) => {
+                    let title = document.getElementById('newTitle').value;
+                    let artist = document.getElementById('newArtist').value;
+                    let album = document.getElementById('newAlbum').value;
+                    let genre = document.getElementById('newGenre').value;
+
+                    let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({title, artist, album, genre})
+                    });
+                    if (response.ok){
+                        alert('Updated successfully');
+                        viewMode();
+                    } else {
+                        alert('Track was not updated');
+                    }
+                });
+            }
+
+            function fillTrackForm(track){
+                document.getElementById('newTitle').value = track.title;
+                document.getElementById('newArtist').value = track.artist.name;
+                document.getElementById('newAlbum').value = track.album.title;
+                let genreSelect = document.getElementById('newGenre');
+                genreSelect.value = track.genre;
+            }
+
             let params = new URLSearchParams(window.location.search);
             let trackId = params.get('id');
             window.onload = async () => {
                 let response = await fetch(`http://localhost:5000/track?id=${trackId}`);
                 if (response.ok){
                     let track = await response.json();
+                    document.title = track.title;
                     document.getElementById('trackTitle').textContent = track.title;
-                    document.getElementById('title').textContent = track.title;
                     document.getElementById('artistName').textContent = track.artist.name;
                     document.getElementById('artistName').href = `http://localhost:5000/artist.html?id=${track.artist.id}`;
                     document.getElementById('albumTitle').textContent = track.album.title;
                     document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.album.id}`;
                     document.getElementById('trackGenre').textContent = track.genre;
+
                     let payload = getPayload();
                     if (payload.role == 'Admin')
                     {
-                        let removeBtn = document.createElement('button');
-                        removeBtn.id = 'removeTrack';
-                        removeBtn.textContent = 'Remove';
-                        removeBtn.addEventListener('click', async (event) => {
-                            let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type':'application/json',
-                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                },
-                                body: JSON.stringify(trackId)
-                            });
-                            if (response.ok){
-                                alert('Removed successfully');
-                            } else {
-                                alert('Track was not removed');
-                            }
-                        });
-                        document.getElementById('adminPanel').appendChild(removeBtn);
+                        createCancelButtonEvent();
+                        createRemoveButtonEvent(trackId);
+                        createSaveButtonEvent(trackId);
+                        createUpdateButtonEvent();
+                        fillTrackForm(track);
+                        viewMode();
                     }
                 }
-                else
-                    alert('Track not found');
+                else alert('Track not found');
             }
         </script>
     </body>
