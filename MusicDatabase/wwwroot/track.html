@@ -90,7 +90,7 @@
                             'Content-Type':'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         },
-                        body: JSON.stringify({title, artist, album, genre})
+                        body: JSON.stringify({title, artist, album, genre, id: trackId})
                     });
                     if (response.ok){
                         alert('Updated successfully');
