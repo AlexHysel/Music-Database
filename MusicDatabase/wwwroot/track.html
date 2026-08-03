@@ -8,15 +8,17 @@
         <p id="trackGenre"></p>
         <div id="adminPanel">
             <form id="newTrackInfo" style="display: none">
-                <input type="text" placeholder="Title" id="newTitle" required></input>
-                <input type="text" placeholder="Artist" id="newArtist" required></input>
-                <input type="text" placeholder="Album" id="newAlbum" required></input>
+                <input type="text" placeholder="Title" id="newTitle" required></input><br>
+                <input type="text" placeholder="Artist" id="newArtist" required></input><br>
+                <input type="text" placeholder="Album" id="newAlbum" required></input><br>
+                <div id="otherArtists"></div>
+                <button type="button" id="addArtistButton">Add Another Artist</button><br>
                 <select id="newGenre" required>
                     <option value="ROCK">ROCK</option>
                     <option value="METAL">METAL</option>
                     <option value="DARKSYNTH">DARKSYNTH</option>
                     <option value="AMBIENT">AMBIENT</option>
-                </select>
+                </select><br>
                 <input type="submit" value="Save" id="saveButton">
                 <input type="button" value="Cancel" id="cancelButton">
             </form>
@@ -25,6 +27,9 @@
         </div>
         <script src='auth.js'></script>
         <script>
+            let params = new URLSearchParams(window.location.search);
+            let trackId = params.get('id');
+            
             function editMode(){
                 document.getElementById('trackTitle').style.display = 'none';
                 document.getElementById('artistName').style.display = 'none';
@@ -65,6 +70,27 @@
                 });
             }
 
+            function createAddArtistButtonEvent(){
+                document.getElementById('addArtistButton').addEventListener('click', () => {
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.required = true;
+                    let removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = 'Remove';
+                    removeBtn.id = 'removeArtist';
+                    removeBtn.addEventListener('click', (event) =>{
+                        event.target.parentElement.remove();
+                    })
+                    let field = document.createElement('div');
+                    field.id = 'field';
+                    field.appendChild(input);
+                    field.appendChild(removeBtn);
+                    let doc = document.getElementById('otherArtists');
+                    doc.appendChild(field);
+                })
+            }
+
             function createUpdateButtonEvent(){
                 document.getElementById('updateButton').addEventListener('click', async (event) => {
                     editMode();
@@ -84,6 +110,7 @@
                     let artist = document.getElementById('newArtist').value;
                     let album = document.getElementById('newAlbum').value;
                     let genre = document.getElementById('newGenre').value;
+                    let others = Array.from(document.getElementById('otherArtists').querySelectorAll('input')).map(input => input.value);
 
                     let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
                         method: 'PUT',
@@ -95,7 +122,7 @@
                             title: title,
                             artistName: artist,
                             albumTitle: album,
-                            othersNames: [],
+                            othersNames: others,
                             genre: genre,
                             id: trackId
                         })
@@ -114,10 +141,26 @@
                 document.getElementById('newArtist').value = track.artist.name;
                 document.getElementById('newAlbum').value = track.album.title;
                 document.getElementById('newGenre').value = track.genre;
+                let otherArtistsDiv = document.getElementById('otherArtists');
+                track.others.forEach(o => {
+                    let removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = 'Remove';
+                    removeBtn.id = 'removeArtist';
+                    removeBtn.addEventListener('click', (event) =>{
+                        event.target.parentElement.remove();
+                    });
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = 'Another Artist';
+                    input.value = o.name;
+                    let other = document.createElement('div');
+                    other.appendChild(input);
+                    other.appendChild(removeBtn);
+                    otherArtistsDiv.appendChild(other);
+                });
             }
 
-            let params = new URLSearchParams(window.location.search);
-            let trackId = params.get('id');
             window.onload = async () => {
                 let response = await fetch(`http://localhost:5000/track?id=${trackId}`);
                 if (response.ok){
@@ -134,6 +177,7 @@
                     if (payload.role == 'Admin')
                     {
                         createCancelButtonEvent();
+                        createAddArtistButtonEvent();
                         createRemoveButtonEvent(trackId);
                         createSaveButtonEvent(trackId);
                         createUpdateButtonEvent();

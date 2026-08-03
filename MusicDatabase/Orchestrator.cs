@@ -97,6 +97,10 @@ public class Orchestrator
 
     public async Task<Result> UpdateTrackAsync(TrackUpdateDTO patch)
     {
+        var others = new List<Artist>();
+        foreach (string name in patch.OthersNames)
+            if (!string.IsNullOrEmpty(name))
+                others.Add(await _manager.EnsureArtistCreated(name));
         if (await _manager.UpdateTrackAsync(new Track
         {
             Id = Guid.Parse(patch.Id),
@@ -104,7 +108,7 @@ public class Orchestrator
             Genre = Enum.Parse<Genre>(patch.Genre, ignoreCase: true),
             Album = await _manager.EnsureAlbumCreated(patch.AlbumTitle, await _manager.EnsureArtistCreated(patch.ArtistName)),
             Artist = await _manager.EnsureArtistCreated(patch.ArtistName),
-            Others = (await Task.WhenAll(patch.OthersNames.Select(async name => await _manager.EnsureArtistCreated(name.Trim())))).ToList()
+            Others = others
         }))
         {
             await _manager.SaveChangesAsync();

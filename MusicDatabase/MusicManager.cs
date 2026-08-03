@@ -34,14 +34,18 @@ public class MusicManager
 
     async public Task<bool> UpdateTrackAsync(Track track)
     {
-        Track? existing = await _context.Tracks.FirstOrDefaultAsync(t => t.Id == track.Id);
+        Track? existing = await _context.Tracks
+            .Include(t => t.Others)
+            .FirstOrDefaultAsync(t => t.Id == track.Id);
         if (existing == null) return false;
         
         existing.Title = track.Title;
         existing.Genre = track.Genre;
         existing.Album = track.Album;
         existing.Artist = track.Artist;
-        existing.Others = track.Others;
+        existing.Others.Clear();
+        foreach (var other in track.Others)
+            existing.Others.Add(other);
         
         return true;
     }
