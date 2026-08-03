@@ -30,13 +30,13 @@
                         removeBtn.id = 'removeAlbum';
                         removeBtn.textContent = 'Remove';
                         removeBtn.addEventListener('click', async (event) => {
-                            let response = await fetch(`http://localhost:5000/album?id=${id}`, {
+                            event.preventDefault();
+                            let response = await fetch(`http://localhost:5000/artist?id=${id}`, {
                                 method: 'DELETE',
                                 headers: {
                                     'Content-Type':'application/json',
                                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                                 },
-                                body: JSON.stringify(id)
                             });
                             if (response.ok){
                                 alert('Removed successfully');
