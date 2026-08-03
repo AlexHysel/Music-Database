@@ -35,7 +35,7 @@ public record TrackUpdateDTO(
     string Title,
     string AlbumTitle,
     string ArtistName,
-    string OthersNames,
+    string[] OthersNames,
     string Genre,
     string Id
 );

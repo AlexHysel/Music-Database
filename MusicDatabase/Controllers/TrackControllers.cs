@@ -41,7 +41,7 @@ public class TrackController : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] TrackDetailDTO patch)
+    public async Task<IActionResult> Put([FromBody] TrackUpdateDTO patch)
     {
         Result result = await _orchestrator.UpdateTrackAsync(patch);
         if (result.Success)

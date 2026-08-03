@@ -6,5 +6,5 @@ public enum Genre
     RAP,
     EDM,
     AMBIENT,
-    DARKSYNTH,
+    DARKSYNTH
 }
