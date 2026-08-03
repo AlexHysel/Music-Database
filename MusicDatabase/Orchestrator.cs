@@ -101,7 +101,7 @@ public class Orchestrator
         {
             Id = Guid.Parse(patch.Id),
             Title = patch.Title,
-            Genre = Enum.Parse<Genre>(patch.Genre),
+            Genre = Enum.Parse<Genre>(patch.Genre, ignoreCase: true),
             Album = await _manager.EnsureAlbumCreated(patch.Album.Title, await _manager.EnsureArtistCreated(patch.Artist.Name)),
             Artist = await _manager.EnsureArtistCreated(patch.Artist.Name),
             Others = (await Task.WhenAll(patch.Others.Select(async o => await _manager.EnsureArtistCreated(o.Name)))).ToList()

@@ -79,6 +79,7 @@
 
             function createSaveButtonEvent(trackId){
                 document.getElementById('saveButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
                     let title = document.getElementById('newTitle').value;
                     let artist = document.getElementById('newArtist').value;
                     let album = document.getElementById('newAlbum').value;
@@ -90,7 +91,14 @@
                             'Content-Type':'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         },
-                        body: JSON.stringify({title, artist, album, genre, id: trackId})
+                        body: JSON.stringify({
+                            title: title,
+                            artist: {name: artist, id: trackId},
+                            album: {title: album, id: trackId},
+                            others: [],
+                            genre: genre,
+                            id: trackId
+                        })
                     });
                     if (response.ok){
                         alert('Updated successfully');
