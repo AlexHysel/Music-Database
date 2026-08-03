@@ -12,10 +12,10 @@
                 <input type="text" placeholder="Artist" id="newArtist" required></input>
                 <input type="text" placeholder="Album" id="newAlbum" required></input>
                 <select id="newGenre" required>
-                    <option value="Rock">Rock</option>
-                    <option value="Metal">Metal</option>
-                    <option value="Darksynth">Darksynth</option>
-                    <option value="Ambient">Ambient</option>
+                    <option value="ROCK">ROCK</option>
+                    <option value="METAL">METAL</option>
+                    <option value="DARKSYNTH">DARKSYNTH</option>
+                    <option value="AMBIENT">AMBIENT</option>
                 </select>
                 <input type="submit" value="Save" id="saveButton">
                 <input type="button" value="Cancel" id="cancelButton">
@@ -102,7 +102,7 @@
                     });
                     if (response.ok){
                         alert('Updated successfully');
-                        viewMode();
+                        window.location.reload();
                     } else {
                         alert('Track was not updated');
                     }
@@ -113,8 +113,7 @@
                 document.getElementById('newTitle').value = track.title;
                 document.getElementById('newArtist').value = track.artist.name;
                 document.getElementById('newAlbum').value = track.album.title;
-                let genreSelect = document.getElementById('newGenre');
-                genreSelect.value = track.genre;
+                document.getElementById('newGenre').value = track.genre;
             }
 
             let params = new URLSearchParams(window.location.search);
