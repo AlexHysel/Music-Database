@@ -5,12 +5,32 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <h1 id="artistName"></h1>
         <div id="albumList"></div>
-        <div id="adminPanel" style="display: none;"></div>
-            <button type="button" id="removeButtonn">Remove</button>
+        <div id="adminPanel" style="display: none"></div>
+            <input type="text" id="newName" placeholder="Artist's Name" required style="display: none">
+            <button type="button" id="removeButton">Remove</button>
+            <button type="button" id="updateButton">Update</button>
+            <button type="button" id="saveButton" style="display: none">Save</button>
+            <button type="button" id="cancelButton" style="display: none">Cancel</button>
         <script src='auth.js'></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
+
+            function editMode(){
+                document.getElementById('newName').style.display = 'inline';
+                document.getElementById('updateButton').style.display = 'none';
+                document.getElementById('removeButton').style.display = 'none';
+                document.getElementById('cancelButton').style.display = 'inline';
+                document.getElementById('saveButton').style.display = 'inline';
+            }
+
+            function viewMode(){
+                document.getElementById('newName').style.display = 'none';
+                document.getElementById('updateButton').style.display = 'inline';
+                document.getElementById('removeButton').style.display = 'inline';
+                document.getElementById('cancelButton').style.display = 'none';
+                document.getElementById('saveButton').style.display = 'none';
+            }
 
             function createRemoveButtonEvent(){
                 document.getElementById('removeButton').addEventListener('click', async (event) => {
@@ -30,6 +50,47 @@
                 });
             }
 
+            function createSaveButtonEvent(){
+                document.getElementById('saveButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    let newName = document.getElementById('newName').value;
+                    let response = await fetch('http://localhost:5000/artist', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({name: newName, id: id})
+                    });
+                    if (response.ok)
+                    {
+                        alert('Updated')
+                        window.location.reload();
+                    }
+                    else{
+                        alert('Artist not found');
+                    }
+                });
+            }
+
+            function createCancelButtonEvent(){
+                document.getElementById('cancelButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    viewMode();
+                });
+            }
+
+            function createUpdateButtonEvent(){
+                document.getElementById('updateButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    editMode();
+                });
+            }
+
+            function fillArtistForm(artist){
+                document.getElementById('newName').value = artist.name;
+            }
+
             window.onload = async () => {
                 let response = await fetch(`http://localhost:5000/artist?id=${id}`);
                 if (response.ok){
@@ -47,6 +108,10 @@
                     let payload = getPayload();
                     if (payload.role == 'Admin'){
                         createRemoveButtonEvent();
+                        createCancelButtonEvent();
+                        createSaveButtonEvent();
+                        createUpdateButtonEvent();
+                        fillArtistForm(artist);
                         document.getElementById('adminPanel').style.display = 'none';
                     }
                 } else {
