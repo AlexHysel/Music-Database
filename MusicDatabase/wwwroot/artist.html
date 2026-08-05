@@ -5,12 +5,32 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <h1 id="artistName"></h1>
         <div id="albumList"></div>
-        <div id="adminPanel"></div>
+        <div id="adminPanel" style="display: none;"></div>
+            <button type="button" id="removeButtonn">Remove</button>
         <script src='auth.js'></script>
         <script>
+            let params = new URLSearchParams(window.location.search);
+            let id = params.get('id');
+
+            function createRemoveButtonEvent(){
+                document.getElementById('removeButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    let response = await fetch(`http://localhost:5000/artist?id=${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                    });
+                    if (response.ok){
+                        alert('Removed successfully');
+                    } else {
+                        alert('Album was not removed');
+                    }
+                });
+            }
+
             window.onload = async () => {
-                let params = new URLSearchParams(window.location.search);
-                let id = params.get('id');
                 let response = await fetch(`http://localhost:5000/artist?id=${id}`);
                 if (response.ok){
                     let artist = await response.json();
@@ -25,27 +45,9 @@
                         document.getElementById('albumList').appendChild(album);
                     });
                     let payload = getPayload();
-                    if (payload.role == 'Admin')
-                    {
-                        let removeBtn = document.createElement('button');
-                        removeBtn.id = 'removeAlbum';
-                        removeBtn.textContent = 'Remove';
-                        removeBtn.addEventListener('click', async (event) => {
-                            event.preventDefault();
-                            let response = await fetch(`http://localhost:5000/artist?id=${id}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type':'application/json',
-                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                },
-                            });
-                            if (response.ok){
-                                alert('Removed successfully');
-                            } else {
-                                alert('Album was not removed');
-                            }
-                        });
-                        document.getElementById('adminPanel').appendChild(removeBtn);
+                    if (payload.role == 'Admin'){
+                        createRemoveButtonEvent();
+                        document.getElementById('adminPanel').style.display = 'none';
                     }
                 } else {
                     alert('not found');
