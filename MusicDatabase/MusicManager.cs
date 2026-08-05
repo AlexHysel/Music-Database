@@ -222,6 +222,17 @@ public class MusicManager
         return false;
     }
 
+    async public Task<bool> UpdateArtistAsync(Artist patch)
+    {
+        Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Id == patch.Id);
+        if (artist != null)
+        {
+            artist.Name = patch.Name;
+            return true;
+        }
+        return false;
+    }
+
     async public Task AddArtistAsync(Artist artist)
     {
         if (await _context.Artists.AnyAsync(a => a.Name == artist.Name))

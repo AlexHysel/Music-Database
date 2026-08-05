@@ -29,4 +29,15 @@ public class ArtistController : ControllerBase
         else
             return NotFound(result.Message);
     }
+
+    [HttpPut]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Put([FromBody] ArtistDTO patch)
+    {
+        Result result = await _orchestrator.UpdateArtistAsync(patch);
+        if (result.Success)
+            return Ok();
+        else
+            return NotFound(result.Message);
+    }
 }

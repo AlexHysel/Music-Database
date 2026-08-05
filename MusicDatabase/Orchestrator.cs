@@ -175,6 +175,19 @@ public class Orchestrator
             return Result.Fail("Artist not found");
     }
 
+    public async Task<Result> UpdateArtistAsync(ArtistDTO patch)
+    {
+        if (await _manager.UpdateArtistAsync(
+            new Artist {Name = patch.Name, Id = Guid.Parse(patch.Id)}
+        ))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Artist not found");
+    }
+
     public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page)
     {
         var request = _manager.GetArtists().Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
