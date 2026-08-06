@@ -163,6 +163,10 @@ public class Orchestrator
             return Result<AlbumDetailDTO?>.Fail("Album not found");
     }
 
+    public async Task<Result> UpdateAlbumAsync(AlbumDTO patch)
+    {
+    }
+
     //ARTIST
     public async Task<Result> RemoveArtistAsync(Guid id)
     {
