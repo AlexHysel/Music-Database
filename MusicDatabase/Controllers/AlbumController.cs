@@ -12,7 +12,7 @@ public class AlbumController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<AlbumDetailDTO> result = await _orchestrator.GetAlbumAsync(id);
+        Result<AlbumDetailDTO?> result = await _orchestrator.GetAlbumAsync(a => a.Id == id);
         if (result.Success)
             return Ok(result.Data);
         else
