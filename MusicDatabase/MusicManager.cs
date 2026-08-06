@@ -16,6 +16,11 @@ public class MusicManager
     }
 
     // TRACK
+    async public Task<bool> TrackExistsAsync(Guid id)
+    {
+        return await _context.Tracks.AnyAsync(t => t.Id == id);
+    }
+
     async public Task<Track?> GetTrackAsync(Expression<Func<Track, bool>> filter)
     {
         return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(filter);
@@ -125,9 +130,14 @@ public class MusicManager
         return user.Password.Equals(password);
     }
 
-    async public Task<bool> HasUserAsync(string name)
+    async public Task<bool> UserExistsAsync(string name)
     {
         return await _context.Users.AnyAsync(u => u.Name == name);
+    }
+
+    async public Task<bool> UserExistsAsync(Guid id)
+    {
+        return await _context.Users.AnyAsync(u => u.Id == id);
     }
 
     async public Task<bool> AddUserAsync(string name, UserRole role, string password)
@@ -169,7 +179,7 @@ public class MusicManager
         return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(filter);
     }
 
-    async public Task AddAlbumAsync(Album album)
+    public async Task AddAlbumAsync(Album album)
     {
         if (album.Artist.Albums.FirstOrDefault(a => a.Title == album.Title) == null)
         {
@@ -180,7 +190,7 @@ public class MusicManager
             Logging.Error("Artist already has album with this title.");
     }
 
-    async public Task<Album> EnsureAlbumCreated(string title, Artist artist)
+    public async Task<Album> EnsureAlbumCreated(string title, Artist artist)
     {
         Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Artist.Id == artist.Id && a.Title == title);
         if (album == null)
@@ -191,13 +201,23 @@ public class MusicManager
         return album;
     }
 
+    public async Task<bool> AlbumExistsAsync(Guid id)
+    {
+        return await _context.Albums.AnyAsync(a => a.Id == id);
+    }
+
     // ARTIST
+    public async Task<bool> ArtistExistsAsync(Guid id)
+    {
+        return await _context.Artists.AnyAsync(a => a.Id == id);
+    }
+
     public IQueryable<Artist> GetArtists()
     {
         return _context.Artists.AsNoTracking();
     }
 
-    async public Task<Artist> EnsureArtistCreated(string name)
+    public async Task<Artist> EnsureArtistCreated(string name)
     {
         Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Name == name);
         if (artist == null)

@@ -258,7 +258,7 @@ public class Orchestrator
     
     public async Task<Result> AddUserAsync(string name, string role, string password)
     {
-        if (await _manager.HasUserAsync(name))
+        if (await _manager.UserExistsAsync(name))
             return Result.Fail("User with this name already exists");
         else
         {
