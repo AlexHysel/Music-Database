@@ -1,10 +1,10 @@
 # Music-Database
 
-Web appliaction for managing database with music (artists, tracks, users, etc)
+Web application for managing database with music (artists, tracks, users, etc)
 
 ## Stack
 
-* **Backend**: ASP.NET Core MinimalAPI (.NET10)
+* **Backend**: ASP.NET Core (.NET10)
 
 * **ORM**: Entity Framework Core
 
