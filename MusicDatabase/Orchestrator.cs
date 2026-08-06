@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -165,6 +166,15 @@ public class Orchestrator
 
     public async Task<Result> UpdateAlbumAsync(AlbumDTO patch)
     {
+        Album? album = await _manager.GetAlbumAsync(a => a.Id == Guid.Parse(patch.Id));
+        if (album != null)
+        {
+            album.Title = patch.Title;
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Album Not Found");
     }
 
     //ARTIST
