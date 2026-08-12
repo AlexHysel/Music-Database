@@ -6,16 +6,97 @@
         <h1 id="albumTitle"></h1>
         <a id="albumArtist"></a>
         <div id="trackList"></div>
-        <div id="adminPanel"></div>
+        <div id="adminPanel" style="display: none;">
+            <input id="albumTitleInput" type="text" placeholder="New Title" required style="display: none">
+            <button id="updateButton" type="button">Update</button>
+            <button id="removeButton" type="button">Remove</button>
+            <button id="cancelButton" type="button" style="display: none">Cancel</button>
+            <button id="saveButton" type="button" style="display: none">Save</button>
+        </div>
         <script src='auth.js'></script>
         <script>
+            let params = new URLSearchParams(window.location.search);
+            let id = params.get('id');
+
+            function viewMode(){
+                document.getElementById('albumTitleInput').style.display = 'none';
+                document.getElementById('updateButton').style.display = 'inline-block';
+                document.getElementById('removeButton').style.display = 'inline-block';
+                document.getElementById('cancelButton').style.display = 'none';
+                document.getElementById('saveButton').style.display = 'none';
+            }
+
+            function editMode(){
+                document.getElementById('albumTitleInput').style.display = 'inline-block';
+                document.getElementById('updateButton').style.display = 'none';
+                document.getElementById('removeButton').style.display = 'none';
+                document.getElementById('cancelButton').style.display = 'inline-block';
+                document.getElementById('saveButton').style.display = 'inline-block';
+            }
+
+            function createRemoveButtonEvent(){
+                document.getElementById('removeButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    let response = await fetch(`http://localhost:5000/album?id=${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    if (response.ok){
+                        alert('Removed successfully');
+                    } else {
+                        alert('Album was not removed');
+                    }
+                });
+            }
+
+            function createSaveButtonEvent(){
+                document.getElementById('saveButton').addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    let newTitle = document.getElementById('albumTitleInput').value;
+                    let response = await fetch('http://localhost:5000/album', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({id, title: newTitle})
+                    });
+                    if (response.ok){
+                        alert('Updated successfully');
+                        document.getElementById('albumTitle').textContent = newTitle;
+                        viewMode();
+                    } else {
+                        alert('Album was not updated');
+                    }
+                });
+            }
+
+            function createUpdateButtonEvent(){
+                document.getElementById('updateButton').addEventListener('click', () => {
+                    event.preventDefault();
+                    editMode();
+                });
+            }
+
+            function createCancelButtonEvent(){
+                document.getElementById('cancelButton').addEventListener('click', () => {
+                    event.preventDefault();
+                    viewMode();
+                });
+            }
+
+            function fillAlbumFields(album){
+                document.getElementById('albumTitleInput').value = album.title;
+            }
+
             window.onload = async () => {
-                let params = new URLSearchParams(window.location.search);
-                let id = params.get('id');
                 let response = await fetch(`http://localhost:5000/album?id=${id}`)
                 if (response.ok){
                     let album = await response.json();
-                    document.title = album.title = `${album.title} by ${album.artist.name}`;
+                    document.title = `${album.title} by ${album.artist.name}`;
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artist.name;
                     document.getElementById('albumArtist').href = `http://localhost:5000/artist.html?id=${album.artist.id}`;
@@ -28,25 +109,12 @@
                     let payload = getPayload();
                     if (payload.role == 'Admin')
                     {
-                        let removeBtn = document.createElement('button');
-                        removeBtn.id = 'removeAlbum';
-                        removeBtn.textContent = 'Remove';
-                        removeBtn.addEventListener('click', async (event) => {
-                            let response = await fetch(`http://localhost:5000/album?id=${id}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type':'application/json',
-                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                },
-                                body: JSON.stringify(id)
-                            });
-                            if (response.ok){
-                                alert('Removed successfully');
-                            } else {
-                                alert('Album was not removed');
-                            }
-                        });
-                        document.getElementById('adminPanel').appendChild(removeBtn);
+                        createRemoveButtonEvent();
+                        createUpdateButtonEvent();
+                        createCancelButtonEvent();
+                        createSaveButtonEvent();
+                        fillAlbumFields(album);
+                        document.getElementById('adminPanel').style.display = 'block';
                     }
                 }
             }

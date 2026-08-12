@@ -109,20 +109,8 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// ===== GET =====
-
 app.MapGet("/search", async (Orchestrator o, string searchLine) => await o.Search(searchLine));
 
-app.MapGet("/album", async (Orchestrator o, Guid id) =>
-{
-    Result<AlbumDetailDTO?> result = await o.GetAlbumAsync(a => a.Id == id);
-    if (result.Success)
-        return Results.Ok(result.Data);
-    else
-        return Results.NotFound("Album not found");
-});
-
-// ===== POST =====
 app.MapPost("/login", async (Orchestrator o, LogInRequest request) =>
 {
     AuthDTO? auth = await o.LogInAsync(request.Name, request.Password);
@@ -139,8 +127,5 @@ app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
     else
         return Results.Conflict(result.Message);
 });
-
-// ===== DELETE =====
-app.MapDelete("/album", async (Orchestrator o, Guid id) => await o.RemoveAlbumAsync(id)).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.Run();
