@@ -109,6 +109,28 @@ public record UserDTO(
     }
 }
 
+public record UserDetailDTO(
+    string Name,
+    string Role,
+    string Id,
+    ArtistDTO[] FavoriteArtists,
+    AlbumDTO[] FavoriteAlbums,
+    TrackDTO[] FavoriteTracks
+)
+{
+    public static UserDetailDTO FromUser(User user)
+    {
+        return new UserDetailDTO(
+            user.Name,
+            user.Role.ToString(),
+            user.Id.ToString(),
+            user.FavoriteArtists.Select(a => ArtistDTO.FromArtist(a)).ToArray(),
+            user.FavoriteAlbums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
+            user.FavoriteTracks.Select(t => TrackDTO.FromTrack(t)).ToArray()
+        );
+    }
+}
+
 public record AuthDTO(
     string Token
 );
