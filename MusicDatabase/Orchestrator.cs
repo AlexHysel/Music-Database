@@ -280,12 +280,10 @@ public class Orchestrator
     public async Task<AuthDTO?> LogInAsync(string name, string password)
     {
         AuthDTO? auth = null;
-        string key = _config["Jwt:Key"]!;
-        Console.WriteLine($"Login attempt for user: {name}");
         if (await _manager.AuthenticateUser(name, password))
         {
-            Console.WriteLine("User authenticated successfully");
             string role = (await _manager.GetUserAsync(u => u.Name == name))!.Role.ToString();
+            string key = _config["Jwt:Key"]!;
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -302,12 +300,7 @@ public class Orchestrator
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
-            Console.WriteLine($"Token generated: {tokenString.Substring(0, Math.Min(50, tokenString.Length))}...");
             auth = new AuthDTO(tokenString);
-        }
-        else
-        {
-            Console.WriteLine("User authentication failed");
         }
         return auth;
     }

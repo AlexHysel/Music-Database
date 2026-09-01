@@ -26,8 +26,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Description = "Введите: Bearer {token}"
+        Type = SecuritySchemeType.ApiKey
     });
     options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
     {
@@ -68,13 +67,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             {
                 Console.WriteLine("Authentication challenge triggered");
                 return Task.CompletedTask;
-            },
-            OnMessageReceived = context =>
-            {
-                var header = context.Request.Headers["Authorization"].FirstOrDefault();
-                Console.WriteLine($"Raw Authorization header: {header ?? "Not present"}");
-                Console.WriteLine($"Token received: {context.Token ?? "null"}");
-                return Task.CompletedTask;
             }
         };
     });
@@ -89,12 +81,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-var key = builder.Configuration["Jwt:Key"]!;
-
 using (var scope = app.Services.CreateScope())
 {
     MusicDb db = scope.ServiceProvider.GetRequiredService<MusicDb>();
-    db.Database.EnsureCreated();
+    try
+    {
+        db.Database.Migrate();
+        Logging.Success("Database successfully migrated");
+    }
+    catch (Exception e)
+    {
+        Logging.Error("Database migration failed: \n" + e.Message);
+    }
 }
 
 app.UseSwagger();
