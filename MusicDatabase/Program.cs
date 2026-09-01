@@ -90,7 +90,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 var key = builder.Configuration["Jwt:Key"]!;
-Console.WriteLine($"Validation key: {key}");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -100,14 +99,6 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
-// Middleware to log Authorization header
-app.Use(async (context, next) =>
-{
-    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-    Console.WriteLine($"Authorization header: {authHeader ?? "Not present"}");
-    await next();
-});
 
 app.MapGet("/search", async (Orchestrator o, string searchLine) => await o.Search(searchLine));
 
