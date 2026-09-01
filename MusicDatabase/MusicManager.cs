@@ -127,7 +127,7 @@ public class MusicManager
     {
         User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
         if (user == null) return false;
-        return user.Password.Equals(password);
+        return BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password);
     }
 
     async public Task<bool> UserExistsAsync(string name)
@@ -145,7 +145,7 @@ public class MusicManager
         if (await _context.Users.AnyAsync(u => u.Name == name))
             return false;
         
-        User user = new() {Name = name, Password = password, Role = role};
+        User user = new() {Name = name, Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password), Role = role};
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
         return true;
