@@ -26,6 +26,11 @@ public class MusicManager
         return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    async public Task<Track[]> GetFavoriteTracksAsync(User user)
+    {
+        return await _context.Tracks.AsNoTracking().Where(t => user.FavoriteTracks.Contains(t)).ToArrayAsync();
+    }
+
     public IQueryable<Track> GetTracks()
     {
         return _context.Tracks.AsNoTracking();
@@ -144,6 +149,11 @@ public class MusicManager
         return false;
     }
 
+    async public Task<Album[]> GetFavoriteAlbumsAsync(User user)
+    {
+        return await _context.Albums.AsNoTracking().Where(a => user.FavoriteAlbums.Contains(a)).ToArrayAsync();
+    }
+
     public IQueryable<Album> GetAlbums()
     {
         return _context.Albums.AsNoTracking();
@@ -207,6 +217,11 @@ public class MusicManager
             return true;
         }
         return false;
+    }
+
+    public async Task<Artist[]> GetFavoriteArtistsAsync(User user)
+    {
+        return await _context.Artists.AsNoTracking().Where(a => user.FavoriteArtists.Contains(a)).ToArrayAsync();
     }
 
     public async Task<Artist> EnsureArtistCreated(string name)
