@@ -106,8 +106,8 @@
                         trackTitle.href = `http://localhost:5000/track.html?id=${t.id}`;
                         document.getElementById('trackList').appendChild(trackTitle);
                     });
-                    let payload = getPayload();
-                    if (payload.role == 'Admin')
+                    let role = getRole();
+                    if (role == 'Admin')
                     {
                         createRemoveButtonEvent();
                         createUpdateButtonEvent();

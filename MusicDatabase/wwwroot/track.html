@@ -7,7 +7,7 @@
         <a id="artistName"></a>
         <a id="albumTitle"></a>
         <p id="trackGenre"></p>
-        <div id="adminPanel">
+        <div id="adminPanel" style="display: none">
             <form id="newTrackInfo" style="display: none">
                 <input type="text" placeholder="Title" id="newTitle" required></input><br>
                 <input type="text" placeholder="Artist" id="newArtist" required></input><br>
@@ -174,8 +174,8 @@
                     document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.album.id}`;
                     document.getElementById('trackGenre').textContent = track.genre;
 
-                    let payload = getPayload();
-                    if (payload.role == 'Admin')
+                    let role = getRole();
+                    if (role == 'Admin')
                     {
                         createCancelButtonEvent();
                         createAddArtistButtonEvent();
