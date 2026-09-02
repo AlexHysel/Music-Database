@@ -31,6 +31,23 @@ public class Orchestrator
     }
 
     //TRACK
+    public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
+    {
+        Track? track = await _manager.GetTrackAsync(trackId);
+        User? user = await _manager.GetUserAsync(userId);
+        if (track == null) 
+            return Result.Fail("Track not found");
+        if (user == null)
+            return Result.Fail("User not found");
+        if (await _manager.AddTrackToFavoritesAsync(track, user))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Track already in favorites");
+    }
+
     public async Task<Result> RemoveTrackAsync(Guid id)
     {
         if (await _manager.RemoveTrackAsync(id))
@@ -122,6 +139,23 @@ public class Orchestrator
     }
 
     //ALBUM
+    public async Task<Result> AddAlbumToFavoritesAsync(Guid albumId, Guid userId)
+    {
+        Album? album = await _manager.GetAlbumAsync(albumId);
+        User? user = await _manager.GetUserAsync(userId);
+        if (album == null) 
+            return Result.Fail("Album not found");
+        if (user == null)
+            return Result.Fail("User not found");
+        if (await _manager.AddAlbumToFavoritesAsync(album, user))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Album already in favorites");
+    }
+    
     public async Task<Result> RemoveAlbumAsync(Guid id)
     {
         if (await _manager.RemoveAlbumAsync(id))
@@ -178,6 +212,23 @@ public class Orchestrator
     }
 
     //ARTIST
+    public async Task<Result> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
+    {
+        Artist? artist = await _manager.GetArtists().FirstOrDefaultAsync(a => a.Id == artistId);
+        User? user = await _manager.GetUserAsync(userId);
+        if (artist == null)
+            return Result.Fail("Artist not found");
+        if (user == null)
+            return Result.Fail("User not found");
+        if (await _manager.AddArtistToFavoritesAsync(artist, user))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Artist already in favorites");
+    }
+
     public async Task<Result> RemoveArtistAsync(Guid id)
     {
         if (await _manager.RemoveArtistAsync(id))
