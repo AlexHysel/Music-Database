@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("/[controller]")]
 public class AlbumController : ControllerBase
 {
     private readonly Orchestrator _orchestrator;
