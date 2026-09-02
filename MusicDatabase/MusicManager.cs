@@ -57,42 +57,10 @@ public class MusicManager
 
     async public Task<bool> RemoveTrackAsync(Expression<Func<Track, bool>> filter)
     {
-        var trackData = await _context.Tracks
-            .Where(filter)
-                .Select(
-                t => new
-                {
-                    t.Id,
-                    t.Title,
-                    AlbumId = t.Album.Id,
-                    ArtistsIDs = t.Others.Select(a => a.Id),
-                    ArtistIDs = t.Artist.Id
-                }
-            ).FirstOrDefaultAsync();
-        if (trackData != null)
+        Track? track = await _context.Tracks.FirstOrDefaultAsync(filter);
+        if (track != null)
         {
-            using var transaciton = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                await _context.Tracks
-                    .Where(t => t.Id == trackData.Id)
-                    .ExecuteDeleteAsync();
-                await _context.Artists
-                    .Where(a => trackData.ArtistsIDs.Contains(a.Id))
-                    .Where(a => a.Tracks.Count == 0)
-                    .ExecuteDeleteAsync();
-                await _context.Artists
-                    .Where(a => a.Id == trackData.ArtistIDs)
-                    .Where(a => a.Tracks.Count == 0)
-                    .ExecuteDeleteAsync();
-                if (await _context.Tracks.CountAsync(t => t.AlbumId == trackData.AlbumId) == 0)
-                    await RemoveAlbumAsync(a => a.Id == trackData.AlbumId);
-                await transaciton.CommitAsync();
-            }
-            catch
-            {
-                await transaciton.RollbackAsync();
-            }
+            _context.Tracks.Remove(track);
             return true;
         }
         return false;
