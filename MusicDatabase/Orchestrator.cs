@@ -273,6 +273,7 @@ public class Orchestrator
         else
         {
             await _manager.AddUserAsync(name, Enum.Parse<UserRole>(role), password);
+            await _manager.SaveChangesAsync();
             return Result.Ok();
         }
     }

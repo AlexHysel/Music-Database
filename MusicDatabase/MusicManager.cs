@@ -119,7 +119,6 @@ public class MusicManager
         
         User user = new() {Name = name, Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password), Role = role};
         await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -150,10 +149,7 @@ public class MusicManager
         if (album.Artist.Albums.FirstOrDefault(a => a.Title == album.Title) == null)
         {
             await _context.Albums.AddAsync(album);
-            Logging.Success($"Album {album.Title} added.");
         }
-        else
-            Logging.Error("Artist already has album with this title.");
     }
 
     public async Task<Album> EnsureAlbumCreated(string title, Artist artist)
