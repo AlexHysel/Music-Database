@@ -36,6 +36,16 @@ public class MusicManager
         await _context.Tracks.AddAsync(track);
     }
 
+    async public Task<bool> AddTrackToFavoritesAsync(Track track, User user)
+    {
+        if (!user.FavoriteTracks.Contains(track))
+        {
+            user.FavoriteTracks.Add(track);
+            return true;
+        }
+        return false;
+    }
+
     async public Task<bool> UpdateTrackAsync(Track track)
     {
         Track? existing = await _context.Tracks
@@ -144,6 +154,16 @@ public class MusicManager
         return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    public async Task<bool> AddAlbumToFavoritesAsync(Album album, User user)
+    {
+        if (!user.FavoriteAlbums.Contains(album))
+        {
+            user.FavoriteAlbums.Add(album);
+            return true;
+        }
+        return false;
+    }
+
     public async Task AddAlbumAsync(Album album)
     {
         if (album.Artist.Albums.FirstOrDefault(a => a.Title == album.Title) == null)
@@ -177,6 +197,16 @@ public class MusicManager
     public IQueryable<Artist> GetArtists()
     {
         return _context.Artists.AsNoTracking();
+    }
+
+    public async Task<bool> AddArtistToFavoritesAsync(Artist artist, User user)
+    {
+        if (!user.FavoriteArtists.Contains(artist))
+        {
+            user.FavoriteArtists.Add(artist);
+            return true;
+        }
+        return false;
     }
 
     public async Task<Artist> EnsureArtistCreated(string name)
