@@ -33,7 +33,7 @@ public class Orchestrator
     //TRACK
     public async Task<Result> RemoveTrackAsync(Guid id)
     {
-        if (await _manager.RemoveTrackAsync(t => t.Id == id))
+        if (await _manager.RemoveTrackAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -124,7 +124,7 @@ public class Orchestrator
     //ALBUM
     public async Task<Result> RemoveAlbumAsync(Guid id)
     {
-        if (await _manager.RemoveAlbumAsync(a => a.Id == id))
+        if (await _manager.RemoveAlbumAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -152,9 +152,9 @@ public class Orchestrator
         return _manager.GetAlbums().Where(filter).Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
     }
 
-    public async Task<Result<AlbumDetailDTO?>> GetAlbumAsync(Expression<Func<Album, bool>> filter)
+    public async Task<Result<AlbumDetailDTO?>> GetAlbumAsync(Guid id)
     {
-        Album? album = await _manager.GetAlbumAsync(filter);
+        Album? album = await _manager.GetAlbumAsync(id);
         if (album != null)
         {
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
@@ -166,7 +166,7 @@ public class Orchestrator
 
     public async Task<Result> UpdateAlbumAsync(AlbumDTO patch)
     {
-        Album? album = await _manager.GetAlbumAsync(a => a.Id == Guid.Parse(patch.Id));
+        Album? album = await _manager.GetAlbumAsync(Guid.Parse(patch.Id));
         if (album != null)
         {
             album.Title = patch.Title;
@@ -180,7 +180,7 @@ public class Orchestrator
     //ARTIST
     public async Task<Result> RemoveArtistAsync(Guid id)
     {
-        if (await _manager.RemoveArtistAsync(a => a.Id == id))
+        if (await _manager.RemoveArtistAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -235,7 +235,7 @@ public class Orchestrator
     //USER
     public async Task<Result> RemoveUserAsync(Guid id)
     {
-        if (await _manager.RemoveUserAsync(u => u.Id == id))
+        if (await _manager.RemoveUserAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -259,7 +259,7 @@ public class Orchestrator
 
     public async Task<Result<UserDTO>> GetUserAsync(Guid id)
     {
-        User? user = await _manager.GetUserAsync(u => u.Id == id);
+        User? user = await _manager.GetUserAsync(id);
         if (user == null)
             return Result<UserDTO>.Fail("User not found");
         else
@@ -280,9 +280,10 @@ public class Orchestrator
     public async Task<AuthDTO?> LogInAsync(string name, string password)
     {
         AuthDTO? auth = null;
-        if (await _manager.AuthenticateUser(name, password))
+        User? user = await _manager.AuthenticateUser(name, password);
+        if (user != null)
         {
-            string role = (await _manager.GetUserAsync(u => u.Name == name))!.Role.ToString();
+            string role = user.Role.ToString();
             string key = _config["Jwt:Key"]!;
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor

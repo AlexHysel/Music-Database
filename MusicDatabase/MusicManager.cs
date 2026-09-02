@@ -21,9 +21,9 @@ public class MusicManager
         return await _context.Tracks.AnyAsync(t => t.Id == id);
     }
 
-    async public Task<Track?> GetTrackAsync(Expression<Func<Track, bool>> filter)
+    async public Task<Track?> GetTrackAsync(Guid id)
     {
-        return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(filter);
+        return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public IQueryable<Track> GetTracks()
@@ -34,7 +34,6 @@ public class MusicManager
     async public Task AddTrackAsync(Track track)
     {
         await _context.Tracks.AddAsync(track);
-        Logging.Success($"Track ({track.Id}) added.");
     }
 
     async public Task<bool> UpdateTrackAsync(Track track)
@@ -55,9 +54,9 @@ public class MusicManager
         return true;
     }
 
-    async public Task<bool> RemoveTrackAsync(Expression<Func<Track, bool>> filter)
+    async public Task<bool> RemoveTrackAsync(Guid id)
     {
-        Track? track = await _context.Tracks.FirstOrDefaultAsync(filter);
+        Track? track = await _context.Tracks.FirstOrDefaultAsync(t => t.Id == id);
         if (track != null)
         {
             _context.Tracks.Remove(track);
@@ -72,30 +71,35 @@ public class MusicManager
         return _context.Users.AsNoTracking();
     }
 
-    public async Task<User?> GetUserAsync(Expression<Func<User, bool>> filter)
+    public async Task<User?> GetUserAsync(Guid id)
     {
-        User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(filter);
+        User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
         return user;
     }
 
-    async public Task<bool> RemoveUserAsync(Expression<Func<User, bool>> filter)
+    async public Task<bool> RemoveUserAsync(Guid id)
     {
-        User? user = await _context.Users.FirstOrDefaultAsync(filter);
+        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         if (user != null)
         {
             _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
             return true;
         }
         return false;
     }
 
-    async public Task<bool> AuthenticateUser(string name, string password)
+    async public Task<User?> AuthenticateUser(string name, string password)
     {
         User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
-        if (user == null) return false;
-        return BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password);
+        if (user != null && BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password))
+        {
+            return user;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     async public Task<bool> UserExistsAsync(string name)
@@ -120,18 +124,12 @@ public class MusicManager
     }
 
     // ALBUM
-    async public Task<bool> RemoveAlbumAsync(Expression<Func<Album, bool>> filter)
+    async public Task<bool> RemoveAlbumAsync(Guid id)
     {
-        Album? album = await _context.Albums
-            .Include(a => a.Artist)
-            .ThenInclude(a => a.Albums)
-            .FirstOrDefaultAsync(filter);
-
+        Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
         if (album != null)
         {
             _context.Albums.Remove(album);
-            if (!album.Artist.Albums.Any(a => a != album))
-                await RemoveArtistAsync((a) => a == album.Artist);
             return true;
         }
         return false;
@@ -142,9 +140,9 @@ public class MusicManager
         return _context.Albums.AsNoTracking();
     }
 
-    public async Task<Album?> GetAlbumAsync(Expression<Func<Album, bool>> filter)
+    public async Task<Album?> GetAlbumAsync(Guid id)
     {
-        return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(filter);
+        return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task AddAlbumAsync(Album album)
@@ -198,9 +196,9 @@ public class MusicManager
         return artist;
     }
 
-    async public Task<bool> RemoveArtistAsync(Expression<Func<Artist, bool>> filter)
+    async public Task<bool> RemoveArtistAsync(Guid id)
     {
-        Artist? artist = await _context.Artists.FirstOrDefaultAsync(filter);
+        Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Id == id);
 
         if (artist != null)
         {
@@ -223,12 +221,9 @@ public class MusicManager
 
     async public Task AddArtistAsync(Artist artist)
     {
-        if (await _context.Artists.AnyAsync(a => a.Name == artist.Name))
-            Logging.Error("This artist already exist.");
-        else
+        if (!await _context.Artists.AnyAsync(a => a.Name == artist.Name))
         {
             await _context.Artists.AddAsync(artist);
-            Logging.Success($"Artist {artist.Name} added.");
         }
     }
 }
