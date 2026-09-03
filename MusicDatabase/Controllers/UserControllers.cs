@@ -13,15 +13,11 @@ public class UserController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<UserDTO> result = await _orchestrator.GetUserAsync(id);
+        Result<UserDetailDTO> result = await _orchestrator.GetUserDetailAsync(id);
         if (result.Success)
-        {
             return Ok(result.Data);
-        }
         else
-        {
             return NotFound(result.Message);
-        }
     }
 
     [HttpDelete]

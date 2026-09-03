@@ -5,10 +5,31 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <h1 id="username"></h1>
         <h2 id="userRole"></h2>
-        <
-        <div id="adminPanel"></div>
+        <div id="favoriteAlbums"></div>
+        <div id="favoriteArtists"></div>
+        <div id="favoriteTracks"></div>
+        <div id="adminPanel">
+            <button id="removeUserBtn">Remove User</button>
+        </div>
         <script src='auth.js'></script>
         <script>
+            function createRemoveButtonEvent(userId){
+                document.getElementById('removeUserBtn').addEventListener('click', async (event) => {
+                    let response = await fetch(`http://localhost:5000/user?id=${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    if (response.ok){
+                        alert('Removed successfully.');
+                    } else {
+                        alert('NotFound');
+                    }
+                });
+            }
+
             window.onload = async (event) => {
                 let params = new URLSearchParams(window.location.search);
                 let id = params.get('id');
@@ -19,26 +40,31 @@
                     document.title = user.name;
                     document.getElementById("username").textContent = user.name;
                     document.getElementById("userRole").textContent = user.role;
-                    let role = getRole();
-                    if (role == 'Admin'){
-                        let removeBtn = document.createElement('button');
-                        removeBtn.addEventListener('click', async (event) => {
-                            let response = await fetch(`http://localhost:5000/user?id=${id}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type':'application/json',
-                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                },
-                                body: JSON.stringify(id)
-                            });
-                            if (response.ok){
-                                alert('Removed successfully.');
-                            } else {
-                                alert('NotFound');
-                            }
-                        });
-                        removeBtn.textContent = 'Remove';
-                        document.getElementById('adminPanel').appendChild(removeBtn);
+
+                    for (let artist of user.favoriteArtists){
+                        let artistLink = document.createElement('a');
+                        artistLink.href = `artist.html?id=${artist.id}`;
+                        artistLink.textContent = artist.name;
+                        document.getElementById("favoriteArtists").appendChild(artistLink);
+                        document.getElementById("favoriteArtists").appendChild(document.createElement('br'));
+                    }
+                    for (let album of user.favoriteAlbums){
+                        let albumLink = document.createElement('a');
+                        albumLink.href = `album.html?id=${album.id}`;
+                        albumLink.textContent = album.title;
+                        document.getElementById("favoriteAlbums").appendChild(albumLink);
+                        document.getElementById("favoriteAlbums").appendChild(document.createElement('br'));
+                    }
+                    for (let track of user.favoriteTracks){
+                        let trackLink = document.createElement('a');
+                        trackLink.href = `track.html?id=${track.id}`;
+                        trackLink.textContent = track.title;
+                        document.getElementById("favoriteTracks").appendChild(trackLink);
+                        document.getElementById("favoriteTracks").appendChild(document.createElement('br'));
+                    }
+                    
+                    if (user.role == 'Admin'){
+                        createRemoveButtonEvent(id);
                     }
                 }
             }

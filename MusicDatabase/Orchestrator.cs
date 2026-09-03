@@ -346,6 +346,19 @@ public class Orchestrator
         else
             return Result<UserDTO>.Ok(UserDTO.FromUser(user));
     }
+
+    public async Task<Result<UserDetailDTO>> GetUserDetailAsync(Guid id)
+    {
+        User? user = await _manager.GetUsers()
+            .Include(u => u.FavoriteAlbums)
+            .Include(u => u.FavoriteArtists)
+            .Include(u => u.FavoriteTracks)
+            .FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null)
+            return Result<UserDetailDTO>.Fail("User not found");
+        else
+            return Result<UserDetailDTO>.Ok(UserDetailDTO.FromUser(user));
+    }
     
     public async Task<Result> AddUserAsync(string name, string role, string password)
     {
