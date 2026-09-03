@@ -12,6 +12,7 @@
             <button id="removeUserBtn">Remove User</button>
         </div>
         <script src='auth.js'></script>
+        <script src='trackElement.js'></script>
         <script>
             function createRemoveButtonEvent(userId){
                 document.getElementById('removeUserBtn').addEventListener('click', async (event) => {
@@ -33,7 +34,7 @@
             window.onload = async (event) => {
                 let params = new URLSearchParams(window.location.search);
                 let id = params.get('id');
-                let response = await fetch(`http://localhost:5000/user?id=${id}`);
+                let response = await fetch(`user?id=${id}`);
                 if (response.ok)
                 {
                     let user = await response.json();
@@ -56,13 +57,9 @@
                         document.getElementById("favoriteAlbums").appendChild(document.createElement('br'));
                     }
                     for (let track of user.favoriteTracks){
-                        let trackLink = document.createElement('a');
-                        trackLink.href = `track.html?id=${track.id}`;
-                        trackLink.textContent = track.title;
-                        document.getElementById("favoriteTracks").appendChild(trackLink);
-                        document.getElementById("favoriteTracks").appendChild(document.createElement('br'));
+                        document.getElementById("favoriteTracks").appendChild(createTrackElement(track));
                     }
-                    
+
                     if (user.role == 'Admin'){
                         createRemoveButtonEvent(id);
                     }

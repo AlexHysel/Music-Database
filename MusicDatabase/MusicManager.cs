@@ -26,6 +26,11 @@ public class MusicManager
         return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    async public Task<Track?> GetTrackedTrackAsync(Guid id)
+    {
+        return await _context.Tracks.FirstOrDefaultAsync(t => t.Id == id);
+    }
+
     async public Task<Track[]> GetFavoriteTracksAsync(User user)
     {
         return await _context.Tracks.AsNoTracking().Where(t => user.FavoriteTracks.Contains(t)).ToArrayAsync();
@@ -43,7 +48,7 @@ public class MusicManager
 
     async public Task<bool> AddTrackToFavoritesAsync(Track track, User user)
     {
-        if (!user.FavoriteTracks.Contains(track))
+        if (!_context.Users.AsNoTracking().Any(u => u.Id == user.Id && u.FavoriteTracks.Contains(track)))
         {
             user.FavoriteTracks.Add(track);
             return true;
@@ -89,6 +94,12 @@ public class MusicManager
     public async Task<User?> GetUserAsync(Guid id)
     {
         User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+        return user;
+    }
+
+    public async Task<User?> GetTrackedUserAsync(Guid id)
+    {
+        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         return user;
     }
 

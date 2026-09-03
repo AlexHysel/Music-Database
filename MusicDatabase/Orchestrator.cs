@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -33,8 +32,8 @@ public class Orchestrator
     //TRACK
     public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
     {
-        Track? track = await _manager.GetTrackAsync(trackId);
-        User? user = await _manager.GetUserAsync(userId);
+        Track? track = await _manager.GetTrackedTrackAsync(trackId);
+        User? user = await _manager.GetTrackedUserAsync(userId);
         if (track == null) 
             return Result.Fail("Track not found");
         if (user == null)
@@ -385,7 +384,8 @@ public class Orchestrator
             {
                 Subject = new ClaimsIdentity([
                     new Claim(ClaimTypes.Name, name),
-                    new Claim(ClaimTypes.Role, role)
+                    new Claim(ClaimTypes.Role, role),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                 ]),
                 Expires = DateTime.UtcNow.AddDays(7),
                 Issuer = "MusicDatabase",

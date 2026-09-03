@@ -26,6 +26,7 @@
             <h2>Users</h2>
             <div id='foundUsers'></div>
         </div>
+        <script src="trackElement.js"></script>
         <script>
             document.getElementById('searchButton').addEventListener('click', async (event) => {
                 event.preventDefault();
@@ -49,10 +50,7 @@
                     }
                     document.getElementById('foundTracks').innerHTML = ''
                     for (track of result.tracks){
-                        let trackTitle = document.createElement('a');
-                        trackTitle.textContent = track.title;
-                        trackTitle.href = `http://localhost:5000/track.html?id=${track.id}`
-                        document.getElementById('foundTracks').appendChild(trackTitle);
+                        document.getElementById('foundTracks').appendChild(createTrackElement(track));
                     }
                     document.getElementById('foundUsers').innerHTML = ''
                     for (user of result.users){

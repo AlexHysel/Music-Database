@@ -99,7 +99,7 @@ public class UserController : ControllerBase
 
     // FAVORITE TRACKS
     [HttpPost("me/favorites/tracks")]
-    public async Task<IActionResult> AddFavoriteTrack([FromQuery] Guid trackId)
+    public async Task<IActionResult> AddFavoriteTrack([FromQuery] Guid Id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
         if (userIdClaim == null) return Forbid();
@@ -107,7 +107,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.AddTrackToFavoritesAsync(trackId, userId);
+        Result result = await _orchestrator.AddTrackToFavoritesAsync(Id, userId);
         if (result.Success)
             return Ok();
         else
