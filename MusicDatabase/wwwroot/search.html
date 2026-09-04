@@ -27,6 +27,8 @@
             <div id='foundUsers'></div>
         </div>
         <script src="trackElement.js"></script>
+        <script src="albumElement.js"></script>
+        <script src="artistElement.js"></script>
         <script>
             document.getElementById('searchButton').addEventListener('click', async (event) => {
                 event.preventDefault();
@@ -36,17 +38,11 @@
                     let result = await response.json();
                     document.getElementById('foundArtists').innerHTML = ''
                     for (artist of result.artists){
-                        let artistName = document.createElement('a');
-                        artistName.textContent = artist.name;
-                        artistName.href = `http://localhost:5000/artist.html?id=${artist.id}`
-                        document.getElementById('foundArtists').appendChild(artistName);
+                        document.getElementById('foundArtists').appendChild(createArtistElement(artist));
                     }
                     document.getElementById('foundAlbums').innerHTML = ''
                     for (album of result.albums){
-                        let albumTitle = document.createElement('a');
-                        albumTitle.textContent = album.title;
-                        albumTitle.href = `http://localhost:5000/album.html?id=${album.id}`
-                        document.getElementById('foundAlbums').appendChild(albumTitle);
+                        document.getElementById('foundAlbums').appendChild(createAlbumElement(album));
                     }
                     document.getElementById('foundTracks').innerHTML = ''
                     for (track of result.tracks){

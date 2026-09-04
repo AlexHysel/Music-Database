@@ -49,7 +49,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("me/favorites/albums")]
-    public async Task<IActionResult> AddFavoriteAlbum([FromQuery] Guid albumId)
+    public async Task<IActionResult> AddFavoriteAlbum([FromQuery] Guid id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
         if (userIdClaim == null) return Forbid();
@@ -57,7 +57,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.AddAlbumToFavoritesAsync(albumId, userId);
+        Result result = await _orchestrator.AddAlbumToFavoritesAsync(id, userId);
         if (result.Success)
             return Ok();
         else
@@ -65,7 +65,7 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("me/favorites/albums")]
-    public async Task<IActionResult> RemoveFavoriteAlbum([FromQuery] Guid albumId)
+    public async Task<IActionResult> RemoveFavoriteAlbum([FromQuery] Guid id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
         if (userIdClaim == null) return Forbid();
@@ -73,7 +73,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.RemoveAlbumFromFavoritesAsync(albumId, userId);
+        Result result = await _orchestrator.RemoveAlbumFromFavoritesAsync(id, userId);
         if (result.Success)
             return Ok();
         else
@@ -98,7 +98,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("me/favorites/artists")]
-    public async Task<IActionResult> AddFavoriteArtist([FromQuery] Guid artistId)
+    public async Task<IActionResult> AddFavoriteArtist([FromQuery] Guid id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
         if (userIdClaim == null) return Forbid();
@@ -106,7 +106,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.AddArtistToFavoritesAsync(artistId, userId);
+        Result result = await _orchestrator.AddArtistToFavoritesAsync(userId, id);
         if (result.Success)
             return Ok();
         else
@@ -114,7 +114,7 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("me/favorites/artists")]
-    public async Task<IActionResult> RemoveFavoriteArtist([FromQuery] Guid artistId)
+    public async Task<IActionResult> RemoveFavoriteArtist([FromQuery] Guid id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
         if (userIdClaim == null) return Forbid();
@@ -122,7 +122,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.RemoveArtistFromFavoritesAsync(artistId, userId);
+        Result result = await _orchestrator.RemoveArtistFromFavoritesAsync(userId, id);
         if (result.Success)
             return Ok();
         else
