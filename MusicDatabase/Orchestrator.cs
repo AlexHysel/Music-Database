@@ -30,15 +30,17 @@ public class Orchestrator
     }
 
     //TRACK
+    public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)
+    {
+        User? user = await _manager.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result<TrackDTO[]>.Fail("User not found");
+        else
+            return Result<TrackDTO[]>.Ok(user.GetFavoriteTracks().Select(t => TrackDTO.FromTrack(t)).ToArray());
+    }
     public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
     {
-        Track? track = await _manager.GetTrackedTrackAsync(trackId);
-        User? user = await _manager.GetTrackedUserAsync(userId);
-        if (track == null) 
-            return Result.Fail("Track not found");
-        if (user == null)
-            return Result.Fail("User not found");
-        if (await _manager.AddTrackToFavoritesAsync(track, user))
+        if (await _manager.AddTrackToFavoritesAsync(userId, trackId))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -47,14 +49,15 @@ public class Orchestrator
             return Result.Fail("Track already in favorites");
     }
 
-    public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)
+    public async Task<Result> RemoveTrackFromFavoritesAsync(Guid trackId, Guid userId)
     {
-        User? user = await _manager.GetUserAsync(userId);
-        if (user == null)
-            return Result<TrackDTO[]>.Fail("User not found");
-        var tracks = await _manager.GetFavoriteTracksAsync(user);
-        var trackDtos = tracks.Select(t => TrackDTO.FromTrack(t)).ToArray();
-        return Result<TrackDTO[]>.Ok(trackDtos);
+        if (await _manager.RemoveTrackFromFavoritesAsync(userId, trackId))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Track not in favorites");
     }
 
     public async Task<Result> RemoveTrackAsync(Guid id)
@@ -148,15 +151,19 @@ public class Orchestrator
     }
 
     //ALBUM
+    public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
+    {
+        User? user = await _manager.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result<AlbumDTO[]>.Fail("User not found");
+
+        var albums = user.GetFavoriteAlbums().Select(a => AlbumDTO.FromAlbum(a)).ToArray();
+        return Result<AlbumDTO[]>.Ok(albums);
+    }
+
     public async Task<Result> AddAlbumToFavoritesAsync(Guid albumId, Guid userId)
     {
-        Album? album = await _manager.GetAlbumAsync(albumId);
-        User? user = await _manager.GetUserAsync(userId);
-        if (album == null) 
-            return Result.Fail("Album not found");
-        if (user == null)
-            return Result.Fail("User not found");
-        if (await _manager.AddAlbumToFavoritesAsync(album, user))
+        if (await _manager.AddAlbumToFavoritesAsync(userId, albumId))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -165,14 +172,15 @@ public class Orchestrator
             return Result.Fail("Album already in favorites");
     }
 
-    public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
+    public async Task<Result> RemoveAlbumFromFavoritesAsync(Guid albumId, Guid userId)
     {
-        User? user = await _manager.GetUserAsync(userId);
-        if (user == null)
-            return Result<AlbumDTO[]>.Fail("User not found");
-        var albums = await _manager.GetFavoriteAlbumsAsync(user);
-        var albumDtos = albums.Select(a => AlbumDTO.FromAlbum(a)).ToArray();
-        return Result<AlbumDTO[]>.Ok(albumDtos);
+        if (await _manager.RemoveAlbumFromFavoritesAsync(userId, albumId))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Album not in favorites");
     }
 
     public async Task<Result> RemoveAlbumAsync(Guid id)
@@ -231,15 +239,19 @@ public class Orchestrator
     }
 
     //ARTIST
+    public async Task<Result<ArtistDTO[]>> GetFavoriteArtistsAsync(Guid userId)
+    {
+        User? user = await _manager.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result<ArtistDTO[]>.Fail("User not found");
+
+        var artists = user.GetFavoriteArtists().Select(a => ArtistDTO.FromArtist(a)).ToArray();
+        return Result<ArtistDTO[]>.Ok(artists);
+    }
+
     public async Task<Result> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
     {
-        Artist? artist = await _manager.GetArtists().FirstOrDefaultAsync(a => a.Id == artistId);
-        User? user = await _manager.GetUserAsync(userId);
-        if (artist == null)
-            return Result.Fail("Artist not found");
-        if (user == null)
-            return Result.Fail("User not found");
-        if (await _manager.AddArtistToFavoritesAsync(artist, user))
+        if (await _manager.AddArtistToFavoritesAsync(userId, artistId))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -248,14 +260,15 @@ public class Orchestrator
             return Result.Fail("Artist already in favorites");
     }
 
-    public async Task<Result<ArtistDTO[]>> GetFavoriteArtistsAsync(Guid userId)
+    public async Task<Result> RemoveArtistFromFavoritesAsync(Guid userId, Guid artistId)
     {
-        User? user = await _manager.GetUserAsync(userId);
-        if (user == null)
-            return Result<ArtistDTO[]>.Fail("User not found");
-        var artists = await _manager.GetFavoriteArtistsAsync(user);
-        var artistDtos = artists.Select(a => ArtistDTO.FromArtist(a)).ToArray();
-        return Result<ArtistDTO[]>.Ok(artistDtos);
+        if (await _manager.RemoveArtistFromFavoritesAsync(userId, artistId))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        else
+            return Result.Fail("Artist not in favorites");
     }
 
     public async Task<Result> RemoveArtistAsync(Guid id)
@@ -282,12 +295,6 @@ public class Orchestrator
             return Result.Fail("Artist not found");
     }
 
-    public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page)
-    {
-        var request = _manager.GetArtists().Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
-        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
-    }
-
     public async Task<Result<ArtistDetailDTO>> GetArtistAsync(Guid id)
     {
         Artist? artist = await _manager.GetArtists()
@@ -298,18 +305,6 @@ public class Orchestrator
             return Result<ArtistDetailDTO>.Fail("Artist not found");
         else
             return Result<ArtistDetailDTO>.Ok(ArtistDetailDTO.FromArtist(artist));
-    }
-
-    public async Task<ArtistDTO[]> GetArtistsAsync(int size, int page, Expression<Func<Artist, bool>> filter)
-    {
-        var request = _manager.GetArtists().Where(filter).Select(a => new ArtistDTO(a.Name, a.Id.ToString()));
-        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
-    }
-
-    public Task<ArtistDTO[]> GetArtistsAsync(Expression<Func<Artist, bool>> filter)
-    {
-        return _manager.GetArtists().Where(filter)
-            .Select(a => new ArtistDTO(a.Name, a.Id.ToString())).ToArrayAsync();
     }
 
     //USER

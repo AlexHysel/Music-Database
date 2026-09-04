@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 // DATA ACCESS LAYER
@@ -31,11 +30,6 @@ public class MusicManager
         return await _context.Tracks.FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    async public Task<Track[]> GetFavoriteTracksAsync(User user)
-    {
-        return await _context.Tracks.AsNoTracking().Where(t => user.FavoriteTracks.Contains(t)).ToArrayAsync();
-    }
-
     public IQueryable<Track> GetTracks()
     {
         return _context.Tracks.AsNoTracking();
@@ -44,16 +38,6 @@ public class MusicManager
     async public Task AddTrackAsync(Track track)
     {
         await _context.Tracks.AddAsync(track);
-    }
-
-    async public Task<bool> AddTrackToFavoritesAsync(Track track, User user)
-    {
-        if (!_context.Users.AsNoTracking().Any(u => u.Id == user.Id && u.FavoriteTracks.Contains(track)))
-        {
-            user.FavoriteTracks.Add(track);
-            return true;
-        }
-        return false;
     }
 
     async public Task<bool> UpdateTrackAsync(Track track)
@@ -83,6 +67,32 @@ public class MusicManager
             return true;
         }
         return false;
+    }
+
+    async public Task<bool> RemoveTrackFromFavoritesAsync(Guid userId, Guid trackId)
+    {
+        User? user = await _context.Users
+            .Include(u => u.FavoriteTracks)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        Track? track = await _context.Tracks.FirstOrDefaultAsync(t => t.Id == trackId);
+        if (track == null) return false;
+
+        return user.RemoveTrackFromFavorites(track);
+    }
+
+    async public Task<bool> AddTrackToFavoritesAsync(Guid userId, Guid trackId)
+    {
+        User? user = await _context.Users
+            .Include(u => u.FavoriteTracks)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        Track? track = await _context.Tracks.FirstOrDefaultAsync(t => t.Id == trackId);
+        if (track == null) return false;
+
+        return user.AddTrackToFavorites(track);
     }
 
     // USER
@@ -149,6 +159,32 @@ public class MusicManager
     }
 
     // ALBUM
+    async public Task<bool> RemoveAlbumFromFavoritesAsync(Guid userId, Guid albumId)
+    {
+        User? user = await _context.Users
+            .Include(u => u.FavoriteAlbums)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Id == albumId);
+        if (album == null) return false;
+
+        return user.RemoveAlbumFromFavorites(album);
+    }
+
+    async public Task<bool> AddAlbumToFavoritesAsync(Guid userId, Guid albumId)
+    {
+        User? user = await _context.Users
+            .Include(u => u.FavoriteAlbums)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Id == albumId);
+        if (album == null) return false;
+
+        return user.AddAlbumToFavorites(album);
+    }
+
     async public Task<bool> RemoveAlbumAsync(Guid id)
     {
         Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
@@ -160,9 +196,9 @@ public class MusicManager
         return false;
     }
 
-    async public Task<Album[]> GetFavoriteAlbumsAsync(User user)
+    async public Task<Album?> GetTrackedAlbumAsync(Guid id)
     {
-        return await _context.Albums.AsNoTracking().Where(a => user.FavoriteAlbums.Contains(a)).ToArrayAsync();
+        return await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public IQueryable<Album> GetAlbums()
@@ -174,17 +210,7 @@ public class MusicManager
     {
         return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(a => a.Id == id);
     }
-
-    public async Task<bool> AddAlbumToFavoritesAsync(Album album, User user)
-    {
-        if (!user.FavoriteAlbums.Contains(album))
-        {
-            user.FavoriteAlbums.Add(album);
-            return true;
-        }
-        return false;
-    }
-
+    
     public async Task AddAlbumAsync(Album album)
     {
         if (album.Artist.Albums.FirstOrDefault(a => a.Title == album.Title) == null)
@@ -210,6 +236,32 @@ public class MusicManager
     }
 
     // ARTIST
+    public async Task<bool> RemoveArtistFromFavoritesAsync(Guid userId, Guid artistId)
+    {
+        User? user = await _context.Users
+            .Include(u => u.FavoriteArtists)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Id == artistId);
+        if (artist == null) return false;
+
+        return user.RemoveArtistFromFavorites(artist);
+    }
+
+    public async Task<bool> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
+    {
+        User? user = await _context.Users
+            .Include(u => u.FavoriteArtists)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return false;
+
+        Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Id == artistId);
+        if (artist == null) return false;
+
+        return user.AddArtistToFavorites(artist);
+    }
+
     public async Task<bool> ArtistExistsAsync(Guid id)
     {
         return await _context.Artists.AnyAsync(a => a.Id == id);
@@ -220,19 +272,9 @@ public class MusicManager
         return _context.Artists.AsNoTracking();
     }
 
-    public async Task<bool> AddArtistToFavoritesAsync(Artist artist, User user)
+    public async Task<Artist?> GetTrackedArtistAsync(Guid id)
     {
-        if (!user.FavoriteArtists.Contains(artist))
-        {
-            user.FavoriteArtists.Add(artist);
-            return true;
-        }
-        return false;
-    }
-
-    public async Task<Artist[]> GetFavoriteArtistsAsync(User user)
-    {
-        return await _context.Artists.AsNoTracking().Where(a => user.FavoriteArtists.Contains(a)).ToArrayAsync();
+        return await _context.Artists.FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<Artist> EnsureArtistCreated(string name)
@@ -269,13 +311,5 @@ public class MusicManager
             return true;
         }
         return false;
-    }
-
-    async public Task AddArtistAsync(Artist artist)
-    {
-        if (!await _context.Artists.AnyAsync(a => a.Name == artist.Name))
-        {
-            await _context.Artists.AddAsync(artist);
-        }
     }
 }

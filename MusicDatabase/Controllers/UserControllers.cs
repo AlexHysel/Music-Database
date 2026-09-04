@@ -64,6 +64,22 @@ public class UserController : ControllerBase
             return NotFound(result.Message);
     }
 
+    [HttpDelete("me/favorites/albums")]
+    public async Task<IActionResult> RemoveFavoriteAlbum([FromQuery] Guid albumId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+        if (userIdClaim == null) return Forbid();
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return BadRequest("Invalid user id in token");
+
+        Result result = await _orchestrator.RemoveAlbumFromFavoritesAsync(albumId, userId);
+        if (result.Success)
+            return Ok();
+        else
+            return NotFound(result.Message);
+    }
+
     // FAVORITE ARTISTS
     [HttpGet("me/favorites/artists")]
     public async Task<IActionResult> GetFavoriteArtists()
@@ -91,6 +107,22 @@ public class UserController : ControllerBase
             return BadRequest("Invalid user id in token");
 
         Result result = await _orchestrator.AddArtistToFavoritesAsync(artistId, userId);
+        if (result.Success)
+            return Ok();
+        else
+            return NotFound(result.Message);
+    }
+
+    [HttpDelete("me/favorites/artists")]
+    public async Task<IActionResult> RemoveFavoriteArtist([FromQuery] Guid artistId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+        if (userIdClaim == null) return Forbid();
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return BadRequest("Invalid user id in token");
+
+        Result result = await _orchestrator.RemoveArtistFromFavoritesAsync(artistId, userId);
         if (result.Success)
             return Ok();
         else
@@ -126,6 +158,22 @@ public class UserController : ControllerBase
         Result<TrackDTO[]> result = await _orchestrator.GetFavoriteTracksAsync(userId);
         if (result.Success)
             return Ok(result.Data);
+        else
+            return NotFound(result.Message);
+    }
+
+    [HttpDelete("me/favorites/tracks")]
+    public async Task<IActionResult> RemoveFavoriteTrack([FromQuery] Guid Id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+        if (userIdClaim == null) return Forbid();
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return BadRequest("Invalid user id in token");
+
+        Result result = await _orchestrator.RemoveTrackFromFavoritesAsync(Id, userId);
+        if (result.Success)
+            return Ok();
         else
             return NotFound(result.Message);
     }
