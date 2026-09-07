@@ -36,7 +36,7 @@
             function createRemoveButtonEvent(){
                 document.getElementById('removeButton').addEventListener('click', async (event) => {
                     event.preventDefault();
-                    let response = await fetch(`http://localhost:5000/artist?id=${id}`, {
+                    let response = await fetch(`artist?id=${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type':'application/json',
@@ -55,7 +55,7 @@
                 document.getElementById('saveButton').addEventListener('click', async (event) => {
                     event.preventDefault();
                     let newName = document.getElementById('newName').value;
-                    let response = await fetch('http://localhost:5000/artist', {
+                    let response = await fetch('artist', {
                         method: 'PUT',
                         headers: {
                             'Content-Type':'application/json',
@@ -93,7 +93,7 @@
             }
 
             window.onload = async () => {
-                let response = await fetch(`http://localhost:5000/artist?id=${id}`);
+                let response = await fetch(`artist?id=${id}`);
                 if (response.ok){
                     let artist = await response.json();
                     document.getElementById('artistName').textContent = artist.name;
@@ -101,7 +101,7 @@
                     artist.albums.forEach(a => {
                         let album = document.createElement('div');
                         let title = document.createElement('a');
-                        title.href = `http://localhost:5000/album.html?id=${a.id}`;
+                        title.href = `album.html?id=${a.id}`;
                         title.textContent = a.title;
                         album.appendChild(title);
                         document.getElementById('albumList').appendChild(album);

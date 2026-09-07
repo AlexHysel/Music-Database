@@ -37,7 +37,7 @@
             function createRemoveButtonEvent(){
                 document.getElementById('removeButton').addEventListener('click', async (event) => {
                     event.preventDefault();
-                    let response = await fetch(`http://localhost:5000/album?id=${id}`, {
+                    let response = await fetch(`album?id=${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type':'application/json',
@@ -56,7 +56,7 @@
                 document.getElementById('saveButton').addEventListener('click', async (event) => {
                     event.preventDefault();
                     let newTitle = document.getElementById('albumTitleInput').value;
-                    let response = await fetch('http://localhost:5000/album', {
+                    let response = await fetch('album', {
                         method: 'PUT',
                         headers: {
                             'Content-Type':'application/json',
@@ -93,17 +93,17 @@
             }
 
             window.onload = async () => {
-                let response = await fetch(`http://localhost:5000/album?id=${id}`)
+                let response = await fetch(`album?id=${id}`)
                 if (response.ok){
                     let album = await response.json();
                     document.title = `${album.title} by ${album.artist.name}`;
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artist.name;
-                    document.getElementById('albumArtist').href = `http://localhost:5000/artist.html?id=${album.artist.id}`;
+                    document.getElementById('albumArtist').href = `artist.html?id=${album.artist.id}`;
                     album.tracks.forEach(t => {
                         trackTitle = document.createElement('a');
                         trackTitle.textContent = t.title;
-                        trackTitle.href = `http://localhost:5000/track.html?id=${t.id}`;
+                        trackTitle.href = `track.html?id=${t.id}`;
                         document.getElementById('trackList').appendChild(trackTitle);
                     });
                     let role = getRole();

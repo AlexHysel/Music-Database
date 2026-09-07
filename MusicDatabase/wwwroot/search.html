@@ -33,7 +33,7 @@
             document.getElementById('searchButton').addEventListener('click', async (event) => {
                 event.preventDefault();
                 let searchLine = document.getElementById('searchLine').value;
-                let response = await fetch(`http://localhost:5000/search?searchLine=${searchLine}`);
+                let response = await fetch(`search?searchLine=${searchLine}`);
                 if (response.ok){
                     let result = await response.json();
                     document.getElementById('foundArtists').innerHTML = ''
@@ -52,7 +52,7 @@
                     for (user of result.users){
                         let userName = document.createElement('a');
                         userName.textContent = user.name;
-                        userName.href = `http://localhost:5000/user.html?id=${user.id}`
+                        userName.href = `user.html?id=${user.id}`
                         document.getElementById('foundUsers').appendChild(userName);
                     }
                 } else {

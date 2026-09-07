@@ -55,7 +55,7 @@
 
             function createRemoveButtonEvent(trackId){
                 document.getElementById('removeButton').addEventListener('click', async (event) => {
-                    let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
+                    let response = await fetch(`track?id=${trackId}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type':'application/json',
@@ -113,7 +113,7 @@
                     let genre = document.getElementById('newGenre').value;
                     let others = Array.from(document.getElementById('otherArtists').querySelectorAll('input')).map(input => input.value);
 
-                    let response = await fetch(`http://localhost:5000/track?id=${trackId}`, {
+                    let response = await fetch(`track?id=${trackId}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type':'application/json',
@@ -163,15 +163,15 @@
             }
 
             window.onload = async () => {
-                let response = await fetch(`http://localhost:5000/track?id=${trackId}`);
+                let response = await fetch(`track?id=${trackId}`);
                 if (response.ok){
                     let track = await response.json();
                     document.title = track.title;
                     document.getElementById('trackTitle').textContent = track.title;
                     document.getElementById('artistName').textContent = track.artist.name;
-                    document.getElementById('artistName').href = `http://localhost:5000/artist.html?id=${track.artist.id}`;
+                    document.getElementById('artistName').href = `artist.html?id=${track.artist.id}`;
                     document.getElementById('albumTitle').textContent = track.album.title;
-                    document.getElementById('albumTitle').href = `http://localhost:5000/album.html?id=${track.album.id}`;
+                    document.getElementById('albumTitle').href = `album.html?id=${track.album.id}`;
                     document.getElementById('trackGenre').textContent = track.genre;
 
                     let role = getRole();

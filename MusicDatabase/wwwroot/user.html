@@ -24,7 +24,7 @@
         <script>
             function createRemoveButtonEvent(userId){
                 document.getElementById('removeUserBtn').addEventListener('click', async (event) => {
-                    let response = await fetch(`http://localhost:5000/user?id=${userId}`, {
+                    let response = await fetch(`user?id=${userId}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type':'application/json',

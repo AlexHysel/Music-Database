@@ -26,7 +26,7 @@
                 let username = document.getElementById('username').value;
                 let role = document.getElementById('role').value;
                 let password = document.getElementById('password').value;
-                let response = await fetch('http://localhost:5000/signup', {
+                let response = await fetch('signup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
