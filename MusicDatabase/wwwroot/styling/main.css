@@ -2,15 +2,31 @@ body {
     background-color: #1e1d24;
     color: white;
     font-family: Arial;
+    padding: 4px;
 }
 
 .track, .album, .artist {
+    align-items: center;
+    display: flex;
     font-size: 20px;
-    background-color: #2e2d34;
-    border: 2px solid orange;
+    white-space: nowrap;
+    background-color: #4a4850;
+    border: 2px solid #00c896;
     border-radius: 10px;
-    margin: 2px;
-    padding: 2px;
+    margin: 4px;
+    padding: 4px;
+}
+
+.track button, .album button, .artist button {
+    background-color: #00c896;
+    color: white;
+    padding: 4px 8px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.track:hover, .album:hover, .artist:hover {
+    border: 2px solid #f2ecff;
 }
 
 .track a, .album a, .artist a {
