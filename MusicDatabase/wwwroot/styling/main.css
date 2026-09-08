@@ -5,7 +5,7 @@ body {
     padding: 4px;
 }
 
-.track, .album, .artist {
+.track {
     align-items: center;
     display: flex;
     font-size: 20px;
@@ -15,9 +15,19 @@ body {
     border-radius: 10px;
     margin: 4px;
     padding: 4px;
+    max-height: 50px;
 }
 
-.track button, .album button, .artist button {
+img {
+    height: 100%;
+    max-height: 42px;
+    width: auto;
+    object-fit: cover;
+    aspect-ratio: 1/1;
+    flex-shrink: 0;
+}
+
+.track button {
     background-color: #00c896;
     color: white;
     padding: 4px 8px;
@@ -30,8 +40,10 @@ body {
 }
 
 .track a, .album a, .artist a {
+    overflow: hidden;
+    text-overflow: ellipsis;
     display: inline-block;
-    width: 300px;
+    width: 400px;
     color: inherit;
     text-decoration: none;
 }

@@ -2,6 +2,11 @@ function createTrackElement(track) {
     let trackElement = document.createElement('div');
     trackElement.className = 'track'
 
+    let trackImage = document.createElement('img');
+    trackImage.src = `https://i1.sndcdn.com/artworks-000051619600-qmkido-t500x500.jpg`;
+    trackImage.alt = track.title;
+    trackElement.appendChild(trackImage);
+
     let trackTitle = document.createElement('a');
     trackTitle.textContent = track.title;
     trackTitle.href = `track.html?id=${track.id}`;
@@ -42,6 +47,7 @@ function createTrackElement(track) {
         }
     });
 
+    trackElement.appendChild(trackImage);
     trackElement.appendChild(trackTitle);
     trackElement.appendChild(addToFavoritesBtn);
     trackElement.appendChild(removeFromFavoritesBtn);
