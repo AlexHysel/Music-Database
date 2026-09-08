@@ -1,3 +1,9 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     background-color: #1e1d24;
     color: white;
@@ -18,13 +24,46 @@ body {
     max-height: 50px;
 }
 
-img {
+.artist {
+    box-sizing: border-box;
+    align-items: center;
+    margin: 4px;
+    width: 280px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.artist a {
+    font-size: 20px;
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+    text-decoration: none;
+}
+
+.artist img {
+    width: 100%;
+    object-fit: cover;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+}
+
+.track img {
     height: 100%;
     max-height: 42px;
     width: auto;
     object-fit: cover;
     aspect-ratio: 1/1;
     flex-shrink: 0;
+}
+
+.artistList {
+    display: flex;
+    max-height: auto;
 }
 
 .track button {
@@ -35,11 +74,11 @@ img {
     margin-left: auto;
 }
 
-.track:hover, .album:hover, .artist:hover {
+.track:hover, .album:hover {
     border: 2px solid #f2ecff;
 }
 
-.track a, .album a, .artist a {
+.track a, .album a {
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
