@@ -285,7 +285,7 @@ public class Orchestrator
     public async Task<Result> UpdateArtistAsync(ArtistDTO patch)
     {
         if (await _manager.UpdateArtistAsync(
-            new Artist {Name = patch.Name, Id = Guid.Parse(patch.Id)}
+            new Artist {Name = patch.Name, ImageUrl = patch.ImageUrl, Id = Guid.Parse(patch.Id)}
         ))
         {
             await _manager.SaveChangesAsync();

@@ -72,16 +72,18 @@ public record AlbumDetailDTO(
 
 public record ArtistDTO(
     string Name,
+    string ImageUrl,
     string Id)
 {
     public static ArtistDTO FromArtist(Artist artist)
     {
-        return new ArtistDTO(artist.Name, artist.Id.ToString());
+        return new ArtistDTO(artist.Name, artist.ImageUrl, artist.Id.ToString());
     }
 }
 
 public record ArtistDetailDTO(
     string Name,
+    string ImageUrl,
     AlbumDTO[] Albums,
     TrackDTO[] Tracks,
     string Id)
@@ -92,6 +94,7 @@ public record ArtistDetailDTO(
         var tracks = artist.Tracks ?? new List<Track>();
         return new ArtistDetailDTO(
             artist.Name,
+            artist.ImageUrl,
             albums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
             tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             artist.Id.ToString());

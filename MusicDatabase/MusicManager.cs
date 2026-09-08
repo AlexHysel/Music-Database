@@ -308,6 +308,7 @@ public class MusicManager
         if (artist != null)
         {
             artist.Name = patch.Name;
+            artist.ImageUrl = patch.ImageUrl;
             return true;
         }
         return false;

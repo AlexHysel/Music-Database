@@ -3,7 +3,7 @@ function createArtistElement(artist) {
     artistElement.className = 'artist'
 
     let artistImage = document.createElement('img');
-    artistImage.src = `https://i1.sndcdn.com/artworks-000051619600-qmkido-t500x500.jpg`;
+    artistImage.src = artist.imageUrl;
     artistImage.alt = artist.name;
 
     let artistName = document.createElement('a');
