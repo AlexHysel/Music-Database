@@ -94,9 +94,9 @@ public class Orchestrator
 
     public async Task AddTrackAsync(string title, string artistName, string[]? others, string albumTitle, Genre genre)
     {
-        Album album = await _manager.EnsureAlbumCreated(albumTitle, await _manager.EnsureArtistCreated(artistName));
-
         Artist artist = await _manager.EnsureArtistCreated(artistName);
+        Album album = await _manager.EnsureAlbumCreated(albumTitle, artist);
+        
         List<Artist> artists = [];
         if (others != null)
             foreach (string name in others)
@@ -227,10 +227,11 @@ public class Orchestrator
 
     public async Task<Result> UpdateAlbumAsync(AlbumDTO patch)
     {
-        Album? album = await _manager.GetAlbumAsync(Guid.Parse(patch.Id));
+        Album? album = await _manager.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
         if (album != null)
         {
             album.Title = patch.Title;
+            album.ImageUrl = patch.ImageUrl;
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }

@@ -9,6 +9,7 @@
         <ul id="trackList"></ul>
         <div id="adminPanel" style="display: none;">
             <input id="albumTitleInput" type="text" placeholder="New Title" required style="display: none">
+            <input id="newImageUrl" type="text" placeholder="New Cover URL" required style="display: none">
             <button id="updateButton" type="button">Update</button>
             <button id="removeButton" type="button">Remove</button>
             <button id="cancelButton" type="button" style="display: none">Cancel</button>
@@ -22,6 +23,7 @@
 
             function viewMode(){
                 document.getElementById('albumTitleInput').style.display = 'none';
+                document.getElementById('newImageUrl').style.display = 'none';
                 document.getElementById('updateButton').style.display = 'inline-block';
                 document.getElementById('removeButton').style.display = 'inline-block';
                 document.getElementById('cancelButton').style.display = 'none';
@@ -30,6 +32,7 @@
 
             function editMode(){
                 document.getElementById('albumTitleInput').style.display = 'inline-block';
+                document.getElementById('newImageUrl').style.display = 'inline-block';
                 document.getElementById('updateButton').style.display = 'none';
                 document.getElementById('removeButton').style.display = 'none';
                 document.getElementById('cancelButton').style.display = 'inline-block';
@@ -57,18 +60,19 @@
             function createSaveButtonEvent(){
                 document.getElementById('saveButton').addEventListener('click', async (event) => {
                     event.preventDefault();
-                    let newTitle = document.getElementById('albumTitleInput').value;
+                    let title = document.getElementById('albumTitleInput').value;
+                    let imageUrl = document.getElementById('newImageUrl').value;
                     let response = await fetch('album', {
                         method: 'PUT',
                         headers: {
                             'Content-Type':'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         },
-                        body: JSON.stringify({id, title: newTitle})
+                        body: JSON.stringify({title, imageUrl, id})
                     });
                     if (response.ok){
                         alert('Updated successfully');
-                        document.getElementById('albumTitle').textContent = newTitle;
+                        document.getElementById('albumTitle').textContent = title;
                         viewMode();
                     } else {
                         alert('Album was not updated');
@@ -92,6 +96,7 @@
 
             function fillAlbumFields(album){
                 document.getElementById('albumTitleInput').value = album.title;
+                document.getElementById('newImageUrl').value = album.imageUrl;
             }
 
             window.onload = async () => {

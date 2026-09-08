@@ -9,7 +9,7 @@ function createAlbumElement(album) {
     albumTitle.textContent = album.title;
 
     let albumImage = document.createElement('img');
-    albumImage.src = `https://i.scdn.co/image/ab67616d00001e02bb4d8804974a61ab74f33ede`//album.imageUrl;
+    albumImage.src = album.imageUrl;
     albumImage.alt = album.title;
 
     let addToFavoritesBtn = document.createElement('button')

@@ -42,11 +42,13 @@ public record TrackUpdateDTO(
 
 public record AlbumDTO(
     string Title,
+    string ImageUrl,
     string Id)
 {
     public static AlbumDTO FromAlbum(Album album){
         return new AlbumDTO(
             album.Title,
+            album.ImageUrl,
             album.Id.ToString()
         );
     }
@@ -54,6 +56,7 @@ public record AlbumDTO(
 
 public record AlbumDetailDTO(
     string Title,
+    string ImageUrl,
     ArtistDTO Artist,
     TrackDTO[] Tracks,
     string Type,
@@ -63,6 +66,7 @@ public record AlbumDetailDTO(
     {
         return new AlbumDetailDTO(
             album.Title,
+            album.ImageUrl,
             ArtistDTO.FromArtist(album.Artist),
             album.Tracks == null ? new TrackDTO[0] : album.Tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             album.Type.ToString(),

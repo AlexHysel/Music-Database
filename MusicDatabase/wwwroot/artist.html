@@ -109,7 +109,7 @@
                         document.getElementById('albumList').appendChild(createAlbumElement(a));
                     });
                     let role = getRole();
-                    if (role.role == 'Admin'){
+                    if (role == 'Admin'){
                         createRemoveButtonEvent();
                         createCancelButtonEvent();
                         createSaveButtonEvent();

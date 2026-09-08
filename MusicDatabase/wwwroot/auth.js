@@ -12,7 +12,7 @@ function getPayload(){
 function getRole(){
     const payload = getPayload();
     if (!payload) return null;
-    return payload;
+    return payload.role;
 }
 
 window.getUsername = getUsername;
