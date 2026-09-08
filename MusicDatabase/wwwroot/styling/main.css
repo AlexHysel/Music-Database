@@ -1,0 +1,21 @@
+body {
+    background-color: #1e1d24;
+    color: white;
+    font-family: Arial;
+}
+
+.track, .album, .artist {
+    font-size: 20px;
+    background-color: #2e2d34;
+    border: 2px solid orange;
+    border-radius: 10px;
+    margin: 2px;
+    padding: 2px;
+}
+
+.track a, .album a, .artist a {
+    display: inline-block;
+    width: 300px;
+    color: inherit;
+    text-decoration: none;
+}

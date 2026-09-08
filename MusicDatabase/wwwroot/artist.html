@@ -13,6 +13,7 @@
             <button type="button" id="cancelButton" style="display: none">Cancel</button>
         </div>
         <script src='auth.js'></script>
+        <script src='albumElement.js'></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
@@ -99,12 +100,7 @@
                     document.getElementById('artistName').textContent = artist.name;
                     document.title = artist.name;
                     artist.albums.forEach(a => {
-                        let album = document.createElement('div');
-                        let title = document.createElement('a');
-                        title.href = `album.html?id=${a.id}`;
-                        title.textContent = a.title;
-                        album.appendChild(title);
-                        document.getElementById('albumList').appendChild(album);
+                        document.getElementById('albumList').appendChild(createAlbumElement(a));
                     });
                     let role = getRole();
                     if (role == 'Admin'){

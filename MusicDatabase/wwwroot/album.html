@@ -14,6 +14,7 @@
             <button id="saveButton" type="button" style="display: none">Save</button>
         </div>
         <script src='auth.js'></script>
+        <script src='trackElement.js'></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
@@ -101,10 +102,7 @@
                     document.getElementById('albumArtist').textContent = album.artist.name;
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artist.id}`;
                     album.tracks.forEach(t => {
-                        trackTitle = document.createElement('a');
-                        trackTitle.textContent = t.title;
-                        trackTitle.href = `track.html?id=${t.id}`;
-                        document.getElementById('trackList').appendChild(trackTitle);
+                        document.getElementById('trackList').appendChild(createTrackElement(t));
                     });
                     let role = getRole();
                     if (role == 'Admin')
