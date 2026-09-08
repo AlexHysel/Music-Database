@@ -2,13 +2,15 @@ function createArtistElement(artist) {
     let artistElement = document.createElement('li');
     artistElement.className = 'artist'
 
+    let artistLink = document.createElement('a');
+    artistLink.href = `artist.html?id=${artist.id}`;
+
     let artistImage = document.createElement('img');
     artistImage.src = artist.imageUrl;
     artistImage.alt = artist.name;
 
-    let artistName = document.createElement('a');
+    let artistName = document.createElement('h3');
     artistName.textContent = artist.name;
-    artistName.href = `artist.html?id=${artist.id}`;
 
     let addToFavoritesBtn = document.createElement('button')
     addToFavoritesBtn.textContent = 'Like';
@@ -46,7 +48,8 @@ function createArtistElement(artist) {
         }
     });
 
-    artistElement.appendChild(artistImage);
-    artistElement.appendChild(artistName);
+    artistLink.appendChild(artistImage);
+    artistLink.appendChild(artistName);
+    artistElement.appendChild(artistLink);
     return artistElement;
 }

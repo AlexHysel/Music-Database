@@ -1,5 +1,5 @@
 function createTrackElement(track) {
-    let trackElement = document.createElement('div');
+    let trackElement = document.createElement('li');
     trackElement.className = 'track'
 
     let trackImage = document.createElement('img');

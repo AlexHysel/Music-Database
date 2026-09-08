@@ -1,10 +1,16 @@
 function createAlbumElement(album) {
-    let albumElement = document.createElement('div');
+    let albumElement = document.createElement('li');
     albumElement.className = 'album'
 
-    let albumTitle = document.createElement('a');
+    let albumLink = document.createElement('a');
+    albumLink.href = `album.html?id=${album.id}`;
+
+    let albumTitle = document.createElement('h3');
     albumTitle.textContent = album.title;
-    albumTitle.href = `album.html?id=${album.id}`;
+
+    let albumImage = document.createElement('img');
+    albumImage.src = `https://i.scdn.co/image/ab67616d00001e02bb4d8804974a61ab74f33ede`//album.imageUrl;
+    albumImage.alt = album.title;
 
     let addToFavoritesBtn = document.createElement('button')
     addToFavoritesBtn.textContent = 'Like';
@@ -42,8 +48,8 @@ function createAlbumElement(album) {
         }
     });
 
-    albumElement.appendChild(albumTitle);
-    albumElement.appendChild(addToFavoritesBtn);
-    albumElement.appendChild(removeFromFavoritesBtn);
+    albumLink.appendChild(albumImage);
+    albumLink.appendChild(albumTitle);
+    albumElement.appendChild(albumLink);
     return albumElement;
 }

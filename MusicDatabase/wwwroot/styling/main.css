@@ -11,25 +11,11 @@ body {
     padding: 4px;
 }
 
-.track {
-    align-items: center;
-    display: flex;
-    font-size: 20px;
-    white-space: nowrap;
-    background-color: #4a4850;
-    border: 2px solid #00c896;
-    border-radius: 10px;
-    margin: 4px;
-    padding: 4px;
-    max-height: 50px;
-}
-
 .artist {
     box-sizing: border-box;
     align-items: center;
     margin: 4px;
     width: 280px;
-    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -52,18 +38,59 @@ body {
     border-radius: 50%;
 }
 
-.track img {
-    height: 100%;
-    max-height: 42px;
-    width: auto;
-    object-fit: cover;
-    aspect-ratio: 1/1;
-    flex-shrink: 0;
-}
-
 .artistList {
     display: flex;
-    max-height: auto;
+}
+
+.album {
+    background-color: #4a4850;
+    transition: transform 0.2s ease;
+    display: flex;
+    width: 260px;
+    margin: 4px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.album:hover {
+    transform: translateY(-5px);
+    background-color: #00c896;
+}
+
+.album img {
+    width: 100%;
+    object-fit: cover;
+    aspect-ratio: 1/1;
+}
+
+.albumList {
+    display: flex;
+}
+
+.album a {
+    font-size: 20px;
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+    text-decoration: none;
+}
+
+.track {
+    align-items: center;
+    display: flex;
+    font-size: 24px;
+    white-space: nowrap;
+    background-color: #4a4850;
+    margin: 8px;
+    height: 60px;
+}
+
+.track img {
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 1/1;
 }
 
 .track button {
@@ -74,11 +101,11 @@ body {
     margin-left: auto;
 }
 
-.track:hover, .album:hover {
-    border: 2px solid #f2ecff;
+.track:hover {
+    background-color: #00c896;
 }
 
-.track a, .album a {
+.track a {
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
