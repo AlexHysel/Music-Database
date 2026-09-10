@@ -4,16 +4,21 @@
     <body>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="styling/main.css">
-        <h1 id="albumTitle"></h1>
-        <a id="albumArtist"></a>
-        <div id="trackList"></div>
-        <div id="adminPanel" style="display: none;">
-            <input id="albumTitleInput" type="text" placeholder="New Title" required style="display: none">
-            <input id="newImageUrl" type="text" placeholder="New Cover URL" required style="display: none">
-            <button id="updateButton" type="button">Update</button>
-            <button id="removeButton" type="button">Remove</button>
-            <button id="cancelButton" type="button" style="display: none">Cancel</button>
-            <button id="saveButton" type="button" style="display: none">Save</button>
+        <div id="album" class="albumBig">
+            <div class="left">
+                <img id="cover">
+                <h1 id="albumTitle"></h1>
+                <a id="albumArtist"></a>
+                <div id="adminPanel" style="display: none;">
+                    <input id="albumTitleInput" type="text" placeholder="New Title" required style="display: none">
+                    <input id="newImageUrl" type="text" placeholder="New Cover URL" required style="display: none">
+                    <button id="updateButton" type="button">Update</button>
+                    <button id="removeButton" type="button">Remove</button>
+                    <button id="cancelButton" type="button" style="display: none">Cancel</button>
+                    <button id="saveButton" type="button" style="display: none">Save</button>
+                </div>
+            </div>
+            <div id="trackList"></div>
         </div>
         <script src='auth.js'></script>
         <script src='trackElement.js'></script>
@@ -104,6 +109,7 @@
                 if (response.ok){
                     let album = await response.json();
                     document.title = `${album.title} by ${album.artist.name}`;
+                    document.getElementById('cover').src = album.imageUrl;
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artist.name;
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artist.id}`;

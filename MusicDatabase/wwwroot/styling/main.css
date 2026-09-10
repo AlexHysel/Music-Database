@@ -14,16 +14,16 @@ a:hover {
 }
 
 body {
+    padding: 3px;
     background-color: #1e1d24;
     color: white;
     font-family: Arial;
-    padding: 4px;
 }
 
 .artist {
     box-sizing: border-box;
     align-items: center;
-    margin: 4px;
+    margin: 3px;
     width: 280px;
     display: flex;
     flex-direction: column;
@@ -54,7 +54,7 @@ body {
     transition: transform 0.2s ease;
     display: flex;
     width: 260px;
-    margin: 4px;
+    margin: 3px;
     flex-direction: column;
     align-items: center;
 }
@@ -82,13 +82,24 @@ body {
     text-overflow: ellipsis;
 }
 
+.albumBig .left {
+    background: #4a4850;
+    width: 400px;
+    margin: 3px;
+}
+
+.albumBig {
+    display: flex;
+    flex-direction: row;
+}
+
 .track {
     align-items: center;
     display: flex;
     font-size: 24px;
+    margin: 3px;
     white-space: nowrap;
     background-color: #4a4850;
-    margin: 8px;
     height: 60px;
 }
 
@@ -114,25 +125,37 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
+    margin: 6px;
     width: 400px;
 }
 
-.trackBig {
+.trackBig, .artistBig {
+    margin: 3px;
     display: flex;
     background: #4a4850;
 }
 
-.trackBig img {
-    width: 260px;
+.trackBig img, .artistBig img, .albumBig .left img {
+    width: 400px;
     object-fit: cover;
     aspect-ratio: 1/1;
 }
 
-.trackBigInfo {
-    display: flex;
-    flex-direction: column;
+ul {
+    margin: 0px;
+    padding: 0px;
 }
 
-.trackBig h1 {
+.trackBig h1, .artistBig h1, .albumBig h1 {
+    width: 100%;
+}
+
+.trackBigInfo, .artistBigInfo {
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+}
+
+.trackBig h1, .artistBig h1, .albumBig h1 {
     font-size: 65px;
 }
