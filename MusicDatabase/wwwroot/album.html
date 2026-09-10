@@ -6,7 +6,7 @@
         <link rel="stylesheet" href="styling/main.css">
         <h1 id="albumTitle"></h1>
         <a id="albumArtist"></a>
-        <ul id="trackList"></ul>
+        <div id="trackList"></div>
         <div id="adminPanel" style="display: none;">
             <input id="albumTitleInput" type="text" placeholder="New Title" required style="display: none">
             <input id="newImageUrl" type="text" placeholder="New Cover URL" required style="display: none">
@@ -107,9 +107,7 @@
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artist.name;
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artist.id}`;
-                    album.tracks.forEach(t => {
-                        document.getElementById('trackList').appendChild(createTrackElement(t));
-                    });
+                    document.getElementById('trackList').appendChild(createTrackList(album.tracks));
                     let role = getRole();
                     if (role == 'Admin')
                     {

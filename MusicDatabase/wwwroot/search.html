@@ -11,18 +11,9 @@
             <input id='searchLine' type='text' class='form-control'>
             <input id='searchButton' class='btn btn-outline-secondary' type='submit'>
         </div>
-        <div>
-            <h2>Artists</h2>
-            <ul class="artistList" id='foundArtists'></ul>
-        </div>
-        <div>
-            <h2>Albums</h2>
-            <ul class="albumList" id='foundAlbums'></ul>
-        </div>
-        <div>
-            <h2>Tracks</h2>
-            <ul id='foundTracks'></ul>
-        </div>
+        <div id='foundArtists'></div>
+        <div id='foundAlbums'></div>
+        <div id='foundTracks'></div>
         <div>
             <h2>Users</h2>
             <ul id='foundUsers'></ul>
@@ -37,18 +28,19 @@
                 let response = await fetch(`search?searchLine=${searchLine}`);
                 if (response.ok){
                     let result = await response.json();
-                    document.getElementById('foundArtists').innerHTML = '';
-                    for (artist of result.artists){
-                        document.getElementById('foundArtists').appendChild(createArtistElement(artist));
-                    }
-                    document.getElementById('foundAlbums').innerHTML = '';
-                    for (album of result.albums){
-                        document.getElementById('foundAlbums').appendChild(createAlbumElement(album));
-                    }
-                    document.getElementById('foundTracks').innerHTML = '';
-                    for (track of result.tracks){
-                        document.getElementById('foundTracks').appendChild(createTrackElement(track));
-                    }
+
+                    let artistsEl = document.getElementById('foundArtists');
+                    artistsEl.innerHTML = '';
+                    artistsEl.appendChild(createArtistList(result.artists));
+
+                    let albumsEl = document.getElementById('foundAlbums');
+                    albumsEl.innerHTML = '';
+                    albumsEl.appendChild(createAlbumList(result.albums));
+
+                    let tracksEl = document.getElementById('foundTracks');
+                    tracksEl.innerHTML = '';
+                    tracksEl.appendChild(createTrackList(result.tracks));
+
                     document.getElementById('foundUsers').innerHTML = '';
                     for (user of result.users){
                         let userName = document.createElement('a');

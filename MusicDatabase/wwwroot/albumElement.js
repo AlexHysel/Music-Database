@@ -53,3 +53,14 @@ function createAlbumElement(album) {
     albumElement.appendChild(albumLink);
     return albumElement;
 }
+
+function createAlbumList(albums)
+{
+    let albumList = document.createElement('ul');
+    albumList.className = 'albumList';
+
+    for (let album of albums)
+        albumList.appendChild(createAlbumElement(album));
+
+    return albumList;
+}

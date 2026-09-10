@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="styling/main.css">
         <h1 id="artistName"></h1>
         <div id="albumList"></div>
+        <div id="trackList"></div>
         <div id="adminPanel" style="display: none">
             <input type="text" id="newName" placeholder="Artist's Name" required style="display: none">
             <input type="text" id="newImageUrl" placeholder="Artist's Image URL" required style="display: none">
@@ -16,6 +17,7 @@
         </div>
         <script src='auth.js'></script>
         <script src='albumElement.js'></script>
+        <script src="trackElement.js"></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
@@ -105,9 +107,8 @@
                     let artist = await response.json();
                     document.getElementById('artistName').textContent = artist.name;
                     document.title = artist.name;
-                    artist.albums.forEach(a => {
-                        document.getElementById('albumList').appendChild(createAlbumElement(a));
-                    });
+                    document.getElementById('albumList').append(createAlbumList(artist.albums));
+                    document.getElementById('trackList').append(createTrackList(artist.tracks));
                     let role = getRole();
                     if (role == 'Admin'){
                         createRemoveButtonEvent();

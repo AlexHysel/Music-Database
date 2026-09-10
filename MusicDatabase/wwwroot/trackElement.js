@@ -53,3 +53,14 @@ function createTrackElement(track) {
     trackElement.appendChild(removeFromFavoritesBtn);
     return trackElement;
 }
+
+function createTrackList(tracks)
+{
+    let trackList = document.createElement('ul');
+    trackList.className = 'trackList';
+
+    for (let track of tracks)
+        trackList.appendChild(createTrackElement(track));
+
+    return trackList;
+}

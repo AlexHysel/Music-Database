@@ -53,3 +53,14 @@ function createArtistElement(artist) {
     artistElement.appendChild(artistLink);
     return artistElement;
 }
+
+function createArtistList(artists)
+{
+    let artistList = document.createElement('ul');
+    artistList.className = 'artistList';
+
+    for (let artist of artists)
+        artistList.appendChild(createArtistElement(artist));
+
+    return artistList;
+}
