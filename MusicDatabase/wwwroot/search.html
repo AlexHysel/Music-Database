@@ -7,9 +7,9 @@
     <body>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="styling/main.css">
-        <div id='search'>
-            <input id='searchLine' type='text'>
-            <input id='searchButton', type='submit'>
+        <div id='search' class="input-group mb-3">
+            <input id='searchLine' type='text' class='form-control'>
+            <input id='searchButton' class='btn btn-outline-secondary' type='submit'>
         </div>
         <div>
             <h2>Artists</h2>
@@ -37,19 +37,19 @@
                 let response = await fetch(`search?searchLine=${searchLine}`);
                 if (response.ok){
                     let result = await response.json();
-                    document.getElementById('foundArtists').innerHTML = ''
+                    document.getElementById('foundArtists').innerHTML = '';
                     for (artist of result.artists){
                         document.getElementById('foundArtists').appendChild(createArtistElement(artist));
                     }
-                    document.getElementById('foundAlbums').innerHTML = ''
+                    document.getElementById('foundAlbums').innerHTML = '';
                     for (album of result.albums){
                         document.getElementById('foundAlbums').appendChild(createAlbumElement(album));
                     }
-                    document.getElementById('foundTracks').innerHTML = ''
+                    document.getElementById('foundTracks').innerHTML = '';
                     for (track of result.tracks){
                         document.getElementById('foundTracks').appendChild(createTrackElement(track));
                     }
-                    document.getElementById('foundUsers').innerHTML = ''
+                    document.getElementById('foundUsers').innerHTML = '';
                     for (user of result.users){
                         let userName = document.createElement('a');
                         userName.textContent = user.name;
