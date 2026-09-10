@@ -3,7 +3,7 @@ function createTrackElement(track) {
     trackElement.className = 'track'
 
     let trackImage = document.createElement('img');
-    trackImage.src = track.album.imageUrl;
+    trackImage.src = track.imageUrl;
     trackImage.alt = track.title;
     trackElement.appendChild(trackImage);
 

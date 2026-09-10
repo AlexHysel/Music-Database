@@ -14,10 +14,10 @@ public class MusicManager
         await _context.SaveChangesAsync();
     }
 
-    // TRACK
-    async public Task<bool> TrackExistsAsync(Guid id)
-    {
-        return await _context.Tracks.AnyAsync(t => t.Id == id);
+    //TRACK
+    //  GET
+    async public Task<List<Track>> GetMatchingTracksAsync(string title){
+        return await _context.Tracks.AsNoTracking().Where(t => t.Title.Contains(title)).Include(t => t.Album).ToListAsync();
     }
 
     async public Task<Track?> GetTrackAsync(Guid id)
@@ -30,11 +30,23 @@ public class MusicManager
         return await _context.Tracks.FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public IQueryable<Track> GetTracks()
-    {
-        return _context.Tracks.AsNoTracking();
+    async public Task<Track?> GetTrackDetailAsync(Guid id){
+        return await _context.Tracks.AsNoTracking()
+            .Include(t => t.Album)
+            .Include(t => t.Artist)
+            .Include(t => t.Others)
+            .FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    async public Task<Track?> GetTrackedTrackDetailAsync(Guid id){
+        return await _context.Tracks
+            .Include(t => t.Album)
+            .Include(t => t.Artist)
+            .Include(t => t.Others)
+            .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    //  ADD
     async public Task AddTrackAsync(Track track)
     {
         await _context.Tracks.AddAsync(track);
@@ -58,6 +70,7 @@ public class MusicManager
         return true;
     }
 
+    //  REMOVE
     async public Task<bool> RemoveTrackAsync(Guid id)
     {
         Track? track = await _context.Tracks.FirstOrDefaultAsync(t => t.Id == id);
@@ -96,25 +109,35 @@ public class MusicManager
     }
 
     // USER
-    public IQueryable<User> GetUsers()
-    {
-        return _context.Users.AsNoTracking();
+    public async Task<List<User>> GetMatchingUsersAsync(string name){
+        return await _context.Users.Where(u => u.Name.Contains(name)).ToListAsync();
     }
 
-    public async Task<User?> GetUserAsync(Guid id)
-    {
-        User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-        return user;
+    public async Task<User?> GetUserAsync(Guid id){
+        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    public async Task<User?> GetTrackedUserAsync(Guid id)
-    {
-        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        return user;
+    public async Task<User?> GetTrackedUserAsync(Guid id){
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    async public Task<bool> RemoveUserAsync(Guid id)
-    {
+    public async Task<User?> GetUserDetailAsync(Guid id){
+        return await _context.Users.AsNoTracking()
+            .Include(u => u.FavoriteArtists)
+            .Include(u => u.FavoriteAlbums)
+            .Include(u => u.FavoriteTracks)
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+    
+    public async Task<User?> GetTrackedUserDetailAsync(Guid id){
+        return await _context.Users
+            .Include(u => u.FavoriteArtists)
+            .Include(u => u.FavoriteAlbums)
+            .Include(u => u.FavoriteTracks)
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    async public Task<bool> RemoveUserAsync(Guid id){
         User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         if (user != null)
@@ -129,23 +152,14 @@ public class MusicManager
     {
         User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
         if (user != null && BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password))
-        {
             return user;
-        }
         else
-        {
             return null;
-        }
     }
 
     async public Task<bool> UserExistsAsync(string name)
     {
         return await _context.Users.AnyAsync(u => u.Name == name);
-    }
-
-    async public Task<bool> UserExistsAsync(Guid id)
-    {
-        return await _context.Users.AnyAsync(u => u.Id == id);
     }
 
     async public Task<bool> AddUserAsync(string name, UserRole role, string password)
@@ -158,7 +172,13 @@ public class MusicManager
         return true;
     }
 
-    // ALBUM
+    //ALBUM
+    //  GET
+    async public Task<List<Album>> GetMatchingAlbumsAsync(string title)
+    {
+        return await _context.Albums.Where(a => a.Title.Contains(title)).ToListAsync();
+    }
+
     async public Task<bool> RemoveAlbumFromFavoritesAsync(Guid userId, Guid albumId)
     {
         User? user = await _context.Users
@@ -201,22 +221,9 @@ public class MusicManager
         return await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public IQueryable<Album> GetAlbums()
-    {
-        return _context.Albums.AsNoTracking();
-    }
-
     public async Task<Album?> GetAlbumAsync(Guid id)
     {
         return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(a => a.Id == id);
-    }
-    
-    public async Task AddAlbumAsync(Album album)
-    {
-        if (album.Artist.Albums.FirstOrDefault(a => a.Title == album.Title) == null)
-        {
-            await _context.Albums.AddAsync(album);
-        }
     }
 
     public async Task<Album> EnsureAlbumCreated(string title, Artist artist)
@@ -230,14 +237,36 @@ public class MusicManager
         return album;
     }
 
-    public async Task<bool> AlbumExistsAsync(Guid id)
-    {
-        return await _context.Albums.AnyAsync(a => a.Id == id);
+    //ARTIST
+    //  GET
+    public async Task<List<Artist>> GetMatchingArtistsAsync(string name){
+        return await _context.Artists.Where(a => a.Name.Contains(name)).ToListAsync();
     }
 
-    // ARTIST
-    public async Task<bool> RemoveArtistFromFavoritesAsync(Guid userId, Guid artistId)
-    {
+    public async Task<Artist?> GetArtistAsync(Guid id){
+        return await _context.Artists.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task<Artist?> GetTrackedArtist(Guid id){
+        return await _context.Artists.FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task<Artist?> GetArtistDetailAsync(Guid id){
+        return await _context.Artists.AsNoTracking()
+            .Include(a => a.Albums)
+            .Include(a => a.Tracks)
+            .ThenInclude(t => t.Album)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+    
+    public async Task<Artist?> GetTrackedArtistDetailAsync(Guid id){
+        return await _context.Artists
+            .Include(a => a.Albums)
+            .Include(a => a.Tracks)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task<bool> RemoveArtistFromFavoritesAsync(Guid userId, Guid artistId){
         User? user = await _context.Users
             .Include(u => u.FavoriteArtists)
             .FirstOrDefaultAsync(u => u.Id == userId);
@@ -249,8 +278,7 @@ public class MusicManager
         return user.RemoveArtistFromFavorites(artist);
     }
 
-    public async Task<bool> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
-    {
+    public async Task<bool> AddArtistToFavoritesAsync(Guid userId, Guid artistId){
         User? user = await _context.Users
             .Include(u => u.FavoriteArtists)
             .FirstOrDefaultAsync(u => u.Id == userId);
@@ -260,21 +288,6 @@ public class MusicManager
         if (artist == null) return false;
 
         return user.AddArtistToFavorites(artist);
-    }
-
-    public async Task<bool> ArtistExistsAsync(Guid id)
-    {
-        return await _context.Artists.AnyAsync(a => a.Id == id);
-    }
-
-    public IQueryable<Artist> GetArtists()
-    {
-        return _context.Artists.AsNoTracking();
-    }
-
-    public async Task<Artist?> GetTrackedArtistAsync(Guid id)
-    {
-        return await _context.Artists.FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<Artist> EnsureArtistCreated(string name)

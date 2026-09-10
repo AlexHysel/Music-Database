@@ -18,14 +18,14 @@ public class Orchestrator
 
     public async Task<SearchResultDTO> Search(string title)
     {
-        ArtistDTO[] artists = await _manager.GetArtists().Where(a => a.Name.Contains(title))
-            .Select(a => ArtistDTO.FromArtist(a)).ToArrayAsync();
-        AlbumDTO[] albums = await _manager.GetAlbums().Where(a => a.Title.Contains(title))
-            .Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
-        TrackDTO[] tracks = await _manager.GetTracks().Include(t => t.Album).Where(a => a.Title.Contains(title))
-            .Select(t => TrackDTO.FromTrack(t)).ToArrayAsync();
-        UserDTO[] users = await _manager.GetUsers().Where(u => u.Name.Contains(title))
-            .Select(u => UserDTO.FromUser(u)).ToArrayAsync();
+        ArtistDTO[] artists = (await _manager.GetMatchingArtistsAsync(title))
+            .Select(a => ArtistDTO.FromArtist(a)).ToArray();
+        AlbumDTO[] albums = (await _manager.GetMatchingAlbumsAsync(title))
+            .Select(a => AlbumDTO.FromAlbum(a)).ToArray();
+        TrackDTO[] tracks = (await _manager.GetMatchingTracksAsync(title))
+            .Select(t => TrackDTO.FromTrack(t)).ToArray();
+        UserDTO[] users = (await _manager.GetMatchingUsersAsync(title))
+            .Select(u => UserDTO.FromUser(u)).ToArray();
         return new SearchResultDTO(artists, albums, tracks, users);
     }
 
@@ -71,27 +71,6 @@ public class Orchestrator
             return Result.Fail("Track not found");
     }
 
-    public async Task<TrackDetailDTO[]> GetTracksAsync(int size, int page, Expression<Func<Track, bool>> filter)
-    {
-        IQueryable<TrackDetailDTO> request = _manager.GetTracks().Where(filter)
-            .Select(t => TrackDetailDTO.FromTrack(t));
-        return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
-    }
-
-    public async Task<TrackDetailDTO[]> GetTracksAsync(Expression<Func<Track, bool>> filter)
-    {
-        IQueryable<TrackDetailDTO> request = _manager.GetTracks().Where(filter)
-            .Select(t => TrackDetailDTO.FromTrack(t));
-        return await request.ToArrayAsync();
-    }
-
-    public async Task<TrackDetailDTO[]> GetTracksAsync(int size, int page)
-    {
-        IQueryable<TrackDetailDTO> request = _manager.GetTracks()
-            .Select(t => TrackDetailDTO.FromTrack(t));
-        return await request.Skip((page - 1) * size).Take(size).ToArrayAsync();
-    }
-
     public async Task AddTrackAsync(string title, string artistName, string[]? others, string albumTitle, Genre genre)
     {
         Artist artist = await _manager.EnsureArtistCreated(artistName);
@@ -110,19 +89,11 @@ public class Orchestrator
 
     public async Task<Result<TrackDetailDTO>> GetTrackAsync(Guid id)
     {
-        Track? track = await _manager.GetTracks()
-            .Include(t => t.Album)
-            .Include(t => t.Artist)
-            .Include(t => t.Others)
-            .FirstOrDefaultAsync(t => t.Id == id);
+        Track? track = await _manager.GetTrackDetailAsync(id);
         if (track == null)
-        {
             return Result<TrackDetailDTO>.Fail("Track not found");
-        }
         else
-        {
             return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
-        }
     }
 
     public async Task<Result> UpdateTrackAsync(TrackUpdateDTO patch)
@@ -192,25 +163,6 @@ public class Orchestrator
         }
         else
             return Result.Fail("Album not found");
-    }
-
-    public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page, Expression<Func<Album, bool>> filter)
-    {
-        var request = _manager.GetAlbums().Where(filter)
-            .Select(a => AlbumDTO.FromAlbum(a));
-        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
-    }
-
-    public async Task<AlbumDTO[]> GetAlbumsAsync(int size, int page)
-    {
-        var request = _manager.GetAlbums()
-            .Select(a => AlbumDTO.FromAlbum(a));
-        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
-    }
-    
-    public Task<AlbumDTO[]> GetAlbumsAsync(Expression<Func<Album, bool>> filter)
-    {
-        return _manager.GetAlbums().Where(filter).Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
     }
 
     public async Task<Result<AlbumDetailDTO?>> GetAlbumAsync(Guid id)
@@ -298,11 +250,7 @@ public class Orchestrator
 
     public async Task<Result<ArtistDetailDTO>> GetArtistAsync(Guid id)
     {
-        Artist? artist = await _manager.GetArtists()
-            .Include(a => a.Tracks)
-            .ThenInclude(t => t.Album)
-            .Include(a => a.Albums)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        Artist? artist = await _manager.GetArtistDetailAsync(id);
         if (artist == null)
             return Result<ArtistDetailDTO>.Fail("Artist not found");
         else
@@ -321,19 +269,6 @@ public class Orchestrator
             return Result.Fail("User not found");
     }
 
-    public async Task<UserDTO[]> GetUsersAsync(int size, int page)
-    {
-        var request = _manager.GetUsers()
-            .Select(u => new UserDTO(u.Name, u.Role.ToString(), u.Id.ToString()));
-        return await request.Skip(size * (page - 1)).Take(size).ToArrayAsync();
-    }
-
-    public Task<UserDTO[]> GetUsersAsync(Expression<Func<User, bool>> filter)
-    {
-        return _manager.GetUsers().Where(filter)
-            .Select(u => new UserDTO(u.Name, u.Role.ToString(), u.Id.ToString())).ToArrayAsync();
-    }
-
     public async Task<Result<UserDTO>> GetUserAsync(Guid id)
     {
         User? user = await _manager.GetUserAsync(id);
@@ -345,11 +280,7 @@ public class Orchestrator
 
     public async Task<Result<UserDetailDTO>> GetUserDetailAsync(Guid id)
     {
-        User? user = await _manager.GetUsers()
-            .Include(u => u.FavoriteAlbums)
-            .Include(u => u.FavoriteArtists)
-            .Include(u => u.FavoriteTracks)
-            .FirstOrDefaultAsync(u => u.Id == id);
+        User? user = await _manager.GetUserDetailAsync(id);
         if (user == null)
             return Result<UserDetailDTO>.Fail("User not found");
         else
