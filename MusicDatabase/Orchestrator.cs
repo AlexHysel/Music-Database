@@ -300,6 +300,7 @@ public class Orchestrator
     {
         Artist? artist = await _manager.GetArtists()
             .Include(a => a.Tracks)
+            .ThenInclude(t => t.Album)
             .Include(a => a.Albums)
             .FirstOrDefaultAsync(a => a.Id == id);
         if (artist == null)
