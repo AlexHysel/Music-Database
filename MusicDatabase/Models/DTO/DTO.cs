@@ -1,11 +1,13 @@
 public record TrackDTO(
     string Title,
+    AlbumDTO Album,
     string Id)
 {
     public static TrackDTO FromTrack(Track track)
     {
         return new TrackDTO(
             track.Title,
+            AlbumDTO.FromAlbum(track.Album),
             track.Id.ToString()
         );
     }

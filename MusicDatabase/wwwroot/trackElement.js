@@ -3,7 +3,7 @@ function createTrackElement(track) {
     trackElement.className = 'track'
 
     let trackImage = document.createElement('img');
-    trackImage.src = `https://i1.sndcdn.com/artworks-000051619600-qmkido-t500x500.jpg`;
+    trackImage.src = track.album.imageUrl;
     trackImage.alt = track.title;
     trackElement.appendChild(trackImage);
 

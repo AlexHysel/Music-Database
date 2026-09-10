@@ -22,7 +22,7 @@ public class Orchestrator
             .Select(a => ArtistDTO.FromArtist(a)).ToArrayAsync();
         AlbumDTO[] albums = await _manager.GetAlbums().Where(a => a.Title.Contains(title))
             .Select(a => AlbumDTO.FromAlbum(a)).ToArrayAsync();
-        TrackDTO[] tracks = await _manager.GetTracks().Where(a => a.Title.Contains(title))
+        TrackDTO[] tracks = await _manager.GetTracks().Include(t => t.Album).Where(a => a.Title.Contains(title))
             .Select(t => TrackDTO.FromTrack(t)).ToArrayAsync();
         UserDTO[] users = await _manager.GetUsers().Where(u => u.Name.Contains(title))
             .Select(u => UserDTO.FromUser(u)).ToArrayAsync();
