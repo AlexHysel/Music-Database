@@ -1,11 +1,9 @@
-// BUSINESS LOGIC LAYER
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+// BUSINESS LOGIC LAYER
 public class Orchestrator
 {
     private readonly MusicManager _manager;
@@ -45,8 +43,7 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Track already in favorites");
+        return Result.Fail("Track already in favorites");
     }
 
     public async Task<Result> RemoveTrackFromFavoritesAsync(Guid trackId, Guid userId)
@@ -56,8 +53,7 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Track not in favorites");
+        return Result.Fail("Track not in favorites");
     }
 
     public async Task<Result> RemoveTrackAsync(Guid id)
@@ -67,8 +63,7 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Track not found");
+        return Result.Fail("Track not found");
     }
 
     public async Task AddTrackAsync(string title, string artistName, string[]? others, string albumTitle, Genre genre)
@@ -82,7 +77,7 @@ public class Orchestrator
                 if (!string.IsNullOrEmpty(name))
                     artists.Add(await _manager.EnsureArtistCreated(name));
 
-        Track track = new() {Title = title, Artist = artist, Album = album, Others = artists, Genre = genre};
+        Track track = new(title, album, artist, artists, genre);
         await _manager.AddTrackAsync(track);
         await _manager.SaveChangesAsync();
     }
@@ -98,27 +93,32 @@ public class Orchestrator
 
     public async Task<Result> UpdateTrackAsync(TrackUpdateDTO patch)
     {
+        /*
+        IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
+        in the same HTML request can cause some problems.
+        */
+        Track? track = await _manager.GetTrackedTrackAsync(Guid.Parse(patch.Id));
+        if (track == null) return Result.Fail("Track not found");
+
+        if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
+
+        if (!Enum.TryParse(patch.Genre, true, out Genre genre)) return Result.Fail("Wrong genre provided");
+        track.SetGenre(genre);
+
+        Artist artist = await _manager.EnsureArtistCreated(patch.ArtistName);
+        if (!track.SetArtist(artist)) return Result.Fail("Wrong artist provided");
+        
+        Album album = await _manager.EnsureAlbumCreated(patch.AlbumTitle, artist);
+        if (!track.SetAlbum(album)) return Result.Fail("Wrong album provided");
+
         var others = new List<Artist>();
         foreach (string name in patch.OthersNames)
             if (!string.IsNullOrEmpty(name))
-                others.Add(await _manager.EnsureArtistCreated(name));
-        if (await _manager.UpdateTrackAsync(new Track
-        {
-            Id = Guid.Parse(patch.Id),
-            Title = patch.Title,
-            Genre = Enum.Parse<Genre>(patch.Genre, ignoreCase: true),
-            Album = await _manager.EnsureAlbumCreated(patch.AlbumTitle, await _manager.EnsureArtistCreated(patch.ArtistName)),
-            Artist = await _manager.EnsureArtistCreated(patch.ArtistName),
-            Others = others
-        }))
-        {
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        else
-        {
-            return Result.Fail("Track not found");
-        }
+                others.Add(await _manager.EnsureArtistCreated(name));       
+        if (!track.SetOthers(others)) return Result.Fail("Wrong others provided");
+
+        await _manager.SaveChangesAsync();
+        return Result.Ok();
     }
 
     //ALBUM
@@ -179,11 +179,15 @@ public class Orchestrator
 
     public async Task<Result> UpdateAlbumAsync(AlbumDTO patch)
     {
+        /*
+        IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
+        in the same HTML request can cause some problems.
+        */
         Album? album = await _manager.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
         if (album != null)
         {
-            album.Title = patch.Title;
-            album.ImageUrl = patch.ImageUrl;
+            if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
+            if (!album.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
@@ -209,8 +213,7 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Artist already in favorites");
+        return Result.Fail("Artist already in favorites");
     }
 
     public async Task<Result> RemoveArtistFromFavoritesAsync(Guid userId, Guid artistId)
@@ -220,8 +223,7 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Artist not in favorites");
+        return Result.Fail("Artist not in favorites");
     }
 
     public async Task<Result> RemoveArtistAsync(Guid id)
@@ -231,21 +233,24 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Artist not found");
+        return Result.Fail("Artist not found");
     }
 
     public async Task<Result> UpdateArtistAsync(ArtistDTO patch)
     {
-        if (await _manager.UpdateArtistAsync(
-            new Artist {Name = patch.Name, ImageUrl = patch.ImageUrl, Id = Guid.Parse(patch.Id)}
-        ))
+        /*
+        IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
+        in the same HTML request can cause some problems.
+        */
+        Artist? artist = await _manager.GetTrackedArtistAsync(Guid.Parse(patch.Id));
+        if (artist != null)
         {
+            if (!artist.SetName(patch.Name)) return Result.Fail("Empty name provided");
+            if (!artist.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Artist not found");
+        return Result.Fail("Artist not found");
     }
 
     public async Task<Result<ArtistDetailDTO>> GetArtistAsync(Guid id)
@@ -265,8 +270,7 @@ public class Orchestrator
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("User not found");
+        return Result.Fail("User not found");
     }
 
     public async Task<Result<UserDTO>> GetUserAsync(Guid id)
@@ -291,12 +295,9 @@ public class Orchestrator
     {
         if (await _manager.UserExistsAsync(name))
             return Result.Fail("User with this name already exists");
-        else
-        {
-            await _manager.AddUserAsync(name, Enum.Parse<UserRole>(role), password);
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
+        await _manager.AddUserAsync(name, Enum.Parse<UserRole>(role), password);
+        await _manager.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<AuthDTO?> LogInAsync(string name, string password)

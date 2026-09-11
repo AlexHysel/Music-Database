@@ -1,13 +1,33 @@
-public class User
+public class User(string name, string password, UserRole role)
 {
-    public Guid Id {get; set;}
-    public string Name {get; set;}
-    public UserRole Role {get; set;}
-    public string Password {get; set;}
+    public Guid Id {get; private set;} = Guid.NewGuid();
+    public string Name {get; private set;} = name;
+    public UserRole Role {get; private set;} = role;
+    public string Password {get; private set;} = password;
     public List<Track> FavoriteTracks {get; private set;} = null!;
     public List<Album> FavoriteAlbums {get; private set;} = null!;
     public List<Artist> FavoriteArtists {get; private set;} = null!;
     public List<Playlist> Playlists {get; private set;} = null!;
+
+    public bool SetName(string name)
+    {
+        if (name.Trim().Length < 1) return false;
+        Name = name;
+        return true;
+    }
+
+    public bool SetRole(UserRole role)
+    {
+        Role = role;
+        return true;
+    }
+
+    public bool SetPassword(string password)
+    {
+        if (password.Trim().Length < 1) return false;
+        Password = password;
+        return true;
+    }
 
     public bool AddTrackToFavorites(Track track)
     {

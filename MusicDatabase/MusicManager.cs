@@ -52,24 +52,6 @@ public class MusicManager
         await _context.Tracks.AddAsync(track);
     }
 
-    async public Task<bool> UpdateTrackAsync(Track track)
-    {
-        Track? existing = await _context.Tracks
-            .Include(t => t.Others)
-            .FirstOrDefaultAsync(t => t.Id == track.Id);
-        if (existing == null) return false;
-        
-        existing.Title = track.Title;
-        existing.Genre = track.Genre;
-        existing.Album = track.Album;
-        existing.Artist = track.Artist;
-        existing.Others.Clear();
-        foreach (var other in track.Others)
-            existing.Others.Add(other);
-        
-        return true;
-    }
-
     //  REMOVE
     async public Task<bool> RemoveTrackAsync(Guid id)
     {
@@ -167,7 +149,7 @@ public class MusicManager
         if (await _context.Users.AnyAsync(u => u.Name == name))
             return false;
         
-        User user = new() {Name = name, Password = BCrypt.Net.BCrypt.EnhancedHashPassword(password), Role = role};
+        User user = new(name, BCrypt.Net.BCrypt.EnhancedHashPassword(password), role);
         await _context.Users.AddAsync(user);
         return true;
     }
@@ -231,7 +213,7 @@ public class MusicManager
         Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Artist.Id == artist.Id && a.Title == title);
         if (album == null)
         {
-            album = new() {Title = title, Artist = artist, Type = AlbumType.Single};
+            album = new(title, artist);
             await _context.Albums.AddAsync(album);
         }
         return album;
@@ -247,7 +229,7 @@ public class MusicManager
         return await _context.Artists.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public async Task<Artist?> GetTrackedArtist(Guid id){
+    public async Task<Artist?> GetTrackedArtistAsync(Guid id){
         return await _context.Artists.FirstOrDefaultAsync(a => a.Id == id);
     }
 
@@ -297,7 +279,7 @@ public class MusicManager
             artist = _context.Artists.Local.FirstOrDefault(a => a.Name == name);
         if (artist == null)
         {
-            artist = new() {Name = name};
+            artist = new Artist(name);
             await _context.Artists.AddAsync(artist);
         }
         return artist;
@@ -310,18 +292,6 @@ public class MusicManager
         if (artist != null)
         {
             _context.Artists.Remove(artist);
-            return true;
-        }
-        return false;
-    }
-
-    async public Task<bool> UpdateArtistAsync(Artist patch)
-    {
-        Artist? artist = await _context.Artists.FirstOrDefaultAsync(a => a.Id == patch.Id);
-        if (artist != null)
-        {
-            artist.Name = patch.Name;
-            artist.ImageUrl = patch.ImageUrl;
             return true;
         }
         return false;

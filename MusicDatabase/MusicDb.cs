@@ -18,6 +18,10 @@ public class MusicDb : DbContext
         modelBuilder.Entity<Artist>()
             .HasIndex(a => a.Name)
             .IsUnique();
+
+        modelBuilder.Entity<Artist>()
+            .Property(a => a.Id)
+            .ValueGeneratedNever();
         
         modelBuilder.Entity<Artist>()
             .HasMany(a => a.Albums)
@@ -30,6 +34,10 @@ public class MusicDb : DbContext
             .Property(a => a.Type)
             .HasConversion<string>()
             .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+        
+        modelBuilder.Entity<Album>()
+            .Property(a => a.Id)
+            .ValueGeneratedNever();
 
         modelBuilder.Entity<Album>()
             .HasMany(a => a.Tracks)
@@ -41,6 +49,10 @@ public class MusicDb : DbContext
         modelBuilder.Entity<Track>()
             .HasOne(t => t.Artist)
             .WithMany(a => a.Tracks);
+
+        modelBuilder.Entity<Track>()
+            .Property(t => t.Id)
+            .ValueGeneratedNever();
 
         modelBuilder.Entity<Track>()
             .HasMany(t => t.Others)
@@ -55,6 +67,10 @@ public class MusicDb : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Name)
             .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Id)
+            .ValueGeneratedNever();
 
         modelBuilder.Entity<User>()
             .Property(u => u.Role)
