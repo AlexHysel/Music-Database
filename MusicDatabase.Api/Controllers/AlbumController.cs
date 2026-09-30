@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using MusicDatabase.Core;
 using MusicDatabase.Contracts;
+using System.ComponentModel.DataAnnotations;
 
 [ApiController]
 [Route("/[controller]")]
@@ -20,6 +21,16 @@ public class AlbumController : ControllerBase
             return Ok(result.Data);
         else
             return NotFound();
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string title = "",
+        [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
+        [FromQuery, Range(1, 50)] int toTake = 5)
+    {
+        AlbumDTO[] found = await _orchestrator.GetMatchingAlbumsAsync(title, toSkip, toTake);
+        return Ok(found);
     }
 
     [HttpDelete]
