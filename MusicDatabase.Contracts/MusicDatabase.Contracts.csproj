@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MusicDatabase.Data\MusicDatabase.Data.csproj" />
+    <ProjectReference Include="..\MusicDatabase.Common\MusicDatabase.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

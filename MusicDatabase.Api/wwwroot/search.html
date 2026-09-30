@@ -33,27 +33,27 @@
                     artistsEl.innerHTML = '';
                     let artistsList = createArtistListWithMore(result.artists, { endpoint: 'artist/search', queryParam: 'name' });
                     artistsEl.appendChild(artistsList);
-                    if (artistsList._moreElement) artistsEl.appendChild(artistsList._moreElement);
 
                     let albumsEl = document.getElementById('foundAlbums');
                     albumsEl.innerHTML = '';
                     let albumsList = createAlbumListWithMore(result.albums, { endpoint: 'album/search', queryParam: 'title' });
                     albumsEl.appendChild(albumsList);
-                    if (albumsList._moreElement) albumsEl.appendChild(albumsList._moreElement);
 
                     let tracksEl = document.getElementById('foundTracks');
                     tracksEl.innerHTML = '';
                     tracksEl.appendChild(createTrackList(result.tracks, { endpoint: 'track/search', queryParam: 'title', compact: true }));
 
-                    document.getElementById('foundUsers').innerHTML = '';
-                    for (user of result.users){
+                    let usersEl = document.getElementById('foundUsers');
+                    usersEl.innerHTML = '';
+                    let users = Array.isArray(result.users) ? result.users : getPagedItems(result.users, []);
+                    for (let user of users){
                         let userName = document.createElement('a');
                         userName.textContent = user.name;
-                        userName.href = `user.html?id=${user.id}`
-                        document.getElementById('foundUsers').appendChild(userName);
+                        userName.href = `user.html?id=${user.id}`;
+                        usersEl.appendChild(userName);
                     }
                 } else {
-                    alert("Something went wrong :(")
+                    alert("Something went wrong :(");
                 }
             });
         </script>

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MusicDatabase.Common;
 
 namespace MusicDatabase.Data;
 
@@ -18,13 +19,11 @@ public class MusicManager
 
     //TRACK
     //  GET
-    async public Task<List<Track>> GetMatchingTracksAsync(string title, int toSkip, int toTake){
+    async public Task<PagedResult<Track>> GetMatchingTracksAsync(string title, int toSkip, int toTake){
         return await _context.Tracks.AsNoTracking()
-            .Where(t => t.Title.Contains(title))
-            .Skip(toSkip)
-            .Take(toTake)
+            .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
             .Include(t => t.Album)
-            .ToListAsync();
+            .ToPagedResultAsync(toSkip, toTake);
     }
 
     async public Task<Track?> GetTrackAsync(Guid id)
@@ -98,12 +97,10 @@ public class MusicManager
     }
 
     // USER
-    public async Task<List<User>> GetMatchingUsersAsync(string name, int toSkip, int toTake){
+    public async Task<PagedResult<User>> GetMatchingUsersAsync(string name, int toSkip, int toTake){
         return await _context.Users
-            .Where(u => u.Name.Contains(name))
-            .Skip(toSkip)
-            .Take(toTake)
-            .ToListAsync();
+            .Where(t => EF.Functions.ILike(t.Name, $"%{name}%"))
+            .ToPagedResultAsync(toSkip, toTake);
     }
 
     public async Task<User?> GetUserAsync(Guid id){
@@ -167,13 +164,11 @@ public class MusicManager
 
     //ALBUM
     //  GET
-    async public Task<List<Album>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
+    async public Task<PagedResult<Album>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return await _context.Albums
-            .Where(a => a.Title.Contains(title))
-            .Skip(toSkip)
-            .Take(toTake)
-            .ToListAsync();
+            .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
+            .ToPagedResultAsync(toSkip, toTake);
     }
 
     async public Task<bool> RemoveAlbumFromFavoritesAsync(Guid userId, Guid albumId)
@@ -236,12 +231,10 @@ public class MusicManager
 
     //ARTIST
     //  GET
-    public async Task<List<Artist>> GetMatchingArtistsAsync(string name, int toSkip, int toTake){
+    public async Task<PagedResult<Artist>> GetMatchingArtistsAsync(string name, int toSkip, int toTake){
         return await _context.Artists
-            .Where(a => a.Name.Contains(name))
-            .Skip(toSkip)
-            .Take(toTake)
-            .ToListAsync();
+            .Where(t => EF.Functions.ILike(t.Name, $"%{name}%"))
+            .ToPagedResultAsync(toSkip, toTake);
     }
 
     public async Task<Artist?> GetArtistAsync(Guid id){

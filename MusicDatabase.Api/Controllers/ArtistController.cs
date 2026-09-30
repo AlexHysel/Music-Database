@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MusicDatabase.Core;
 using MusicDatabase.Contracts;
 using System.ComponentModel.DataAnnotations;
+using MusicDatabase.Common;
 
 [ApiController]
 [Route("/[controller]")]
@@ -29,7 +30,7 @@ public class ArtistController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        ArtistDTO[] found = await _orchestrator.GetMatchingArtistsAsync(name, toSkip, toTake);
+        PagedResult<ArtistDTO> found = await _orchestrator.GetMatchingArtistsAsync(name, toSkip, toTake);
         return Ok(found);
     }
 

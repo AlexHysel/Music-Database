@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using MusicDatabase.Common;
 using MusicDatabase.Contracts;
 using MusicDatabase.Core;
 
@@ -30,7 +30,7 @@ public class UserController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        UserDTO[] found = await _orchestrator.GetMatchingUsersAsync(name, toSkip, toTake);
+        PagedResult<UserDTO> found = await _orchestrator.GetMatchingUsersAsync(name, toSkip, toTake);
         return Ok(found);
     }
 

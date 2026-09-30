@@ -1,3 +1,4 @@
+using MusicDatabase.Common;
 using MusicDatabase.Data;
 
 namespace MusicDatabase.Contracts;
@@ -149,8 +150,8 @@ public record AuthDTO(
 );
 
 public record SearchResultDTO(
-    ArtistDTO[] Artists,
-    AlbumDTO[] Albums,
-    TrackDTO[] Tracks,
-    UserDTO[] Users
+    PagedResult<ArtistDTO> Artists,
+    PagedResult<AlbumDTO> Albums,
+    PagedResult<TrackDTO> Tracks,
+    PagedResult<UserDTO> Users
 );

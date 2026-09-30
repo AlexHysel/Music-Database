@@ -29,30 +29,24 @@ function createArtistList(artists)
     return artistList;
 }
 
-function createArtistListWithMore(artists, options = {}) {
-    // options: { showMore: bool, endpoint: string, queryParam: string }
-    let list = createArtistList(artists);
-    const showMoreEnabled = options.showMore ?? true;
+function createArtistListWithMore(pageResult, options = {}) {
+    let list = createArtistList(getPagedItems(pageResult));
+    const hasMore = getHasMore(pageResult, options.showMore ?? false);
+    const showMoreEnabled = options.showMore ?? hasMore;
     if (!showMoreEnabled) return list;
 
-    let showMore = document.createElement('div');
-    showMore.className = 'more-wrapper';
-    let showMoreBtn = document.createElement('button');
-    showMoreBtn.className = 'more-btn btn btn-sm btn-outline-light';
-    showMoreBtn.textContent = 'More';
-    showMore.appendChild(showMoreBtn);
-
-    showMoreBtn.addEventListener('click', async (event) => {
+    let moreItem = createMoreCard(async (event) => {
         event.preventDefault();
-        let size = list.children.length;
+        let size = list.querySelectorAll('.artist').length;
         let url;
         if (options.endpoint) {
+            let params = new URLSearchParams();
             if (options.queryParam && document.getElementById('searchLine')) {
                 let searchLine = document.getElementById('searchLine').value;
-                url = `${options.endpoint}?${options.queryParam}=${encodeURIComponent(searchLine)}&toSkip=${size}`;
-            } else {
-                url = `${options.endpoint}?toSkip=${size}`;
+                params.set(options.queryParam, searchLine);
             }
+            params.set('toSkip', String(size));
+            url = `${options.endpoint}?${params.toString()}`;
         } else {
             let searchLineEl = document.getElementById('searchLine');
             let searchLine = searchLineEl ? searchLineEl.value : '';
@@ -61,11 +55,19 @@ function createArtistListWithMore(artists, options = {}) {
 
         let response = await fetch(url);
         if (response.ok) {
-            for (let newArtist of await response.json())
-                list.appendChild(createArtistElement(newArtist));
+            let data = await response.json();
+            let newArtists = getPagedItems(data);
+            for (let newArtist of newArtists)
+                list.insertBefore(createArtistElement(newArtist), moreItem);
+
+            if (!getHasMore(data)) {
+                if (list.lastElementChild && list.lastElementChild.classList.contains('more-card'))
+                    list.removeChild(list.lastElementChild);
+            }
         } else console.error('Error loading more artists', await response.text());
     });
 
-    list._moreElement = showMore;
+    list.appendChild(moreItem);
+    list._moreElement = moreItem;
     return list;
 }

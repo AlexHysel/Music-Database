@@ -1,3 +1,32 @@
+function getPagedItems(value, fallback = []) {
+    if (Array.isArray(value)) return value;
+    if (!value) return fallback;
+    if (Array.isArray(value.items)) return value.items;
+    if (Array.isArray(value.Items)) return value.Items;
+    return fallback;
+}
+
+function getHasMore(value, fallback = false) {
+    if (!value) return fallback;
+    if (typeof value.hasMore === 'boolean') return value.hasMore;
+    if (typeof value.HasMore === 'boolean') return value.HasMore;
+    return fallback;
+}
+
+function createMoreCard(onClick) {
+    let moreItem = document.createElement('li');
+    moreItem.className = 'more-card';
+
+    let moreBtn = document.createElement('button');
+    moreBtn.type = 'button';
+    moreBtn.className = 'more-btn btn btn-sm btn-outline-light';
+    moreBtn.textContent = 'More';
+    moreBtn.addEventListener('click', onClick);
+
+    moreItem.appendChild(moreBtn);
+    return moreItem;
+}
+
 function createAlbumElement(album) {
     let albumElement = document.createElement('li');
     albumElement.className = 'album';
@@ -34,31 +63,24 @@ function createAlbumList(albums) {
     return albumList;
 }
 
-function createAlbumListWithMore(albums, options = {}) {
-    // options: { showMore: bool, endpoint: string, queryParam: string }
-    let list = createAlbumList(albums);
-    const showMoreEnabled = options.showMore ?? true;
+function createAlbumListWithMore(pageResult, options = {}) {
+    let list = createAlbumList(getPagedItems(pageResult));
+    const hasMore = getHasMore(pageResult, options.showMore ?? false);
+    const showMoreEnabled = options.showMore ?? hasMore;
     if (!showMoreEnabled) return list;
 
-    let showMore = document.createElement('div');
-    showMore.className = 'more-wrapper';
-    let showMoreBtn = document.createElement('button')
-    showMoreBtn.className = 'more-btn btn btn-sm btn-outline-light';
-    showMoreBtn.textContent = 'More';
-    showMore.appendChild(showMoreBtn);
-    list.parentForMore = true; // marker used by pages if needed
-
-    showMoreBtn.addEventListener('click', async (event) => {
+    let moreItem = createMoreCard(async (event) => {
         event.preventDefault();
-        let size = list.children.length;
+        let size = list.querySelectorAll('.album').length;
         let url;
         if (options.endpoint) {
+            let params = new URLSearchParams();
             if (options.queryParam && document.getElementById('searchLine')) {
                 let searchLine = document.getElementById('searchLine').value;
-                url = `${options.endpoint}?${options.queryParam}=${encodeURIComponent(searchLine)}&toSkip=${size}`;
-            } else {
-                url = `${options.endpoint}?toSkip=${size}`;
+                params.set(options.queryParam, searchLine);
             }
+            params.set('toSkip', String(size));
+            url = `${options.endpoint}?${params.toString()}`;
         } else {
             let searchLineEl = document.getElementById('searchLine');
             let searchLine = searchLineEl ? searchLineEl.value : '';
@@ -67,11 +89,19 @@ function createAlbumListWithMore(albums, options = {}) {
 
         let response = await fetch(url);
         if (response.ok) {
-            for (let newAlbum of await response.json())
-                list.appendChild(createAlbumElement(newAlbum));
+            let data = await response.json();
+            let newAlbums = getPagedItems(data);
+            for (let newAlbum of newAlbums)
+                list.insertBefore(createAlbumElement(newAlbum), moreItem);
+
+            if (!getHasMore(data)) {
+                if (list.lastElementChild && list.lastElementChild.classList.contains('more-card'))
+                    list.removeChild(list.lastElementChild);
+            }
         } else console.error('Error loading more albums', await response.text());
     });
 
-    list._moreElement = showMore;
+    list.appendChild(moreItem);
+    list._moreElement = moreItem;
     return list;
 }

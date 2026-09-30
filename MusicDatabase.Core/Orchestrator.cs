@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
+using MusicDatabase.Common;
 
 namespace MusicDatabase.Core;
 
@@ -22,10 +23,10 @@ public class Orchestrator
 
     public async Task<SearchResultDTO> Search(string title)
     {
-        ArtistDTO[] artists = await GetMatchingArtistsAsync(title, 0, 10);
-        AlbumDTO[] albums = await GetMatchingAlbumsAsync(title, 0, 10);
-        TrackDTO[] tracks = await GetMatchingTracksAsync(title, 0, 15);
-        UserDTO[] users = await GetMatchingUsersAsync(title, 0, 10);
+        PagedResult<ArtistDTO> artists = await GetMatchingArtistsAsync(title, 0, 10);
+        PagedResult<AlbumDTO> albums = await GetMatchingAlbumsAsync(title, 0, 10);
+        PagedResult<TrackDTO> tracks = await GetMatchingTracksAsync(title, 0, 15);
+        PagedResult<UserDTO> users = await GetMatchingUsersAsync(title, 0, 10);
         return new SearchResultDTO(artists, albums, tracks, users);
     }
 
@@ -39,10 +40,10 @@ public class Orchestrator
             return Result<TrackDTO[]>.Ok(user.GetFavoriteTracks().Select(t => TrackDTO.FromTrack(t)).ToArray());
     }
 
-    public async Task<TrackDTO[]> GetMatchingTracksAsync(string title, int toSkip, int toTake)
+    public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.GetMatchingTracksAsync(title, toSkip, toTake))
-            .Select(t => TrackDTO.FromTrack(t)).ToArray();
+            .Map(t => TrackDTO.FromTrack(t));
     }
 
     public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
@@ -141,10 +142,10 @@ public class Orchestrator
         return Result<AlbumDTO[]>.Ok(albums);
     }
 
-    public async Task<AlbumDTO[]> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
+    public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.GetMatchingAlbumsAsync(title, toSkip, toTake))
-            .Select(a => AlbumDTO.FromAlbum(a)).ToArray();
+            .Map(a => AlbumDTO.FromAlbum(a));
     }
 
     public async Task<Result> AddAlbumToFavoritesAsync(Guid albumId, Guid userId)
@@ -221,10 +222,10 @@ public class Orchestrator
         return Result<ArtistDTO[]>.Ok(artists);
     }
 
-    public async Task<ArtistDTO[]> GetMatchingArtistsAsync(string name, int toSkip, int toTake)
+    public async Task<PagedResult<ArtistDTO>> GetMatchingArtistsAsync(string name, int toSkip, int toTake)
     {
         return (await _manager.GetMatchingArtistsAsync(name, toSkip, toTake))
-            .Select(a => ArtistDTO.FromArtist(a)).ToArray();
+            .Map(a => ArtistDTO.FromArtist(a));
     }
 
     public async Task<Result> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
@@ -294,10 +295,10 @@ public class Orchestrator
         return Result.Fail("User not found");
     }
 
-    public async Task<UserDTO[]> GetMatchingUsersAsync(string name, int toSkip, int toTake)
+    public async Task<PagedResult<UserDTO>> GetMatchingUsersAsync(string name, int toSkip, int toTake)
     {
         return (await _manager.GetMatchingUsersAsync(name, toSkip, toTake))
-            .Select(u => UserDTO.FromUser(u)).ToArray();
+            .Map(u => UserDTO.FromUser(u));
     }
 
     public async Task<Result<UserDTO>> GetUserAsync(Guid id)

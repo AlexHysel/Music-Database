@@ -5,6 +5,7 @@ using MusicDatabase.Core;
 using MusicDatabase.Contracts;
 using MusicDatabase.Data;
 using System.ComponentModel.DataAnnotations;
+using MusicDatabase.Common;
 
 [ApiController]
 [Route("/[controller]")]
@@ -30,7 +31,7 @@ public class TrackController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        TrackDTO[] found = await _orchestrator.GetMatchingTracksAsync(title, toSkip, toTake);
+        PagedResult<TrackDTO> found = await _orchestrator.GetMatchingTracksAsync(title, toSkip, toTake);
         return Ok(found);
     }
 

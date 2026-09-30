@@ -58,6 +58,25 @@ header.app-header h1 { font-size: 28px; margin:0; color:#fff; }
 .trackList.compact .meta { font-size:12px; }
 
 /* More button */
+.more-card {
+  width: 220px;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.more-card .more-btn {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px dashed rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.02);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
 .more-btn { padding:8px 14px; border-radius:8px; font-weight:600; }
 .more-wrapper { padding-left: 12px; margin-top:8px; }
 
@@ -78,7 +97,7 @@ input.form-control { background: rgba(255,255,255,0.03); border:1px solid rgba(2
 @media (max-width: 768px) {
   .albumBig { flex-direction:column; }
   .albumBig .left { width:100%; }
-  .album, .artist { width: 45vw; min-width:160px; }
+  .album, .artist, .more-card { width: 45vw; min-width:160px; }
 }
 
 /* Small utility */

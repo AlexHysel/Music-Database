@@ -80,44 +80,37 @@ function createTrackElement(track) {
     return trackElement;
 }
 
-function createTrackList(tracks, options = {})
+function createTrackList(pageResult, options = {})
 {
-    // options: { showMore: bool, endpoint: string, queryParam: string, compact: bool }
     let trackList = document.createElement('ul');
     trackList.className = 'trackList';
     if (options.compact) trackList.classList.add('compact');
 
+    let tracks = getPagedItems(pageResult, []);
     for (let track of tracks)
         trackList.appendChild(createTrackElement(track));
 
-    const showMoreEnabled = options.showMore ?? true;
+    const hasMore = getHasMore(pageResult, options.showMore ?? false);
+    const showMoreEnabled = options.showMore ?? hasMore;
     if (showMoreEnabled)
     {
-        let showMore = document.createElement('li');
-        let showMoreBtn = document.createElement('button');
-        showMoreBtn.className = 'more-btn btn btn-sm btn-outline-light';
-        showMore.appendChild(showMoreBtn);
-        showMoreBtn.textContent = 'More';
-        showMoreBtn.addEventListener('click', async (event) => {
+        let moreItem = createMoreCard(async (event) => {
             event.preventDefault();
-            let size = trackList.children.length - 1;
+            let size = trackList.querySelectorAll('.track').length;
             let url;
             if (options.endpoint)
             {
-                // endpoint may accept query param search or only toSkip
+                let params = new URLSearchParams();
                 if (options.queryParam && document.getElementById('searchLine'))
                 {
                     let searchLine = document.getElementById('searchLine').value;
-                    url = `${options.endpoint}?${options.queryParam}=${encodeURIComponent(searchLine)}&toSkip=${size}`;
+                    params.set(options.queryParam, searchLine);
                 }
-                else
-                {
-                    url = `${options.endpoint}?toSkip=${size}`;
-                }
+                params.set('toSkip', String(size));
+                url = `${options.endpoint}?${params.toString()}`;
             }
             else
             {
-                // default to track/search using searchLine
                 let searchLineEl = document.getElementById('searchLine');
                 let searchLine = searchLineEl ? searchLineEl.value : '';
                 url = `track/search?title=${encodeURIComponent(searchLine)}&toSkip=${size}`;
@@ -125,15 +118,19 @@ function createTrackList(tracks, options = {})
 
             let response = await fetch(url);
             if (response.ok){
-                let btn = trackList.lastChild;
-                trackList.removeChild(btn);
-                for (let newTrack of await response.json())
-                    trackList.appendChild(createTrackElement(newTrack));
-                trackList.append(btn);
+                let data = await response.json();
+                let nextTracks = getPagedItems(data, []);
+                for (let newTrack of nextTracks)
+                    trackList.insertBefore(createTrackElement(newTrack), moreItem);
+
+                if (!getHasMore(data)) {
+                    if (trackList.lastElementChild && trackList.lastElementChild.classList.contains('more-card'))
+                        trackList.removeChild(trackList.lastElementChild);
+                }
             }
             else console.error("Error loading more tracks", await response.text());
         });
-        trackList.appendChild(showMore);
+        trackList.appendChild(moreItem);
     }
 
     return trackList;
