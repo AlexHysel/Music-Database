@@ -31,15 +31,19 @@
 
                     let artistsEl = document.getElementById('foundArtists');
                     artistsEl.innerHTML = '';
-                    artistsEl.appendChild(createArtistList(result.artists));
+                    let artistsList = createArtistListWithMore(result.artists, { endpoint: 'artist/search', queryParam: 'name' });
+                    artistsEl.appendChild(artistsList);
+                    if (artistsList._moreElement) artistsEl.appendChild(artistsList._moreElement);
 
                     let albumsEl = document.getElementById('foundAlbums');
                     albumsEl.innerHTML = '';
-                    albumsEl.appendChild(createAlbumList(result.albums));
+                    let albumsList = createAlbumListWithMore(result.albums, { endpoint: 'album/search', queryParam: 'title' });
+                    albumsEl.appendChild(albumsList);
+                    if (albumsList._moreElement) albumsEl.appendChild(albumsList._moreElement);
 
                     let tracksEl = document.getElementById('foundTracks');
                     tracksEl.innerHTML = '';
-                    tracksEl.appendChild(createTrackList(result.tracks));
+                    tracksEl.appendChild(createTrackList(result.tracks, { endpoint: 'track/search', queryParam: 'title', compact: true }));
 
                     document.getElementById('foundUsers').innerHTML = '';
                     for (user of result.users){

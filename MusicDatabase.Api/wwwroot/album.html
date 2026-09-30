@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 
 <html>
-    <body>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="styling/main.css">
+        <title>Album</title>
+    </head>
+    <body>
+        <div class="container py-4">
         <div id="album" class="albumBig">
             <div class="left">
                 <img id="cover">
                 <h1 id="albumTitle"></h1>
                 <a id="albumArtist"></a>
                 <div id="adminPanel" style="display: none;">
-                    <input id="albumTitleInput" type="text" placeholder="New Title" required style="display: none">
-                    <input id="newImageUrl" type="text" placeholder="New Cover URL" required style="display: none">
-                    <button id="updateButton" type="button">Update</button>
-                    <button id="removeButton" type="button">Remove</button>
-                    <button id="cancelButton" type="button" style="display: none">Cancel</button>
-                    <button id="saveButton" type="button" style="display: none">Save</button>
+                    <input id="albumTitleInput" class="form-control mb-2" type="text" placeholder="New Title" required style="display: none">
+                    <input id="newImageUrl" class="form-control mb-2" type="text" placeholder="New Cover URL" required style="display: none">
+                    <div class="d-flex gap-2">
+                        <button id="updateButton" type="button" class="btn btn-sm btn-outline-light">Update</button>
+                        <button id="removeButton" type="button" class="btn btn-sm btn-danger">Remove</button>
+                        <button id="cancelButton" type="button" class="btn btn-sm btn-secondary" style="display: none">Cancel</button>
+                        <button id="saveButton" type="button" class="btn btn-sm btn-success" style="display: none">Save</button>
+                    </div>
                 </div>
             </div>
             <div id="trackList"></div>
+        </div>
         </div>
         <script src='auth.js'></script>
         <script src='trackElement.js'></script>
@@ -56,6 +65,7 @@
                     });
                     if (response.ok){
                         alert('Removed successfully');
+                        window.location.href = '/';
                     } else {
                         alert('Album was not removed');
                     }
@@ -67,13 +77,14 @@
                     event.preventDefault();
                     let title = document.getElementById('albumTitleInput').value;
                     let imageUrl = document.getElementById('newImageUrl').value;
+                    let body = { Title: title, ImageUrl: imageUrl, Id: id };
                     let response = await fetch('album', {
                         method: 'PUT',
                         headers: {
                             'Content-Type':'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         },
-                        body: JSON.stringify({title, imageUrl, id})
+                        body: JSON.stringify(body)
                     });
                     if (response.ok){
                         alert('Updated successfully');
@@ -86,7 +97,7 @@
             }
 
             function createUpdateButtonEvent(){
-                document.getElementById('updateButton').addEventListener('click', () => {
+                document.getElementById('updateButton').addEventListener('click', (event) => {
                     event.preventDefault();
                     editMode();
                 });
@@ -113,7 +124,8 @@
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artist.name;
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artist.id}`;
-                    document.getElementById('trackList').appendChild(createTrackList(album.tracks));
+                    // Use compact track list on album page and disable 'More' (tracks belong to this album)
+                    document.getElementById('trackList').appendChild(createTrackList(album.tracks, { showMore: false, compact: true }));
                     let role = getRole();
                     if (role == 'Admin')
                     {

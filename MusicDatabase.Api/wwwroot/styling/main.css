@@ -1,167 +1,88 @@
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
+/* Reset and base */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
-    padding: 3px;
-    background-color: #1e1d24;
-    color: white;
-    font-family: Arial;
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, #15141a 0%, #26242b 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #eef2f7;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-.artist {
-    box-sizing: border-box;
-    align-items: center;
-    margin: 3px;
-    width: 280px;
-    min-width: 280px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+/* Links */
+a { color: #cfe8e0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Container helpers */
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* Header */
+header.app-header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+header.app-header h1 { font-size: 28px; margin:0; color:#fff; }
+
+/* Lists */
+.artistList::-webkit-scrollbar, .albumList::-webkit-scrollbar { height:10px; }
+.artistList::-webkit-scrollbar-thumb, .albumList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius:8px; }
+.artistList::-webkit-scrollbar-track, .albumList::-webkit-scrollbar-track { background: transparent; }
+.artistList, .albumList { display:flex; gap:12px; padding:8px 0 8px 12px; overflow:auto; scrollbar-width:thin; }
+
+/* Dark card inputs: ensure form controls are readable on dark background */
+.card .form-control, .card .form-select, .card .form-label { color: #eef2f7; }
+.card .form-control::placeholder { color: rgba(255,255,255,0.5); }
+.card { background: linear-gradient(180deg,#2b2a33 0%, #232128 100%); color: #eef2f7; }
+.trackList { display:flex; flex-direction:column; gap:8px; padding:8px 0 8px 12px; }
+.artistList li, .albumList li, .trackList li { list-style:none; }
+
+/* Cards */
+.artist, .album, .track { background: linear-gradient(180deg,#2f2d33 0%, #232126 100%); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.45); overflow:hidden; }
+.album, .artist { width: 220px; min-width:220px; display:flex; flex-direction:column; align-items:center; padding:8px; }
+.album img, .artist img { width:100%; height:220px; object-fit:cover; border-radius:6px; aspect-ratio:1/1; display:block; }
+.album h3, .artist h3 { margin-top:8px; font-size:16px; text-align:center; color:#fff; }
+
+.track { display:flex; align-items:center; gap:12px; padding:6px 10px; min-width:0; max-width:100%; background: linear-gradient(180deg,#2b2a2f 0%, #1f1e22 100%); border-radius:8px; }
+.track img { width:56px; height:56px; object-fit:cover; border-radius:6px; flex:0 0 56px; display:block; }
+.track .info { display:flex; flex-direction:column; overflow:hidden; }
+.track .title { color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.track .meta { color: #cbd5d0; font-size:13px; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.actions { margin-left: auto; display:flex; gap:8px; align-items:center; }
+
+/* compact track style for dense lists */
+.trackList.compact .track { padding:6px; }
+.trackList.compact .track img { width:48px; height:48px; flex:0 0 48px; }
+.trackList.compact .title { font-size:14px; }
+.trackList.compact .meta { font-size:12px; }
+
+/* More button */
+.more-btn { padding:8px 14px; border-radius:8px; font-weight:600; }
+.more-wrapper { padding-left: 12px; margin-top:8px; }
+
+/* Buttons */
+.btn-like { background:#00c896; color:#042018; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+.btn-unlike { background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.08); padding:6px 10px; border-radius:6px; cursor:pointer; }
+
+/* Large views */
+.albumBig { display:flex; gap:20px; align-items:flex-start; margin-top:12px; }
+.albumBig .left { width:360px; }
+.albumBig img { width:100%; height:360px; object-fit:cover; border-radius:8px; }
+.albumBig h1 { font-size:36px; margin-top:12px; }
+
+/* Forms */
+input.form-control { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); color:#fff; }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .albumBig { flex-direction:column; }
+  .albumBig .left { width:100%; }
+  .album, .artist { width: 45vw; min-width:160px; }
 }
 
-.artist a {
-    font-size: 20px;
-    width: 100%;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.artist img {
-    width: 100%;
-    object-fit: cover;
-    aspect-ratio: 1/1;
-    border-radius: 50%;
-}
-
-.artistList {
-    flex-shrink: 0;
-    overflow-x: scroll;
-    display: flex;
-}
-
-.album {
-    background-color: #4a4850;
-    transition: transform 0.2s ease;
-    display: flex;
-    width: 260px;
-    min-width: 260px;
-    margin: 3px;
-    flex-direction: column;
-    align-items: center;
-}
-
-.album:hover {
-    transform: translateY(-5px);
-    background-color: #00c896;
-}
-
-.album img {
-    width: 100%;
-    object-fit: cover;
-    aspect-ratio: 1/1;
-}
-
-.albumList {
-    flex-shrink: 0;
-    overflow-x: scroll;
-    display: flex;
-}
-
-.album a {
-    font-size: 20px;
-    width: 100%;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.albumBig .left {
-    background: #4a4850;
-    width: 400px;
-    margin: 3px;
-}
-
-.albumBig {
-    display: flex;
-    flex-direction: row;
-}
-
-.track {
-    align-items: center;
-    display: flex;
-    font-size: 24px;
-    margin: 3px;
-    white-space: nowrap;
-    background-color: #4a4850;
-    height: 60px;
-}
-
-.track img {
-    height: 100%;
-    object-fit: cover;
-    aspect-ratio: 1/1;
-}
-
-.track button {
-    background-color: #00c896;
-    color: white;
-    padding: 4px 8px;
-    cursor: pointer;
-    margin-left: auto;
-}
-
-.track:hover {
-    background-color: #00c896;
-}
-
-.track a {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-    margin: 6px;
-    width: 400px;
-}
-
-.trackBig, .artistBig {
-    margin: 3px;
-    display: flex;
-    background: #4a4850;
-}
-
-.trackBig img, .artistBig img, .albumBig .left img {
-    width: 400px;
-    object-fit: cover;
-    aspect-ratio: 1/1;
-}
-
-ul {
-    margin: 0px;
-    padding: 0px;
-}
-
-.trackBig h1, .artistBig h1, .albumBig h1 {
-    width: 100%;
-}
-
-.trackBigInfo, .artistBigInfo {
-    display: flex;
-    flex-direction: column;
-    padding: 6px;
-}
-
-.trackBig h1, .artistBig h1, .albumBig h1 {
-    font-size: 65px;
-}
+/* Small utility */
+.mb-2 { margin-bottom: .5rem; }
+.py-4 { padding-top:1.5rem; padding-bottom:1.5rem; }
+.d-flex { display:flex; }
+.gap-2 { gap: .5rem; }
