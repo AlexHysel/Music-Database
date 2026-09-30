@@ -1,3 +1,18 @@
+function getPagedItems(value, fallback = []) {
+    if (Array.isArray(value)) return value;
+    if (!value) return fallback;
+    if (Array.isArray(value.items)) return value.items;
+    if (Array.isArray(value.Items)) return value.Items;
+    return fallback;
+}
+
+function getHasMore(value, fallback = false) {
+    if (!value) return fallback;
+    if (typeof value.hasMore === 'boolean') return value.hasMore;
+    if (typeof value.HasMore === 'boolean') return value.HasMore;
+    return fallback;
+}
+
 function createTrackElement(track) {
     let trackElement = document.createElement('li');
     trackElement.className = 'track'
