@@ -62,5 +62,24 @@ function createTrackList(tracks)
     for (let track of tracks)
         trackList.appendChild(createTrackElement(track));
 
+    let showMore = document.createElement('li');
+    let showMoreBtn = document.createElement('button');
+    showMore.appendChild(showMoreBtn);
+    showMoreBtn.textContent = 'More';
+    showMoreBtn.addEventListener('click', async (event) => {
+        let searchLine = document.getElementById('searchLine').value;
+        let size = trackList.children.length - 1;
+        let response = await fetch(`track/search?title=${searchLine}&toSkip=${size}`);
+        if (response.ok){
+            let btn = trackList.lastChild;
+            trackList.removeChild(btn);
+            for (let newTrack of await response.json())
+                trackList.appendChild(createTrackElement(newTrack));
+            trackList.append(btn);
+        }
+        else alert("Error");
+    });
+    trackList.appendChild(showMore);
+
     return trackList;
 }

@@ -62,5 +62,24 @@ function createArtistList(artists)
     for (let artist of artists)
         artistList.appendChild(createArtistElement(artist));
 
+    let showMore = document.createElement('li');
+    let showMoreBtn = document.createElement('button');
+    showMore.appendChild(showMoreBtn);
+    showMoreBtn.textContent = 'More';
+    showMoreBtn.addEventListener('click', async (event) => {
+        let searchLine = document.getElementById('searchLine').value;
+        let size = artistList.children.length - 1;
+        let response = await fetch(`artist/search?name=${searchLine}&toSkip=${size}`);
+        if (response.ok){
+            let btn = artistList.lastChild;
+            artistList.removeChild(btn);
+            for (let newArtist of await response.json())
+                artistList.appendChild(createArtistElement(newArtist));
+            artistList.append(btn);
+        }
+        else alert("Error");
+    });
+    artistList.appendChild(showMore);
+
     return artistList;
 }

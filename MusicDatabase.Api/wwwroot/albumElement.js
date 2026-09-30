@@ -62,5 +62,25 @@ function createAlbumList(albums)
     for (let album of albums)
         albumList.appendChild(createAlbumElement(album));
 
+    let showMore = document.createElement('li');
+    let showMoreBtn = document.createElement('button')
+    showMore.appendChild(showMoreBtn);
+    albumList.appendChild(showMore);
+
+    showMoreBtn.textContent = 'More';
+    showMoreBtn.addEventListener('click', async (event) => {
+        let searchLine = document.getElementById('searchLine').value;
+        let size = albumList.children.length - 1;
+        let response = await fetch(`album/search?name=${searchLine}&toSkip=${size}`);
+        if (response.ok){
+            let btn = albumList.lastChild;
+            albumList.removeChild(btn);
+            for (let newAlbum of await response.json())
+                albumList.appendChild(createAlbumElement(newAlbum));
+            albumList.append(btn);
+        }
+        else alert("Error");
+    });
+
     return albumList;
 }
