@@ -22,14 +22,10 @@ public class Orchestrator
 
     public async Task<SearchResultDTO> Search(string title)
     {
-        ArtistDTO[] artists = (await _manager.GetMatchingArtistsAsync(title))
-            .Select(a => ArtistDTO.FromArtist(a)).ToArray();
-        AlbumDTO[] albums = (await _manager.GetMatchingAlbumsAsync(title))
-            .Select(a => AlbumDTO.FromAlbum(a)).ToArray();
-        TrackDTO[] tracks = (await _manager.GetMatchingTracksAsync(title))
-            .Select(t => TrackDTO.FromTrack(t)).ToArray();
-        UserDTO[] users = (await _manager.GetMatchingUsersAsync(title))
-            .Select(u => UserDTO.FromUser(u)).ToArray();
+        ArtistDTO[] artists = await GetMatchingArtistsAsync(title, 0, 10);
+        AlbumDTO[] albums = await GetMatchingAlbumsAsync(title, 0, 10);
+        TrackDTO[] tracks = await GetMatchingTracksAsync(title, 0, 15);
+        UserDTO[] users = await GetMatchingUsersAsync(title, 0, 10);
         return new SearchResultDTO(artists, albums, tracks, users);
     }
 
@@ -42,6 +38,13 @@ public class Orchestrator
         else
             return Result<TrackDTO[]>.Ok(user.GetFavoriteTracks().Select(t => TrackDTO.FromTrack(t)).ToArray());
     }
+
+    public async Task<TrackDTO[]> GetMatchingTracksAsync(string title, int toSkip, int toTake)
+    {
+        return (await _manager.GetMatchingTracksAsync(title, toSkip, toTake))
+            .Select(t => TrackDTO.FromTrack(t)).ToArray();
+    }
+
     public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
     {
         if (await _manager.AddTrackToFavoritesAsync(userId, trackId))
@@ -138,6 +141,12 @@ public class Orchestrator
         return Result<AlbumDTO[]>.Ok(albums);
     }
 
+    public async Task<AlbumDTO[]> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
+    {
+        return (await _manager.GetMatchingAlbumsAsync(title, toSkip, toTake))
+            .Select(a => AlbumDTO.FromAlbum(a)).ToArray();
+    }
+
     public async Task<Result> AddAlbumToFavoritesAsync(Guid albumId, Guid userId)
     {
         if (await _manager.AddAlbumToFavoritesAsync(userId, albumId))
@@ -212,6 +221,12 @@ public class Orchestrator
         return Result<ArtistDTO[]>.Ok(artists);
     }
 
+    public async Task<ArtistDTO[]> GetMatchingArtistsAsync(string name, int toSkip, int toTake)
+    {
+        return (await _manager.GetMatchingArtistsAsync(name, toSkip, toTake))
+            .Select(a => ArtistDTO.FromArtist(a)).ToArray();
+    }
+
     public async Task<Result> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
     {
         if (await _manager.AddArtistToFavoritesAsync(userId, artistId))
@@ -277,6 +292,12 @@ public class Orchestrator
             return Result.Ok();
         }
         return Result.Fail("User not found");
+    }
+
+    public async Task<UserDTO[]> GetMatchingUsersAsync(string name, int toSkip, int toTake)
+    {
+        return (await _manager.GetMatchingUsersAsync(name, toSkip, toTake))
+            .Select(u => UserDTO.FromUser(u)).ToArray();
     }
 
     public async Task<Result<UserDTO>> GetUserAsync(Guid id)
