@@ -90,6 +90,38 @@ header.app-header h1 { font-size: 28px; margin:0; color:#fff; }
 .albumBig img { width:100%; height:360px; object-fit:cover; border-radius:8px; }
 .albumBig h1 { font-size:36px; margin-top:12px; }
 
+.artistBig { display:flex; gap:24px; align-items:flex-end; margin: 12px 0 24px; }
+.artist-hero-wrap { width: min(100%, 420px); }
+.artist-hero {
+  position: relative;
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #1f1e22;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.42);
+}
+.artist-hero img {
+  width: 100%;
+  height: 420px;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 4 / 5;
+}
+.artist-hero-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 28px 20px 18px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.8) 100%);
+}
+.artist-hero-overlay h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.1;
+  color: #fff;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.55);
+}
+.artistBigInfo { flex: 1; min-width: 0; }
+
 /* Forms */
 input.form-control { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); color:#fff; }
 

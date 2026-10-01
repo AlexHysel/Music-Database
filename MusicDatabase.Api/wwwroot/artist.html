@@ -6,11 +6,15 @@
         <link rel="stylesheet" href="styling/main.css">
         <div class="container py-4">
         <div id="artist" class="artistBig">
-            <div class="left">
-                <img id="artistImage">
+            <div class="left artist-hero-wrap">
+                <div class="artist-hero">
+                    <img id="artistImage">
+                    <div class="artist-hero-overlay">
+                        <h1 id="artistName"></h1>
+                    </div>
+                </div>
             </div>
             <div class="artistBigInfo">
-                <h1 id="artistName"></h1>
                 <div id="adminPanel" style="display: none">
                     <input type="text" id="newName" class="form-control mb-2" placeholder="Artist's Name" required style="display: none">
                     <input type="text" id="newImageUrl" class="form-control mb-2" placeholder="Artist's Image URL" required style="display: none">
@@ -125,7 +129,7 @@
                     document.getElementById('albumList').append(albumsList);
                     if (albumsList._moreElement) document.getElementById('albumList').append(albumsList._moreElement);
 
-                    let tracksList = createTrackList(artist.tracks, { showMore: true, endpoint: 'track/search', queryParam: 'title' });
+                    let tracksList = createTrackList({ items: artist.tracks, hasMore: false }, { endpoint: 'artist/tracks', artistId: id, compact: true });
                     document.getElementById('trackList').append(tracksList);
                     let role = getRole();
                     if (role == 'Admin'){

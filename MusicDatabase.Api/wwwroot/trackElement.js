@@ -116,7 +116,9 @@ function createTrackList(pageResult, options = {})
             if (options.endpoint)
             {
                 let params = new URLSearchParams();
-                if (options.queryParam && document.getElementById('searchLine'))
+                if (options.artistId) {
+                    params.set('id', options.artistId);
+                } else if (options.queryParam && document.getElementById('searchLine'))
                 {
                     let searchLine = document.getElementById('searchLine').value;
                     params.set(options.queryParam, searchLine);
@@ -135,12 +137,14 @@ function createTrackList(pageResult, options = {})
             if (response.ok){
                 let data = await response.json();
                 let nextTracks = getPagedItems(data, []);
-                for (let newTrack of nextTracks)
-                    trackList.insertBefore(createTrackElement(newTrack), moreItem);
+                if (trackList.lastElementChild && trackList.lastElementChild.classList.contains('more-card'))
+                    trackList.removeChild(trackList.lastElementChild);
 
-                if (!getHasMore(data)) {
-                    if (trackList.lastElementChild && trackList.lastElementChild.classList.contains('more-card'))
-                        trackList.removeChild(trackList.lastElementChild);
+                for (let newTrack of nextTracks)
+                    trackList.appendChild(createTrackElement(newTrack));
+
+                if (getHasMore(data, false)) {
+                    trackList.appendChild(moreItem);
                 }
             }
             else console.error("Error loading more tracks", await response.text());

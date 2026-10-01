@@ -31,12 +31,10 @@ public class Orchestrator
     }
 
     //TRACK
-    public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(int toSkip, int toTake)
+    public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
     {
-        PagedResult<Track>? tracks = await _manager.GetArtistTracksAsync(toSkip, toTake);
-        if (tracks != null) 
-            return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(t => TrackDTO.FromTrack(t)));
-        else return Result<PagedResult<TrackDTO>>.Fail("Artist not found");
+        PagedResult<Track> tracks = await _manager.GetArtistTracksAsync(artistId, toSkip, toTake);
+        return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(t => TrackDTO.FromTrack(t)));
     }
 
     public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)

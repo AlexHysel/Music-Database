@@ -19,9 +19,12 @@ public class MusicManager
 
     //TRACK
     //  GET
-    async public Task<PagedResult<Track>> GetArtistTracksAsync(int toSkip, int toTake)
+    async public Task<PagedResult<Track>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
     {
         return await _context.Tracks.AsNoTracking()
+            .Where(t => t.ArtistId == artistId)
+            .OrderBy(t => t.Title)
+            .ThenBy(t => t.Id)
             .Include(t => t.Album)
             .ToPagedResultAsync(toSkip, toTake);
     }
