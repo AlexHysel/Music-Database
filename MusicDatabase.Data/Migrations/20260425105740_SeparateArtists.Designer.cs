@@ -5,14 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using MusicDatabase.Data;
 
 #nullable disable
 
 namespace MusicDatabase.Migrations
 {
     [DbContext(typeof(MusicDb))]
-    [Migration("20260514081209_UserRoleAdded")]
-    partial class UserRoleAdded
+    [Migration("20260425105740_SeparateArtists")]
+    partial class SeparateArtists
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -201,10 +202,6 @@ namespace MusicDatabase.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 

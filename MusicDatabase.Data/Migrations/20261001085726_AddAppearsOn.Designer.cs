@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using MusicDatabase.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -11,42 +12,18 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MusicDatabase.Migrations
 {
     [DbContext(typeof(MusicDb))]
-    [Migration("20260213121515_NewMigration")]
-    partial class NewMigration
+    [Migration("20261001085726_AddAppearsOn")]
+    partial class AddAppearsOn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Album", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ArtistId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.ToTable("Albums");
-                });
 
             modelBuilder.Entity("AlbumUser", b =>
                 {
@@ -63,35 +40,17 @@ namespace MusicDatabase.Migrations
                     b.ToTable("UserAlbums", (string)null);
                 });
 
-            modelBuilder.Entity("Artist", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Artists");
-                });
-
             modelBuilder.Entity("ArtistTrack", b =>
                 {
-                    b.Property<Guid>("ArtistsId")
+                    b.Property<Guid>("AppearsOnId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TracksId")
+                    b.Property<Guid>("OthersId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("ArtistsId", "TracksId");
+                    b.HasKey("AppearsOnId", "OthersId");
 
-                    b.HasIndex("TracksId");
+                    b.HasIndex("OthersId");
 
                     b.ToTable("TrackArtists", (string)null);
                 });
@@ -111,7 +70,55 @@ namespace MusicDatabase.Migrations
                     b.ToTable("UserArtists", (string)null);
                 });
 
-            modelBuilder.Entity("Playlist", b =>
+            modelBuilder.Entity("MusicDatabase.Data.Album", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.ToTable("Albums");
+                });
+
+            modelBuilder.Entity("MusicDatabase.Data.Artist", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Artists");
+                });
+
+            modelBuilder.Entity("MusicDatabase.Data.Playlist", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -131,28 +138,15 @@ namespace MusicDatabase.Migrations
                     b.ToTable("Playlists");
                 });
 
-            modelBuilder.Entity("PlaylistTrack", b =>
-                {
-                    b.Property<Guid>("PlaylistId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TracksId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("PlaylistId", "TracksId");
-
-                    b.HasIndex("TracksId");
-
-                    b.ToTable("PlaylistTracks", (string)null);
-                });
-
-            modelBuilder.Entity("Track", b =>
+            modelBuilder.Entity("MusicDatabase.Data.Track", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AlbumId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArtistId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Genre")
@@ -167,7 +161,49 @@ namespace MusicDatabase.Migrations
 
                     b.HasIndex("AlbumId");
 
+                    b.HasIndex("ArtistId");
+
                     b.ToTable("Tracks");
+                });
+
+            modelBuilder.Entity("MusicDatabase.Data.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("PlaylistTrack", b =>
+                {
+                    b.Property<Guid>("PlaylistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TracksId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PlaylistId", "TracksId");
+
+                    b.HasIndex("TracksId");
+
+                    b.ToTable("PlaylistTracks", (string)null);
                 });
 
             modelBuilder.Entity("TrackUser", b =>
@@ -185,48 +221,15 @@ namespace MusicDatabase.Migrations
                     b.ToTable("UserTracks", (string)null);
                 });
 
-            modelBuilder.Entity("User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Album", b =>
-                {
-                    b.HasOne("Artist", "Artist")
-                        .WithMany("Albums")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Artist");
-                });
-
             modelBuilder.Entity("AlbumUser", b =>
                 {
-                    b.HasOne("Album", null)
+                    b.HasOne("MusicDatabase.Data.Album", null)
                         .WithMany()
                         .HasForeignKey("FavoriteAlbumsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("User", null)
+                    b.HasOne("MusicDatabase.Data.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -235,97 +238,118 @@ namespace MusicDatabase.Migrations
 
             modelBuilder.Entity("ArtistTrack", b =>
                 {
-                    b.HasOne("Artist", null)
+                    b.HasOne("MusicDatabase.Data.Track", null)
                         .WithMany()
-                        .HasForeignKey("ArtistsId")
+                        .HasForeignKey("AppearsOnId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Track", null)
+                    b.HasOne("MusicDatabase.Data.Artist", null)
                         .WithMany()
-                        .HasForeignKey("TracksId")
+                        .HasForeignKey("OthersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("ArtistUser", b =>
                 {
-                    b.HasOne("Artist", null)
+                    b.HasOne("MusicDatabase.Data.Artist", null)
                         .WithMany()
                         .HasForeignKey("FavoriteArtistsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("User", null)
+                    b.HasOne("MusicDatabase.Data.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Playlist", b =>
+            modelBuilder.Entity("MusicDatabase.Data.Album", b =>
                 {
-                    b.HasOne("User", "Creator")
+                    b.HasOne("MusicDatabase.Data.Artist", "Artist")
+                        .WithMany("Albums")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+                });
+
+            modelBuilder.Entity("MusicDatabase.Data.Playlist", b =>
+                {
+                    b.HasOne("MusicDatabase.Data.User", "Creator")
                         .WithMany("Playlists")
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Creator");
                 });
 
+            modelBuilder.Entity("MusicDatabase.Data.Track", b =>
+                {
+                    b.HasOne("MusicDatabase.Data.Album", "Album")
+                        .WithMany("Tracks")
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MusicDatabase.Data.Artist", "Artist")
+                        .WithMany("Tracks")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Artist");
+                });
+
             modelBuilder.Entity("PlaylistTrack", b =>
                 {
-                    b.HasOne("Playlist", null)
+                    b.HasOne("MusicDatabase.Data.Playlist", null)
                         .WithMany()
                         .HasForeignKey("PlaylistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Track", null)
+                    b.HasOne("MusicDatabase.Data.Track", null)
                         .WithMany()
                         .HasForeignKey("TracksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Track", b =>
-                {
-                    b.HasOne("Album", "Album")
-                        .WithMany("Tracks")
-                        .HasForeignKey("AlbumId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Album");
-                });
-
             modelBuilder.Entity("TrackUser", b =>
                 {
-                    b.HasOne("Track", null)
+                    b.HasOne("MusicDatabase.Data.Track", null)
                         .WithMany()
                         .HasForeignKey("FavoriteTracksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("User", null)
+                    b.HasOne("MusicDatabase.Data.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Album", b =>
+            modelBuilder.Entity("MusicDatabase.Data.Album", b =>
                 {
                     b.Navigation("Tracks");
                 });
 
-            modelBuilder.Entity("Artist", b =>
+            modelBuilder.Entity("MusicDatabase.Data.Artist", b =>
                 {
                     b.Navigation("Albums");
+
+                    b.Navigation("Tracks");
                 });
 
-            modelBuilder.Entity("User", b =>
+            modelBuilder.Entity("MusicDatabase.Data.User", b =>
                 {
                     b.Navigation("Playlists");
                 });

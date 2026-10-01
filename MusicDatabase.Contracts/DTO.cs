@@ -97,17 +97,20 @@ public record ArtistDetailDTO(
     string ImageUrl,
     AlbumDTO[] Albums,
     TrackDTO[] Tracks,
+    TrackDTO[] AppearsOn,
     string Id)
 {
     public static ArtistDetailDTO FromArtist(Artist artist)
     {
         var albums = artist.Albums ?? new List<Album>();
         var tracks = artist.Tracks ?? new List<Track>();
+        var appearsOn = artist.AppearsOn ?? new List<Track>();
         return new ArtistDetailDTO(
             artist.Name,
             artist.ImageUrl,
             albums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
             tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            appearsOn.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             artist.Id.ToString());
     }
 }

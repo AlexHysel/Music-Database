@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MusicDatabase.Data.Migrations
+namespace MusicDatabase.Migrations
 {
     [DbContext(typeof(MusicDb))]
     partial class MusicDbModelSnapshot : ModelSnapshot
@@ -39,15 +39,15 @@ namespace MusicDatabase.Data.Migrations
 
             modelBuilder.Entity("ArtistTrack", b =>
                 {
+                    b.Property<Guid>("AppearsOnId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("OthersId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TrackId")
-                        .HasColumnType("uuid");
+                    b.HasKey("AppearsOnId", "OthersId");
 
-                    b.HasKey("OthersId", "TrackId");
-
-                    b.HasIndex("TrackId");
+                    b.HasIndex("OthersId");
 
                     b.ToTable("TrackArtists", (string)null);
                 });
@@ -235,15 +235,15 @@ namespace MusicDatabase.Data.Migrations
 
             modelBuilder.Entity("ArtistTrack", b =>
                 {
-                    b.HasOne("MusicDatabase.Data.Artist", null)
+                    b.HasOne("MusicDatabase.Data.Track", null)
                         .WithMany()
-                        .HasForeignKey("OthersId")
+                        .HasForeignKey("AppearsOnId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MusicDatabase.Data.Track", null)
+                    b.HasOne("MusicDatabase.Data.Artist", null)
                         .WithMany()
-                        .HasForeignKey("TrackId")
+                        .HasForeignKey("OthersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

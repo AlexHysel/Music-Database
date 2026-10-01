@@ -5,14 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using MusicDatabase.Data;
 
 #nullable disable
 
 namespace MusicDatabase.Migrations
 {
     [DbContext(typeof(MusicDb))]
-    [Migration("20260911110446_RemoveDbCreatingIds")]
-    partial class RemoveDbCreatingIds
+    [Migration("20260908095440_AddImageUrlToAlbum")]
+    partial class AddImageUrlToAlbum
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +28,7 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Album", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ArtistId")
@@ -69,6 +71,7 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Artist", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("ImageUrl")
@@ -155,6 +158,7 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Track", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AlbumId")
@@ -198,6 +202,7 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")

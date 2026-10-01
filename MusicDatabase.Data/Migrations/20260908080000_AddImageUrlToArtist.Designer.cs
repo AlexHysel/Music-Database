@@ -5,20 +5,20 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using MusicDatabase.Data;
 
 #nullable disable
 
 namespace MusicDatabase.Migrations
 {
     [DbContext(typeof(MusicDb))]
-    [Migration("20260902050936_AddCleanupTriggerSql")]
-    partial class AddCleanupTriggerSql : Migration
+    [Migration("20260908080000_AddImageUrlToArtist")]
+    partial class AddImageUrlToArtist
     {
-    #pragma warning disable 612, 618
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
-
+#pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
@@ -69,6 +69,10 @@ namespace MusicDatabase.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()

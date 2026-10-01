@@ -57,7 +57,7 @@ public class MusicDb : DbContext
 
         modelBuilder.Entity<Track>()
             .HasMany(t => t.Others)
-            .WithMany()
+            .WithMany(a => a.AppearsOn)
             .UsingEntity(j => j.ToTable("TrackArtists"));
         
         modelBuilder.Entity<Track>()

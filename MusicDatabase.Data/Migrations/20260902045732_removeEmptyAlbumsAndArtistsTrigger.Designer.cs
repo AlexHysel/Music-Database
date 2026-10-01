@@ -2,17 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using MusicDatabase.Data;
 
 #nullable disable
 
 namespace MusicDatabase.Migrations
 {
     [DbContext(typeof(MusicDb))]
-    partial class MusicDbModelSnapshot : ModelSnapshot
+    [Migration("20260902045732_removeEmptyAlbumsAndArtistsTrigger")]
+    partial class removeEmptyAlbumsAndArtistsTrigger
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,14 +28,11 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Album", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ArtistId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -66,11 +67,8 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Artist", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -152,6 +150,7 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("Track", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AlbumId")
@@ -195,6 +194,7 @@ namespace MusicDatabase.Migrations
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")

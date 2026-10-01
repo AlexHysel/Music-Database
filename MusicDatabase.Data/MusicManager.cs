@@ -266,6 +266,8 @@ public class MusicManager
             .Include(a => a.Albums)
             .Include(a => a.Tracks)
             .ThenInclude(t => t.Album)
+            .Include(a => a.AppearsOn)
+            .ThenInclude(t => t.Album)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
     
@@ -273,6 +275,7 @@ public class MusicManager
         return await _context.Artists
             .Include(a => a.Albums)
             .Include(a => a.Tracks)
+            .Include(a => a.AppearsOn)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 

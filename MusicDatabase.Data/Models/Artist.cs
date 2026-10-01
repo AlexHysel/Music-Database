@@ -7,6 +7,7 @@ public class Artist
     public string ImageUrl { get; private set; } = "";
     public List<Album> Albums { get; private set; } = new();
     public List<Track> Tracks { get; private set; } = new();
+    public List<Track> AppearsOn {get; private set;} = new();
 
     public Artist(string name)
     {
