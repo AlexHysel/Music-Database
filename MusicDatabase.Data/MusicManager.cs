@@ -32,6 +32,8 @@ public class MusicManager
     async public Task<PagedResult<Track>> GetMatchingTracksAsync(string title, int toSkip, int toTake){
         return await _context.Tracks.AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
+            .OrderBy(t => t.Title)
+            .ThenBy(t => t.Id)
             .Include(t => t.Album)
             .ToPagedResultAsync(toSkip, toTake);
     }
@@ -178,6 +180,8 @@ public class MusicManager
     {
         return await _context.Albums
             .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
+            .OrderBy(a => a.Title)
+            .ThenBy(a => a.Id)
             .ToPagedResultAsync(toSkip, toTake);
     }
 
@@ -244,6 +248,8 @@ public class MusicManager
     public async Task<PagedResult<Artist>> GetMatchingArtistsAsync(string name, int toSkip, int toTake){
         return await _context.Artists
             .Where(t => EF.Functions.ILike(t.Name, $"%{name}%"))
+            .OrderBy(a => a.Name)
+            .ThenBy(a => a.Id)
             .ToPagedResultAsync(toSkip, toTake);
     }
 

@@ -117,6 +117,19 @@
                 document.getElementById('newImageUrl').value = artist.imageUrl ?? '';
             }
 
+            async function loadArtistTracks() {
+                let response = await fetch(`artist/tracks?id=${id}&toSkip=0&toTake=5`);
+                if (!response.ok) {
+                    document.getElementById('trackList').innerHTML = '';
+                    return;
+                }
+
+                let pagedTracks = await response.json();
+                let tracksList = createTrackList(pagedTracks, { endpoint: 'artist/tracks', artistId: id, compact: true });
+                document.getElementById('trackList').innerHTML = '';
+                document.getElementById('trackList').appendChild(tracksList);
+            }
+
             window.onload = async () => {
                 let response = await fetch(`artist?id=${id}`);
                 if (response.ok){
@@ -129,8 +142,7 @@
                     document.getElementById('albumList').append(albumsList);
                     if (albumsList._moreElement) document.getElementById('albumList').append(albumsList._moreElement);
 
-                    let tracksList = createTrackList({ items: artist.tracks, hasMore: false }, { endpoint: 'artist/tracks', artistId: id, compact: true });
-                    document.getElementById('trackList').append(tracksList);
+                    await loadArtistTracks();
                     let role = getRole();
                     if (role == 'Admin'){
                         createRemoveButtonEvent();

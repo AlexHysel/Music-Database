@@ -101,9 +101,22 @@ function createTrackList(pageResult, options = {})
     trackList.className = 'trackList';
     if (options.compact) trackList.classList.add('compact');
 
+    const existingTrackIds = new Set();
+    const appendUniqueTracks = (tracks) => {
+        for (let track of tracks) {
+            const id = track?.id ?? track?.Id;
+            if (id && existingTrackIds.has(String(id))) continue;
+            const element = createTrackElement(track);
+            if (id) {
+                element.dataset.trackId = String(id);
+                existingTrackIds.add(String(id));
+            }
+            trackList.appendChild(element);
+        }
+    };
+
     let tracks = getPagedItems(pageResult, []);
-    for (let track of tracks)
-        trackList.appendChild(createTrackElement(track));
+    appendUniqueTracks(tracks);
 
     const hasMore = getHasMore(pageResult, options.showMore ?? false);
     const showMoreEnabled = options.showMore ?? hasMore;
@@ -140,8 +153,7 @@ function createTrackList(pageResult, options = {})
                 if (trackList.lastElementChild && trackList.lastElementChild.classList.contains('more-card'))
                     trackList.removeChild(trackList.lastElementChild);
 
-                for (let newTrack of nextTracks)
-                    trackList.appendChild(createTrackElement(newTrack));
+                appendUniqueTracks(nextTracks);
 
                 if (getHasMore(data, false)) {
                     trackList.appendChild(moreItem);
