@@ -1,0 +1,4 @@
+CREATE TRIGGER track_change_trigger
+AFTER INSERT OR UPDATE OR DELETE ON "Tracks"
+FOR EACH ROW
+EXECUTE FUNCTION fn_update_album_type();
