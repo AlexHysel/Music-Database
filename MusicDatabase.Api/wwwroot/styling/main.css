@@ -23,6 +23,39 @@ a:hover { text-decoration: underline; }
 /* Header */
 header.app-header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
 header.app-header h1 { font-size: 28px; margin:0; color:#fff; }
+header.app-header nav { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.auth-header-shell {
+  position: static;
+  z-index: 1;
+  display:flex;
+  justify-content:flex-end;
+  width: 100%;
+  padding: 12px 16px 10px;
+  margin-bottom: 10px;
+}
+.auth-nav {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  margin-left:auto;
+  width: fit-content;
+}
+.auth-user-pill {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.2;
+}
+.auth-user-pill:hover { text-decoration:none; color:#fff; }
+.auth-logout-btn { margin-left: 4px; }
 
 /* Lists */
 .artistList::-webkit-scrollbar, .albumList::-webkit-scrollbar { height:10px; }

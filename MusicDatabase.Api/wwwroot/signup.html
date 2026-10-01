@@ -34,7 +34,9 @@
                 </form>
             </div>
         </div>
+        <script src="auth.js"></script>
         <script>
+            renderAuthHeader();
             document.getElementById('signupForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
                 let username = document.getElementById('username').value;
