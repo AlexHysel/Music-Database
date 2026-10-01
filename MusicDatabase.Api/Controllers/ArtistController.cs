@@ -34,6 +34,17 @@ public class ArtistController : ControllerBase
         return Ok(found);
     }
 
+    [HttpGet("tracks")]
+    public async Task<IActionResult> GetTracks(
+        [FromQuery] Guid id,
+        [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
+        [FromQuery, Range(1, 50)] int toTake = 5)
+    {
+        Result<PagedResult<TrackDTO>> tracks = await _orchestrator.GetArtistTracksAsync(toSkip, toTake);
+        if (tracks.Data != null) return Ok(tracks.Data);
+        else return NotFound("The artist doesn't exist");
+    }
+
     [HttpDelete]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)

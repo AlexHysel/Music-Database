@@ -19,6 +19,13 @@ public class MusicManager
 
     //TRACK
     //  GET
+    async public Task<PagedResult<Track>> GetArtistTracksAsync(int toSkip, int toTake)
+    {
+        return await _context.Tracks.AsNoTracking()
+            .Include(t => t.Album)
+            .ToPagedResultAsync(toSkip, toTake);
+    }
+
     async public Task<PagedResult<Track>> GetMatchingTracksAsync(string title, int toSkip, int toTake){
         return await _context.Tracks.AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
