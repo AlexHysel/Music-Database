@@ -13,6 +13,20 @@ function getHasMore(value, fallback = false) {
     return fallback;
 }
 
+function createTrackMoreToggle(onClick) {
+    let moreItem = document.createElement('li');
+    moreItem.className = 'track-more-toggle';
+
+    let moreBtn = document.createElement('button');
+    moreBtn.type = 'button';
+    moreBtn.className = 'track-more-btn';
+    moreBtn.textContent = 'More';
+    moreBtn.addEventListener('click', onClick);
+
+    moreItem.appendChild(moreBtn);
+    return moreItem;
+}
+
 function createTrackElement(track) {
     let trackElement = document.createElement('li');
     trackElement.className = 'track'
@@ -122,7 +136,7 @@ function createTrackList(pageResult, options = {})
     const showMoreEnabled = options.showMore ?? hasMore;
     if (showMoreEnabled)
     {
-        let moreItem = createMoreCard(async (event) => {
+        let moreItem = createTrackMoreToggle(async (event) => {
             event.preventDefault();
             let size = trackList.querySelectorAll('.track').length;
             let url;
@@ -150,7 +164,7 @@ function createTrackList(pageResult, options = {})
             if (response.ok){
                 let data = await response.json();
                 let nextTracks = getPagedItems(data, []);
-                if (trackList.lastElementChild && trackList.lastElementChild.classList.contains('more-card'))
+                if (trackList.lastElementChild && trackList.lastElementChild.classList.contains('track-more-toggle'))
                     trackList.removeChild(trackList.lastElementChild);
 
                 appendUniqueTracks(nextTracks);

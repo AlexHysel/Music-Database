@@ -29,6 +29,10 @@
         </div>
         <div id="albumList"></div>
         <div id="trackList"></div>
+        <div id="appearsOnSection" style="display: none; margin-top: 20px;">
+            <h2>Appears On</h2>
+            <div id="appearsOnList"></div>
+        </div>
         <script src='auth.js'></script>
         <script src='albumElement.js'></script>
         <script src="trackElement.js"></script>
@@ -141,6 +145,13 @@
                     let albumsList = createAlbumListWithMore(artist.albums, { endpoint: `album/search`, queryParam: 'title' });
                     document.getElementById('albumList').append(albumsList);
                     if (albumsList._moreElement) document.getElementById('albumList').append(albumsList._moreElement);
+
+                    let appearsOn = Array.isArray(artist.appearsOn) ? artist.appearsOn : [];
+                    if (appearsOn.length > 0) {
+                        let appearsOnList = createTrackList({ items: appearsOn, hasMore: false }, { compact: true, showMore: false });
+                        document.getElementById('appearsOnList').appendChild(appearsOnList);
+                        document.getElementById('appearsOnSection').style.display = 'block';
+                    }
 
                     await loadArtistTracks();
                     let role = getRole();
