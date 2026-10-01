@@ -25,7 +25,43 @@ function logout(){
     window.location.reload();
 }
 
+function renderBrandHeader(){
+    let header = document.querySelector('header.app-header');
+    if (header) {
+        if (!header.querySelector('.brand')) {
+            const brand = document.createElement('div');
+            brand.className = 'brand';
+            brand.innerHTML = `
+                <h1>MusicDatabase</h1>
+                <small>by AlexHysel</small>
+            `;
+            header.insertBefore(brand, header.firstChild);
+        }
+        return header;
+    }
+
+    const container = document.querySelector('.container') || document.body;
+    header = document.createElement('header');
+    header.className = 'app-header';
+
+    const brand = document.createElement('div');
+    brand.className = 'brand';
+    brand.innerHTML = `
+        <h1>MusicDatabase</h1>
+        <small>by AlexHysel</small>
+    `;
+
+    const nav = document.createElement('nav');
+    nav.className = 'auth-nav-root';
+
+    header.appendChild(brand);
+    header.appendChild(nav);
+    container.parentNode.insertBefore(header, container);
+    return header;
+}
+
 function renderAuthHeader(){
+    renderBrandHeader();
     const root = document.querySelector('header.app-header nav') || document.querySelector('nav.auth-nav-root');
     const wrapper = document.getElementById('globalAuthNav') || document.createElement('div');
     wrapper.id = 'globalAuthNav';
