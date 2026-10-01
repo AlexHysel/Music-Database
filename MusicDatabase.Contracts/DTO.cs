@@ -5,14 +5,27 @@ namespace MusicDatabase.Contracts;
 
 public record TrackDTO(
     string Title,
-    string ImageUrl,
+    string AlbumTitle,
+    string AlbumImageUrl,
+    string AlbumId,
+    string ArtistName,
+    string ArtistId,
+    string[] OthersNames,
+    string[] OthersIds,
     string Id)
 {
+    /// <summary>Safe conversion for track relations that are not always fully loaded.</summary>
     public static TrackDTO FromTrack(Track track)
     {
         return new TrackDTO(
             track.Title,
-            track.Album.ImageUrl,
+            track.Album?.Title ?? "",
+            track.Album?.ImageUrl ?? "",
+            track.Album?.Id.ToString() ?? "",
+            track.Artist?.Name ?? "",
+            track.Artist?.Id.ToString() ?? "",
+            track.Others?.Select(o => o.Name).ToArray() ?? new string[0],
+            track.Others?.Select(o => o.Id.ToString()).ToArray() ?? new string[0],
             track.Id.ToString()
         );
     }

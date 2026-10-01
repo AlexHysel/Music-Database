@@ -26,6 +26,8 @@ public class MusicManager
             .OrderBy(t => t.Title)
             .ThenBy(t => t.Id)
             .Include(t => t.Album)
+            .Include(t => t.Artist)
+            .Include(t => t.Others)
             .ToPagedResultAsync(toSkip, toTake);
     }
 
@@ -35,6 +37,8 @@ public class MusicManager
             .OrderBy(t => t.Title)
             .ThenBy(t => t.Id)
             .Include(t => t.Album)
+            .Include(t => t.Artist)
+            .Include(t => t.Others)
             .ToPagedResultAsync(toSkip, toTake);
     }
 
@@ -229,7 +233,11 @@ public class MusicManager
 
     public async Task<Album?> GetAlbumAsync(Guid id)
     {
-        return await _context.Albums.AsNoTracking().Include(a => a.Artist).Include(a => a.Tracks).FirstOrDefaultAsync(a => a.Id == id);
+        return await _context.Albums.AsNoTracking()
+            .Include(a => a.Artist)
+            .Include(a => a.Tracks)
+            .ThenInclude(t => t.Artist)
+            .FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<Album> EnsureAlbumCreated(string title, Artist artist)
@@ -262,12 +270,13 @@ public class MusicManager
     }
 
     public async Task<Artist?> GetArtistDetailAsync(Guid id){
-        return await _context.Artists.AsNoTracking()
+        return await _context.Artists.AsNoTrackingWithIdentityResolution()
             .Include(a => a.Albums)
             .Include(a => a.Tracks)
             .ThenInclude(t => t.Album)
-            .Include(a => a.AppearsOn)
-            .ThenInclude(t => t.Album)
+            .Include(a => a.AppearsOn).ThenInclude(t => t.Album)
+            .Include(a => a.AppearsOn).ThenInclude(t => t.Artist)
+            .Include(a => a.AppearsOn).ThenInclude(t => t.Others)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
     
@@ -275,7 +284,10 @@ public class MusicManager
         return await _context.Artists
             .Include(a => a.Albums)
             .Include(a => a.Tracks)
-            .Include(a => a.AppearsOn)
+            .ThenInclude(t => t.Album)
+            .Include(a => a.AppearsOn).ThenInclude(t => t.Album)
+            .Include(a => a.AppearsOn).ThenInclude(t => t.Artist)
+            .Include(a => a.AppearsOn).ThenInclude(t => t.Others)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
