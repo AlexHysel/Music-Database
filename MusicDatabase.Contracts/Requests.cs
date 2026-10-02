@@ -17,21 +17,19 @@ public record AddTrackRequest(
     string[]? Others
 );
 
-public record UpdateTrackRequest(
-    string Title,
-    string AlbumTitle,
-    string ArtistName,
-    string Genre,
-    string[]? Others,
-    string Id
-);
-
 public record AddAlbumRequest(
     string Title,
     string ArtistName,
     string ImageUrl,
     int ReleaseYear,
     AddTrackRequest[] Tracks
+);
+
+public record UpdateTrackRequest(
+    string Title,
+    string Genre,
+    string[]? Others,
+    string Id
 );
 
 public record UpdateAlbumRequest(
