@@ -108,7 +108,7 @@ public class Orchestrator
             return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
     }
 
-    public async Task<Result> UpdateTrackAsync(TrackUpdateDTO patch)
+    public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
     {
         /*
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
@@ -129,9 +129,9 @@ public class Orchestrator
         if (!track.SetAlbum(album)) return Result.Fail("Wrong album provided");
 
         var others = new List<Artist>();
-        foreach (string name in patch.OthersNames)
+        foreach (string name in patch.Others)
             if (!string.IsNullOrEmpty(name))
-                others.Add(await _manager.EnsureArtistCreated(name));       
+                others.Add(await _manager.EnsureArtistCreated(name));
         if (!track.SetOthers(others)) return Result.Fail("Wrong others provided");
 
         await _manager.SaveChangesAsync();
@@ -139,6 +139,27 @@ public class Orchestrator
     }
 
     //ALBUM
+    public async Task AddAlbumAsync(AddAlbumRequest info)
+    {
+        Artist artist = await _manager.EnsureArtistCreated(info.ArtistName);
+        Album album = new(info.Title, info.ReleaseYear, artist, info.ImageUrl);
+
+        int n = 1;
+        foreach (AddTrackRequest trackInfo in info.Tracks)
+        {
+            List<Artist> others = new();
+            if (trackInfo.Others != null)
+                foreach (string name in trackInfo.Others)
+                    if (!string.IsNullOrEmpty(name))
+                        others.Add(await _manager.EnsureArtistCreated(name));
+            Track track = new(trackInfo.Title, n++, album, artist, others, Enum.Parse<Genre>(trackInfo.Genre));
+            await _manager.AddTrackAsync(track);
+        }
+
+        await _manager.AddAlbumAsync(album);
+        await _manager.SaveChangesAsync();
+    }
+
     public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
     {
         User? user = await _manager.GetTrackedUserAsync(userId);

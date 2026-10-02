@@ -230,6 +230,12 @@ public class MusicManager
         return user.RemoveAlbumFromFavorites(album);
     }
 
+    async public Task<bool> AddAlbumAsync(Album album)
+    {
+        await _context.Albums.AddAsync(album);
+        return true;
+    }
+
     async public Task<bool> AddAlbumToFavoritesAsync(Guid userId, Guid albumId)
     {
         User? user = await _context.Users

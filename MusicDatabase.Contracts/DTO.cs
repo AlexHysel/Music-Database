@@ -58,15 +58,6 @@ public record TrackDetailDTO(
     }
 }
 
-public record TrackUpdateDTO(
-    string Title,
-    string AlbumTitle,
-    string ArtistName,
-    string[] OthersNames,
-    string Genre,
-    string Id
-);
-
 public record AlbumDTO(
     string Title,
     string ArtistName,

@@ -35,15 +35,7 @@ public class TrackController : ControllerBase
         return Ok(found);
     }
 
-    [HttpPost]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Post([FromBody] AddTrackRequest info)
-    {
-        Enum.TryParse(info.Genre, true, out Genre result);
-        await _orchestrator.AddTrackAsync(info.Title, info.Artist, info.Others, info.AlbumTitle, result);
-        return Created();
-    }
-
+    /*
     [HttpDelete]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
@@ -54,10 +46,11 @@ public class TrackController : ControllerBase
         else
             return NotFound(result.Message);
     }
+    */
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] TrackUpdateDTO patch)
+    public async Task<IActionResult> Put([FromBody] UpdateTrackRequest patch)
     {
         Result result = await _orchestrator.UpdateTrackAsync(patch);
         if (result.Success)

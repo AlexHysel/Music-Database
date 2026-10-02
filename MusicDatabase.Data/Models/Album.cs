@@ -13,7 +13,7 @@ public class Album
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
-    public Album (string title, int releaseYear, Artist artist)
+    public Album (string title, int releaseYear, Artist artist, string imageUrl = "")
     {
         title = title.Trim();
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
@@ -27,6 +27,7 @@ public class Album
         ReleaseYear = releaseYear;
         ArtistId = artist.Id;
         Artist = artist;
+        ImageUrl = imageUrl;
     }
 
     private Album () {}

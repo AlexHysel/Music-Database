@@ -13,16 +13,32 @@ public record SignUpRequest(
 
 public record AddTrackRequest(
     string Title,
-    string AlbumTitle,
-    string Artist,
     string Genre,
     string[]? Others
 );
 
+public record UpdateTrackRequest(
+    string Title,
+    string AlbumTitle,
+    string ArtistName,
+    string Genre,
+    string[]? Others,
+    string Id
+);
+
 public record AddAlbumRequest(
     string Title,
-    string Artist,
+    string ArtistName,
     string ImageUrl,
-    int Year,
-    TrackDTO[] Tracks
+    int ReleaseYear,
+    AddTrackRequest[] Tracks
+);
+
+public record UpdateAlbumRequest(
+    string Title,
+    string ArtistName,
+    string ImageUrl,
+    int ReleaseYear,
+    string Id,
+    UpdateTrackRequest[] Tracks
 );
