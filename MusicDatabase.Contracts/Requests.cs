@@ -18,3 +18,11 @@ public record AddTrackRequest(
     string Genre,
     string[]? Others
 );
+
+public record AddAlbumRequest(
+    string Title,
+    string Artist,
+    string ImageUrl,
+    int Year,
+    TrackDTO[] Tracks
+);
