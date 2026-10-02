@@ -1,19 +1,34 @@
 namespace MusicDatabase.Data;
 
-public class User(string name, string password, UserRole role)
+public class User
 {
-    public Guid Id {get; private set;} = Guid.NewGuid();
-    public string Name {get; private set;} = name;
-    public UserRole Role {get; private set;} = role;
-    public string Password {get; private set;} = password;
+    public Guid Id {get; private set;}
+    public string Name {get; private set;}
+    public UserRole Role {get; private set;}
+    public string Password {get; private set;}
     public List<Track> FavoriteTracks {get; private set;} = null!;
     public List<Album> FavoriteAlbums {get; private set;} = null!;
     public List<Artist> FavoriteArtists {get; private set;} = null!;
     public List<Playlist> Playlists {get; private set;} = null!;
+    public DateTimeOffset CreatedAt {get; private set;}
+    public DateTimeOffset UpdatedAt {get; private set;}
+
+    public User(string name, string password, UserRole role)
+    {
+        name = name.Trim();
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        Id = Guid.NewGuid();
+        Name = name;
+        Role = role;
+        Password = password;
+    }
 
     public bool SetName(string name)
     {
-        if (name.Trim().Length < 1) return false;
+        name = name.Trim();
+        if (name.Length < 1) return false;
+
         Name = name;
         return true;
     }
@@ -27,6 +42,7 @@ public class User(string name, string password, UserRole role)
     public bool SetPassword(string password)
     {
         if (password.Trim().Length < 1) return false;
+
         Password = password;
         return true;
     }
@@ -104,5 +120,21 @@ public class User(string name, string password, UserRole role)
     public List<Artist> GetFavoriteArtists()
     {
         return FavoriteArtists;
+    }
+
+    internal void InitializeTimestamps()
+    {
+        if (CreatedAt == default)
+        {
+            CreatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+        else
+            throw new InvalidOperationException("CreatedAt has already been initialized.");
+    }
+
+    internal void UpdateUpdatedAt()
+    {
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

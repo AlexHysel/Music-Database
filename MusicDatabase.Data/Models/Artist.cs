@@ -8,6 +8,8 @@ public class Artist
     public List<Album> Albums { get; private set; } = new();
     public List<Track> Tracks { get; private set; } = new();
     public List<Track> AppearsOn {get; private set;} = new();
+    public DateTimeOffset CreatedAt {get; private set;}
+    public DateTimeOffset UpdatedAt {get; private set;}
 
     public Artist(string name)
     {
@@ -28,5 +30,21 @@ public class Artist
     {
         ImageUrl = imageUrl;
         return true;
+    }
+
+    internal void UpdateUpdatedAt()
+    {
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    internal void InitializeTimestamps()
+    {
+        if (CreatedAt == default)
+        {
+            CreatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+        else
+            throw new InvalidOperationException("CreatedAt has already been initialized.");
     }
 }

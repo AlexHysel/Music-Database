@@ -14,6 +14,34 @@ public class MusicManager
     {
         var updatedAlbums = _context.ChangeTracker.Entries<Album>()
             .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added);
+        foreach (var entry in _context.ChangeTracker.Entries<Track>())
+        {
+            if (entry.State == EntityState.Modified)
+                entry.Entity.UpdateUpdatedAt();
+            else if (entry.State == EntityState.Added)
+                entry.Entity.InitializeTimestamps();
+        }
+        foreach (var entry in _context.ChangeTracker.Entries<Album>())
+        {
+            if (entry.State == EntityState.Modified)
+                entry.Entity.UpdateUpdatedAt();
+            else if (entry.State == EntityState.Added)
+                entry.Entity.InitializeTimestamps();
+        }
+        foreach (var entry in _context.ChangeTracker.Entries<Artist>())
+        {
+            if (entry.State == EntityState.Added)
+                entry.Entity.InitializeTimestamps();
+            else if (entry.State == EntityState.Modified)
+                entry.Entity.UpdateUpdatedAt();
+        }
+        foreach (var entry in _context.ChangeTracker.Entries<User>())
+        {
+            if (entry.State == EntityState.Added)
+                entry.Entity.InitializeTimestamps();
+            else if (entry.State == EntityState.Modified)
+                entry.Entity.UpdateUpdatedAt();
+        }
         await _context.SaveChangesAsync();
     }
 
@@ -245,7 +273,8 @@ public class MusicManager
         Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Artist.Id == artist.Id && a.Title == title);
         if (album == null)
         {
-            album = new(title, artist);
+            //temporary album with release year 0, will be updated later
+            album = new(title, 0, artist);
             await _context.Albums.AddAsync(album);
         }
         return album;

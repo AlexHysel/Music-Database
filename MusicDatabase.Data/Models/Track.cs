@@ -11,6 +11,8 @@ public class Track
     public Artist Artist {get; private set;}
     public List<Artist> Others {get; private set;}
     public Genre Genre {get; private set;}
+    public DateTimeOffset CreatedAt {get; private set;}
+    public DateTimeOffset UpdatedAt {get; private set;}
 
     public Track(string title, int numberInTheAlbum, Album album, Artist artist, List<Artist> others, Genre genre)
     {
@@ -38,12 +40,15 @@ public class Track
     {
         title = title.Trim();
         if (title.Length < 1) return false;
+
         Title = title;
         return true;
     }
 
     public bool SetAlbum(Album album)
     {
+        if (album == null) return false;
+        
         Album = album;
         AlbumId = album.Id;
         return true;
@@ -51,6 +56,8 @@ public class Track
 
     public bool SetArtist(Artist artist)
     {
+        if (artist == null) return false;
+
         Artist = artist;
         ArtistId = artist.Id;
         return true;
@@ -66,5 +73,21 @@ public class Track
     {
         Genre = genre;
         return true;
+    }
+
+    internal void UpdateUpdatedAt()
+    {
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    internal void InitializeTimestamps()
+    {
+        if (CreatedAt == default)
+        {
+            CreatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = DateTimeOffset.UtcNow;
+        }
+        else
+            throw new InvalidOperationException("CreatedAt has already been initialized.");
     }
 }
