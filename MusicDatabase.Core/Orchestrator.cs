@@ -93,7 +93,8 @@ public class Orchestrator
                 if (!string.IsNullOrEmpty(name))
                     artists.Add(await _manager.EnsureArtistCreated(name));
 
-        Track track = new(title, album, artist, artists, genre);
+        //temporarily set to 1, till i change creating track to creating album
+        Track track = new(title, 1, album, artist, artists, genre);
         await _manager.AddTrackAsync(track);
         await _manager.SaveChangesAsync();
     }

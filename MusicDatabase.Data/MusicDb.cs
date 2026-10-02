@@ -51,6 +51,11 @@ public class MusicDb : DbContext
             .HasOne(t => t.Artist)
             .WithMany(a => a.Tracks);
 
+        // Makes the number of the track unique within the album
+        //modelBuilder.Entity<Track>()
+        //    .HasIndex(t => new { t.AlbumId, t.NumberInTheAlbum })
+        //    .IsUnique();
+
         modelBuilder.Entity<Track>()
             .Property(t => t.Id)
             .ValueGeneratedNever();

@@ -4,6 +4,7 @@ public class Track
 {
     public Guid Id {get; private set;}
     public string Title {get; private set;}
+    public int NumberInTheAlbum {get; private set;}
     public Guid AlbumId {get; private set;}
     public Album Album {get; private set;}
     public Guid ArtistId {get; private set;}
@@ -11,10 +12,18 @@ public class Track
     public List<Artist> Others {get; private set;}
     public Genre Genre {get; private set;}
 
-    public Track(string title, Album album, Artist artist, List<Artist> others, Genre genre)
+    public Track(string title, int numberInTheAlbum, Album album, Artist artist, List<Artist> others, Genre genre)
     {
+        title = title.Trim();
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberInTheAlbum);
+        ArgumentNullException.ThrowIfNull(album);
+        ArgumentNullException.ThrowIfNull(artist);
+
         Id = Guid.NewGuid();
         Title = title;
+        NumberInTheAlbum = numberInTheAlbum;
         AlbumId = album.Id;
         Album = album;
         ArtistId = artist.Id;
@@ -27,7 +36,8 @@ public class Track
 
     public bool SetTitle(string title)
     {
-        if (title.Trim().Length < 1) return false;
+        title = title.Trim();
+        if (title.Length < 1) return false;
         Title = title;
         return true;
     }

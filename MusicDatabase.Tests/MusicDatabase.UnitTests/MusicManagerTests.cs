@@ -23,9 +23,9 @@ public class MusicManagerTests
         await db.Albums.AddRangeAsync(albumOne, albumTwo);
 
         await db.Tracks.AddRangeAsync(
-            new Track("zebra", albumOne, artistOne, new List<Artist>(), Genre.ROCK),
-            new Track("alpha", albumOne, artistOne, new List<Artist>(), Genre.ROCK),
-            new Track("beta", albumTwo, artistTwo, new List<Artist>(), Genre.ROCK)
+            new Track("zebra", 1, albumOne, artistOne, new List<Artist>(), Genre.ROCK),
+            new Track("alpha", 2, albumOne, artistOne, new List<Artist>(), Genre.ROCK),
+            new Track("beta", 3, albumTwo, artistTwo, new List<Artist>(), Genre.ROCK)
         );
 
         await db.SaveChangesAsync();
