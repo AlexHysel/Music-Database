@@ -110,18 +110,17 @@ public class Orchestrator
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
     {
-        /*
-        Album is the aggregate root. Track-level updates are intentionally limited to title and featured artists.
-        Album/artist/genre changes should be handled through the album update flow.
-        */
-        Track? track = await _manager.GetTrackedTrackAsync(Guid.Parse(patch.Id));
+        if (string.IsNullOrWhiteSpace(patch.Id) || !Guid.TryParse(patch.Id, out Guid trackId))
+            return Result.Fail("Track id is invalid");
+
+        Track? track = await _manager.GetTrackedTrackAsync(trackId);
         if (track == null) return Result.Fail("Track not found");
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
 
-        if (!string.IsNullOrWhiteSpace(patch.Genre) &&
-            !Enum.TryParse(patch.Genre, true, out Genre genre))
+        if (!Enum.TryParse(patch.Genre, true, out Genre genre))
             return Result.Fail("Wrong genre provided");
+        track.SetGenre(genre);
 
         var others = new List<Artist>();
         foreach (string name in patch.Others ?? Array.Empty<string>())
