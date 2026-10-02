@@ -128,7 +128,7 @@ public class Orchestrator
             return Result.Fail("Artist changes must be done through album update flow");
 
         if (!string.IsNullOrWhiteSpace(patch.Genre) &&
-            !Enum.TryParse(patch.Genre, true, out _))
+            !Enum.TryParse(patch.Genre, true, out Genre genre))
             return Result.Fail("Wrong genre provided");
 
         var others = new List<Artist>();
@@ -155,7 +155,7 @@ public class Orchestrator
                 foreach (string name in trackInfo.Others)
                     if (!string.IsNullOrEmpty(name))
                         others.Add(await _manager.EnsureArtistCreated(name));
-            Track track = new(trackInfo.Title, n++, album, artist, others, Enum.Parse<Genre>(trackInfo.Genre));
+            Track track = new(trackInfo.Title, n++, album, artist, others, Enum.Parse<Genre>(trackInfo.Genre, true));
             await _manager.AddTrackAsync(track);
         }
 
