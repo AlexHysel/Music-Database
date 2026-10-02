@@ -300,8 +300,19 @@ header.app-header nav { display:flex; align-items:center; gap:8px; margin-left:a
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 12px;
   background: rgba(255,255,255,0.03);
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.track-card-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom: 12px;
+}
+.track-card-actions {
+  display:flex;
+  gap:8px;
 }
 .album-other-row {
   display:flex;

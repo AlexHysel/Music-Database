@@ -44,9 +44,11 @@
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h3 class="mb-0">Tracks</h3>
-                            <button type="button" id="addTrack" class="btn btn-sm btn-outline-light">Add Track</button>
                         </div>
                         <div id="tracksContainer"></div>
+                        <div class="mt-3 d-flex justify-content-end">
+                            <button type="button" id="addTrack" class="btn btn-sm btn-outline-light">Add Track</button>
+                        </div>
                     </div>
 
                     <div class="mt-4 d-flex justify-content-end">
@@ -82,24 +84,67 @@
                 container.appendChild(row);
             }
 
+            function syncTrackOrderLabels() {
+                Array.from(tracksContainer.children).forEach((card, index) => {
+                    const label = card.querySelector('.track-order-label');
+                    if (label) label.textContent = `Track ${index + 1}`;
+                });
+            }
+
+            function moveTrack(card, direction) {
+                const cards = Array.from(tracksContainer.children);
+                const index = cards.indexOf(card);
+                const targetIndex = index + direction;
+
+                if (targetIndex < 0 || targetIndex >= cards.length) return;
+
+                const targetCard = cards[targetIndex];
+                tracksContainer.insertBefore(card, direction < 0 ? targetCard : targetCard.nextSibling);
+                syncTrackOrderLabels();
+            }
+
             function createTrackField() {
                 const trackCard = document.createElement('div');
                 trackCard.className = 'album-track-card';
 
                 const header = document.createElement('div');
-                header.className = 'd-flex justify-content-between align-items-center mb-2';
+                header.className = 'track-card-header';
 
                 const title = document.createElement('strong');
-                title.textContent = 'Track';
+                title.className = 'track-order-label';
+                title.textContent = `Track ${tracksContainer.children.length + 1}`;
+
+                const actionGroup = document.createElement('div');
+                actionGroup.className = 'track-card-actions';
+
+                const moveUpBtn = document.createElement('button');
+                moveUpBtn.type = 'button';
+                moveUpBtn.className = 'btn btn-sm btn-outline-light';
+                moveUpBtn.textContent = '↑';
+                moveUpBtn.title = 'Move up';
+                moveUpBtn.addEventListener('click', () => moveTrack(trackCard, -1));
+
+                const moveDownBtn = document.createElement('button');
+                moveDownBtn.type = 'button';
+                moveDownBtn.className = 'btn btn-sm btn-outline-light';
+                moveDownBtn.textContent = '↓';
+                moveDownBtn.title = 'Move down';
+                moveDownBtn.addEventListener('click', () => moveTrack(trackCard, 1));
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'btn btn-sm btn-outline-light';
                 removeBtn.textContent = 'Remove';
-                removeBtn.addEventListener('click', () => trackCard.remove());
+                removeBtn.addEventListener('click', () => {
+                    trackCard.remove();
+                    syncTrackOrderLabels();
+                });
 
+                actionGroup.appendChild(moveUpBtn);
+                actionGroup.appendChild(moveDownBtn);
+                actionGroup.appendChild(removeBtn);
                 header.appendChild(title);
-                header.appendChild(removeBtn);
+                header.appendChild(actionGroup);
 
                 const trackTitleWrap = document.createElement('div');
                 trackTitleWrap.className = 'mb-2';
@@ -155,20 +200,6 @@
                 trackCard.appendChild(genreWrap);
                 trackCard.appendChild(othersWrap);
                 tracksContainer.appendChild(trackCard);
-
-                const defaultOther = document.createElement('input');
-                defaultOther.type = 'text';
-                defaultOther.className = 'form-control';
-                defaultOther.placeholder = 'Featured artist';
-                const defaultRow = document.createElement('div');
-                defaultRow.className = 'album-other-row';
-                const defaultRemove = document.createElement('button');
-                defaultRemove.type = 'button';
-                defaultRemove.className = 'btn btn-sm btn-outline-light';
-                defaultRemove.textContent = 'Remove';
-                defaultRemove.addEventListener('click', () => defaultRow.remove());
-                defaultRow.append(defaultOther, defaultRemove);
-                othersList.appendChild(defaultRow);
 
                 return { trackTitle, genreSelect, othersList };
             }
