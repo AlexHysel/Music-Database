@@ -111,25 +111,28 @@ public class Orchestrator
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
     {
         /*
-        IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
-        in the same HTML request can cause some problems.
+        Album is the aggregate root. Track-level updates are intentionally limited to title and featured artists.
+        Album/artist/genre changes should be handled through the album update flow.
         */
         Track? track = await _manager.GetTrackedTrackAsync(Guid.Parse(patch.Id));
         if (track == null) return Result.Fail("Track not found");
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
 
-        if (!Enum.TryParse(patch.Genre, true, out Genre genre)) return Result.Fail("Wrong genre provided");
-        track.SetGenre(genre);
+        if (!string.IsNullOrWhiteSpace(patch.AlbumTitle) &&
+            !string.Equals(track.Album?.Title, patch.AlbumTitle, StringComparison.OrdinalIgnoreCase))
+            return Result.Fail("Album changes must be done through album update flow");
 
-        Artist artist = await _manager.EnsureArtistCreated(patch.ArtistName);
-        if (!track.SetArtist(artist)) return Result.Fail("Wrong artist provided");
-        
-        Album album = await _manager.EnsureAlbumCreated(patch.AlbumTitle, artist);
-        if (!track.SetAlbum(album)) return Result.Fail("Wrong album provided");
+        if (!string.IsNullOrWhiteSpace(patch.ArtistName) &&
+            !string.Equals(track.Artist?.Name, patch.ArtistName, StringComparison.OrdinalIgnoreCase))
+            return Result.Fail("Artist changes must be done through album update flow");
+
+        if (!string.IsNullOrWhiteSpace(patch.Genre) &&
+            !Enum.TryParse(patch.Genre, true, out _))
+            return Result.Fail("Wrong genre provided");
 
         var others = new List<Artist>();
-        foreach (string name in patch.Others)
+        foreach (string name in patch.Others ?? Array.Empty<string>())
             if (!string.IsNullOrEmpty(name))
                 others.Add(await _manager.EnsureArtistCreated(name));
         if (!track.SetOthers(others)) return Result.Fail("Wrong others provided");
@@ -237,6 +240,21 @@ public class Orchestrator
         }
         else
             return Result.Fail("Album Not Found");
+    }
+
+    public async Task<Result> UpdateAlbumAsync(UpdateAlbumRequest patch)
+    {
+        Album? album = await _manager.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
+        if (album == null) return Result.Fail("Album not found");
+
+        if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
+        if (!album.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
+
+        if (patch.ReleaseYear > 0 && !album.SetReleaseYear(patch.ReleaseYear))
+            return Result.Fail("Wrong release year provided");
+
+        await _manager.SaveChangesAsync();
+        return Result.Ok();
     }
 
     //ARTIST

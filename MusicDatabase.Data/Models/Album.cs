@@ -59,6 +59,15 @@ public class Album
         return true;
     }
 
+    public bool SetReleaseYear(int releaseYear)
+    {
+        if (releaseYear < 1900 || releaseYear > DateTimeOffset.UtcNow.Year + 1)
+            return false;
+
+        ReleaseYear = releaseYear;
+        return true;
+    }
+
     public bool SetTracks(List<Track> tracks)
     {
         Tracks = tracks;
