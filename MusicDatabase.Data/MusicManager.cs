@@ -267,11 +267,12 @@ public class MusicManager
 
     public async Task<Album?> GetAlbumDetailAsync(Guid id)
     {
-        return await _context.Albums.AsNoTracking()
+        Album? album = await _context.Albums.AsNoTracking()
             .Include(a => a.Artist)
             .Include(a => a.Tracks).ThenInclude(t => t.Artist)
             .Include(a => a.Tracks).ThenInclude(t => t.Others)
             .FirstOrDefaultAsync(a => a.Id == id);
+        return album;
     }
 
     public async Task<Album> EnsureAlbumCreated(string title, Artist artist)

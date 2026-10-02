@@ -97,7 +97,10 @@ public record AlbumDetailDTO(
             album.ImageUrl,
             album.Artist?.Name ?? "",
             album.Artist?.Id.ToString() ?? "",
-            album.Tracks == null ? new TrackDTO[0] : album.Tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            album.Tracks == null ? new TrackDTO[0] : album.Tracks
+                .OrderBy(t => t.NumberInTheAlbum)
+                .Select(t => TrackDTO.FromTrack(t))
+                .ToArray(),
             album.ReleaseYear,
             album.Type.ToString(),
             album.CreatedAt,
