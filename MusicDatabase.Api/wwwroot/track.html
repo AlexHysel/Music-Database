@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 
 <html>
+    <head>
+        <meta charset="utf-8">
+    </head>
     <body>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="styling/main.css">
@@ -11,6 +14,7 @@
                 <a id="artistName"></a>
                 <a id="albumTitle"></a>
                 <p id="trackGenre"></p>
+                <div id="trackMeta" class="detail-meta" style="display: none;"></div>
                 <div id="adminPanel" style="display: none">
                     <form id="newTrackInfo" style="display: none">
                         <input type="text" placeholder="Title" id="newTitle" required></input><br>
@@ -146,8 +150,8 @@
 
             function fillTrackForm(track){
                 document.getElementById('newTitle').value = track.title;
-                document.getElementById('newArtist').value = track.artist.name;
-                document.getElementById('newAlbum').value = track.album.title;
+                document.getElementById('newArtist').value = track.artistName;
+                document.getElementById('newAlbum').value = track.albumTitle;
                 document.getElementById('newGenre').value = track.genre;
                 let otherArtistsDiv = document.getElementById('otherArtists');
                 track.others.forEach(o => {
@@ -169,18 +173,36 @@
                 });
             }
 
+            function renderDetailMeta(containerId, createdAt, updatedAt) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const entries = [];
+                if (createdAt) entries.push(`Created: ${new Date(createdAt).toLocaleDateString()}`);
+                if (updatedAt) entries.push(`Updated: ${new Date(updatedAt).toLocaleDateString()}`);
+
+                if (!entries.length) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                container.innerHTML = entries.map(value => `<span>${value}</span>`).join(' • ');
+                container.style.display = 'block';
+            }
+
             window.onload = async () => {
                 let response = await fetch(`track?id=${trackId}`);
                 if (response.ok){
                     let track = await response.json();
                     document.title = track.title;
                     document.getElementById('trackTitle').textContent = track.title;
-                    document.getElementById('artistName').textContent = track.artist.name;
-                    document.getElementById('artistName').href = `artist.html?id=${track.artist.id}`;
-                    document.getElementById('albumTitle').textContent = track.album.title;
-                    document.getElementById('albumTitle').href = `album.html?id=${track.album.id}`;
+                    document.getElementById('artistName').textContent = track.artistName;
+                    document.getElementById('artistName').href = `artist.html?id=${track.artistId}`;
+                    document.getElementById('albumTitle').textContent = track.albumTitle;
+                    document.getElementById('albumTitle').href = `album.html?id=${track.albumId}`;
                     document.getElementById('trackGenre').textContent = track.genre;
-                    document.getElementById('cover').src = track.album.imageUrl;
+                    document.getElementById('cover').src = track.albumImageUrl;
+                    renderDetailMeta('trackMeta', track.createdAt, track.updatedAt);
 
                     let role = getRole();
                     if (role == 'Admin')

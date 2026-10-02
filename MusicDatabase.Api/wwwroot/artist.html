@@ -15,6 +15,7 @@
                     <img id="artistImage">
                     <div class="artist-hero-overlay">
                         <h1 id="artistName"></h1>
+                        <div id="artistMeta" class="detail-meta" style="display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -125,6 +126,23 @@
                 document.getElementById('newImageUrl').value = artist.imageUrl ?? '';
             }
 
+            function renderDetailMeta(containerId, createdAt, updatedAt) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const entries = [];
+                if (createdAt) entries.push(`Created: ${new Date(createdAt).toLocaleDateString()}`);
+                if (updatedAt) entries.push(`Updated: ${new Date(updatedAt).toLocaleDateString()}`);
+
+                if (!entries.length) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                container.innerHTML = entries.map(value => `<span>${value}</span>`).join(' • ');
+                container.style.display = 'block';
+            }
+
             async function loadArtistTracks() {
                 let response = await fetch(`artist/tracks?id=${id}&toSkip=0&toTake=5`);
                 if (!response.ok) {
@@ -144,6 +162,7 @@
                     let artist = await response.json();
                     document.getElementById('artistImage').src = artist.imageUrl;
                     document.getElementById('artistName').textContent = artist.name;
+                    renderDetailMeta('artistMeta', artist.createdAt, artist.updatedAt);
                     document.title = artist.name;
                     // On artist page we want paged lists for albums and tracks
                     let albumsList = createAlbumListWithMore(artist.albums, { endpoint: `album/search`, queryParam: 'title' });

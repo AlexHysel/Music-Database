@@ -15,6 +15,7 @@
                 <img id="cover">
                 <h1 id="albumTitle"></h1>
                 <a id="albumArtist"></a>
+                <div id="albumMeta" class="detail-meta" style="display: none;"></div>
                 <div id="adminPanel" style="display: none;">
                     <input id="albumTitleInput" class="form-control mb-2" type="text" placeholder="New Title" required style="display: none">
                     <input id="newImageUrl" class="form-control mb-2" type="text" placeholder="New Cover URL" required style="display: none">
@@ -115,15 +116,33 @@
                 document.getElementById('newImageUrl').value = album.imageUrl;
             }
 
+            function renderDetailMeta(containerId, createdAt, updatedAt) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const entries = [];
+                if (createdAt) entries.push(`Created: ${new Date(createdAt).toLocaleDateString()}`);
+                if (updatedAt) entries.push(`Updated: ${new Date(updatedAt).toLocaleDateString()}`);
+
+                if (!entries.length) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                container.innerHTML = entries.map(value => `<span>${value}</span>`).join(' • ');
+                container.style.display = 'block';
+            }
+
             window.onload = async () => {
                 let response = await fetch(`album?id=${id}`)
                 if (response.ok){
                     let album = await response.json();
-                    document.title = `${album.title} by ${album.artist.name}`;
+                    document.title = `${album.title} by ${album.artistName}`;
                     document.getElementById('cover').src = album.imageUrl;
                     document.getElementById('albumTitle').textContent = album.title;
-                    document.getElementById('albumArtist').textContent = album.artist.name;
-                    document.getElementById('albumArtist').href = `artist.html?id=${album.artist.id}`;
+                    document.getElementById('albumArtist').textContent = album.artistName;
+                    document.getElementById('albumArtist').href = `artist.html?id=${album.artistId}`;
+                    renderDetailMeta('albumMeta', album.createdAt, album.updatedAt);
                     // Use compact track list on album page and disable 'More' (tracks belong to this album)
                     document.getElementById('trackList').appendChild(createTrackList(album.tracks, { showMore: false, compact: true }));
                     let role = getRole();

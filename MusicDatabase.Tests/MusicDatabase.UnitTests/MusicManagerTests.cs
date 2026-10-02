@@ -18,8 +18,8 @@ public class MusicManagerTests
         var artistTwo = new Artist("Artist Two");
         await db.Artists.AddRangeAsync(artistOne, artistTwo);
 
-        var albumOne = new Album("Album One", artistOne);
-        var albumTwo = new Album("Album Two", artistTwo);
+        var albumOne = new Album("Album One", 2000, artistOne);
+        var albumTwo = new Album("Album Two", 2001, artistTwo);
         await db.Albums.AddRangeAsync(albumOne, albumTwo);
 
         await db.Tracks.AddRangeAsync(

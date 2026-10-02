@@ -33,22 +33,33 @@ function createAlbumElement(album) {
 
     let albumLink = document.createElement('a');
     albumLink.href = `album.html?id=${album.id}`;
+    albumLink.className = 'album-link';
 
     let albumImage = document.createElement('img');
     albumImage.src = album.imageUrl ?? '/placeholder.png';
     albumImage.alt = album.title;
 
+    let albumInfo = document.createElement('div');
+    albumInfo.className = 'album-info';
+
     let albumTitle = document.createElement('h3');
+    albumTitle.className = 'album-title';
     albumTitle.textContent = album.title;
 
     let albumMeta = document.createElement('div');
-    albumMeta.className = 'meta';
-    let artistName = album.artist?.name ?? album.artistName ?? '';
-    if (artistName) albumMeta.textContent = artistName;
+    albumMeta.className = 'album-meta';
+    let releaseYear = Number.isFinite(Number(album.releaseYear)) ? Number(album.releaseYear) : null;
+    let artistName = album.artistName ?? album.artist?.name ?? '';
+    let metaParts = [];
+    if (releaseYear !== null) metaParts.push(String(releaseYear));
+    if (artistName) metaParts.push(artistName);
+    albumMeta.textContent = metaParts.join(' • ');
+
+    albumInfo.appendChild(albumTitle);
+    albumInfo.appendChild(albumMeta);
 
     albumLink.appendChild(albumImage);
-    albumLink.appendChild(albumTitle);
-    if (artistName) albumLink.appendChild(albumMeta);
+    albumLink.appendChild(albumInfo);
     albumElement.appendChild(albumLink);
     return albumElement;
 }

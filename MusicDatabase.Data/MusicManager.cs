@@ -259,12 +259,12 @@ public class MusicManager
         return await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public async Task<Album?> GetAlbumAsync(Guid id)
+    public async Task<Album?> GetAlbumDetailAsync(Guid id)
     {
         return await _context.Albums.AsNoTracking()
             .Include(a => a.Artist)
-            .Include(a => a.Tracks)
-            .ThenInclude(t => t.Artist)
+            .Include(a => a.Tracks).ThenInclude(t => t.Artist)
+            .Include(a => a.Tracks).ThenInclude(t => t.Others)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
@@ -301,8 +301,8 @@ public class MusicManager
     public async Task<Artist?> GetArtistDetailAsync(Guid id){
         return await _context.Artists.AsNoTrackingWithIdentityResolution()
             .Include(a => a.Albums)
-            .Include(a => a.Tracks)
-            .ThenInclude(t => t.Album)
+            .Include(a => a.Tracks).ThenInclude(t => t.Album)
+            .Include(a => a.Tracks).ThenInclude(t => t.Others)
             .Include(a => a.AppearsOn).ThenInclude(t => t.Album)
             .Include(a => a.AppearsOn).ThenInclude(t => t.Artist)
             .Include(a => a.AppearsOn).ThenInclude(t => t.Others)
@@ -312,8 +312,8 @@ public class MusicManager
     public async Task<Artist?> GetTrackedArtistDetailAsync(Guid id){
         return await _context.Artists
             .Include(a => a.Albums)
-            .Include(a => a.Tracks)
-            .ThenInclude(t => t.Album)
+            .Include(a => a.Tracks).ThenInclude(t => t.Album)
+            .Include(a => a.Tracks).ThenInclude(t => t.Others)
             .Include(a => a.AppearsOn).ThenInclude(t => t.Album)
             .Include(a => a.AppearsOn).ThenInclude(t => t.Artist)
             .Include(a => a.AppearsOn).ThenInclude(t => t.Others)

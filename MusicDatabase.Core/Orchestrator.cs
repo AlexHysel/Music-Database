@@ -188,9 +188,9 @@ public class Orchestrator
             return Result.Fail("Album not found");
     }
 
-    public async Task<Result<AlbumDetailDTO?>> GetAlbumAsync(Guid id)
+    public async Task<Result<AlbumDetailDTO?>> GetAlbumDetailAsync(Guid id)
     {
-        Album? album = await _manager.GetAlbumAsync(id);
+        Album? album = await _manager.GetAlbumDetailAsync(id);
         if (album != null)
         {
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);

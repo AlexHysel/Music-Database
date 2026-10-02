@@ -10,11 +10,9 @@ public record TrackDTO(
     string AlbumId,
     string ArtistName,
     string ArtistId,
-    string[] OthersNames,
-    string[] OthersIds,
+    ArtistDTO[] Others,
     string Id)
 {
-    /// <summary>Safe conversion for track relations that are not always fully loaded.</summary>
     public static TrackDTO FromTrack(Track track)
     {
         return new TrackDTO(
@@ -24,8 +22,7 @@ public record TrackDTO(
             track.Album?.Id.ToString() ?? "",
             track.Artist?.Name ?? "",
             track.Artist?.Id.ToString() ?? "",
-            track.Others?.Select(o => o.Name).ToArray() ?? new string[0],
-            track.Others?.Select(o => o.Id.ToString()).ToArray() ?? new string[0],
+            track.Others.Select(o => ArtistDTO.FromArtist(o)).ToArray(),
             track.Id.ToString()
         );
     }
@@ -33,20 +30,30 @@ public record TrackDTO(
 
 public record TrackDetailDTO(
     string Title,
-    AlbumDTO Album,
-    ArtistDTO Artist,
+    string AlbumTitle,
+    string AlbumImageUrl,
+    string AlbumId,
+    string ArtistName,
+    string ArtistId,
     ArtistDTO[] Others,
     string Genre,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
     string Id)
 {
     public static TrackDetailDTO FromTrack(Track track)
     {
         return new TrackDetailDTO(
             track.Title,
-            AlbumDTO.FromAlbum(track.Album),
-            ArtistDTO.FromArtist(track.Artist),
+            track.Album?.Title ?? "",
+            track.Album?.ImageUrl ?? "",
+            track.Album?.Id.ToString() ?? "",
+            track.Artist?.Name ?? "",
+            track.Artist?.Id.ToString() ?? "",
             track.Others.Select(o => ArtistDTO.FromArtist(o)).ToArray(),
             track.Genre.ToString(),
+            track.CreatedAt,
+            track.UpdatedAt,
             track.Id.ToString());
     }
 }
@@ -62,12 +69,18 @@ public record TrackUpdateDTO(
 
 public record AlbumDTO(
     string Title,
+    string ArtistName,
+    string ArtistId,
+    int ReleaseYear,
     string ImageUrl,
     string Id)
 {
     public static AlbumDTO FromAlbum(Album album){
         return new AlbumDTO(
             album.Title,
+            album.Artist?.Name ?? "",
+            album.Artist?.Id.ToString() ?? "",
+            album.ReleaseYear,
             album.ImageUrl,
             album.Id.ToString()
         );
@@ -77,9 +90,13 @@ public record AlbumDTO(
 public record AlbumDetailDTO(
     string Title,
     string ImageUrl,
-    ArtistDTO Artist,
+    string ArtistName,
+    string ArtistId,
     TrackDTO[] Tracks,
+    int ReleaseYear,
     string Type,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
     string Id)
 {
     public static AlbumDetailDTO FromAlbum(Album album)
@@ -87,9 +104,13 @@ public record AlbumDetailDTO(
         return new AlbumDetailDTO(
             album.Title,
             album.ImageUrl,
-            ArtistDTO.FromArtist(album.Artist),
+            album.Artist?.Name ?? "",
+            album.Artist?.Id.ToString() ?? "",
             album.Tracks == null ? new TrackDTO[0] : album.Tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            album.ReleaseYear,
             album.Type.ToString(),
+            album.CreatedAt,
+            album.UpdatedAt,
             album.Id.ToString());
     }
 }
@@ -111,6 +132,8 @@ public record ArtistDetailDTO(
     AlbumDTO[] Albums,
     TrackDTO[] Tracks,
     TrackDTO[] AppearsOn,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
     string Id)
 {
     public static ArtistDetailDTO FromArtist(Artist artist)
@@ -124,6 +147,8 @@ public record ArtistDetailDTO(
             albums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
             tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             appearsOn.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            artist.CreatedAt,
+            artist.UpdatedAt,
             artist.Id.ToString());
     }
 }
@@ -145,7 +170,9 @@ public record UserDetailDTO(
     string Id,
     ArtistDTO[] FavoriteArtists,
     AlbumDTO[] FavoriteAlbums,
-    TrackDTO[] FavoriteTracks
+    TrackDTO[] FavoriteTracks,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt
 )
 {
     public static UserDetailDTO FromUser(User user)
@@ -156,7 +183,9 @@ public record UserDetailDTO(
             user.Id.ToString(),
             user.FavoriteArtists.Select(a => ArtistDTO.FromArtist(a)).ToArray(),
             user.FavoriteAlbums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
-            user.FavoriteTracks.Select(t => TrackDTO.FromTrack(t)).ToArray()
+            user.FavoriteTracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            user.CreatedAt,
+            user.UpdatedAt
         );
     }
 }
