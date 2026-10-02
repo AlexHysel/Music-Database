@@ -119,14 +119,6 @@ public class Orchestrator
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
 
-        if (!string.IsNullOrWhiteSpace(patch.AlbumTitle) &&
-            !string.Equals(track.Album?.Title, patch.AlbumTitle, StringComparison.OrdinalIgnoreCase))
-            return Result.Fail("Album changes must be done through album update flow");
-
-        if (!string.IsNullOrWhiteSpace(patch.ArtistName) &&
-            !string.Equals(track.Artist?.Name, patch.ArtistName, StringComparison.OrdinalIgnoreCase))
-            return Result.Fail("Artist changes must be done through album update flow");
-
         if (!string.IsNullOrWhiteSpace(patch.Genre) &&
             !Enum.TryParse(patch.Genre, true, out Genre genre))
             return Result.Fail("Wrong genre provided");
