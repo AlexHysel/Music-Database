@@ -14,7 +14,7 @@ namespace MusicDatabase.Core;
 // BUSINESS LOGIC LAYER
 public class Orchestrator
 {
-    private readonly MusicManager _manager;
+    private readonly IMusicManager _manager;
     private readonly IConfiguration _config;
 
     public Orchestrator(MusicManager manager, IConfiguration config) {
@@ -34,13 +34,13 @@ public class Orchestrator
     //TRACK
     public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
     {
-        PagedResult<Track> tracks = await _manager.GetArtistTracksAsync(artistId, toSkip, toTake);
+        PagedResult<Track> tracks = await _manager.Tracks.GetArtistTracksAsync(artistId, toSkip, toTake);
         return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(TrackDTO.FromTrack));
     }
 
     public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)
     {
-        User? user = await _manager.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
         if (user == null)
             return Result<TrackDTO[]>.Fail("User not found");
         else
@@ -49,13 +49,21 @@ public class Orchestrator
 
     public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake)
     {
-        return (await _manager.GetMatchingTracksAsync(title, toSkip, toTake))
+        return (await _manager.Tracks.GetMatchingTracksAsync(title, toSkip, toTake))
             .Map(TrackDTO.FromTrack);
     }
 
     public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
     {
-        if (await _manager.AddTrackToFavoritesAsync(userId, trackId))
+        Track? track = await _manager.Tracks.GetTrackAsync(trackId);
+        if (track == null)
+            return Result.Fail("Track not found");
+
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result.Fail("User not found");
+
+        if (user.AddTrackToFavorites(track)) 
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -65,7 +73,15 @@ public class Orchestrator
 
     public async Task<Result> RemoveTrackFromFavoritesAsync(Guid trackId, Guid userId)
     {
-        if (await _manager.RemoveTrackFromFavoritesAsync(userId, trackId))
+        Track? track = await _manager.Tracks.GetTrackAsync(trackId);
+        if (track == null)
+            return Result.Fail("Track not found");
+
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result.Fail("User not found");
+
+        if (user.RemoveTrackFromFavorites(track))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -73,36 +89,9 @@ public class Orchestrator
         return Result.Fail("Track not in favorites");
     }
 
-    public async Task<Result> RemoveTrackAsync(Guid id)
+    public async Task<Result<TrackDetailDTO>> GetTrackDetailAsync(Guid id)
     {
-        if (await _manager.RemoveTrackAsync(id))
-        {
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        return Result.Fail("Track not found");
-    }
-
-    public async Task AddTrackAsync(string title, string artistName, string[]? others, string albumTitle, Genre genre)
-    {
-        Artist artist = await _manager.EnsureArtistCreated(artistName);
-        Album album = await _manager.EnsureAlbumCreated(albumTitle, artist);
-        
-        List<Artist> artists = [];
-        if (others != null)
-            foreach (string name in others)
-                if (!string.IsNullOrEmpty(name))
-                    artists.Add(await _manager.EnsureArtistCreated(name));
-
-        //temporarily set to 1, till i change creating track to creating album
-        Track track = new(title, 1, album, artist, artists, genre);
-        await _manager.AddTrackAsync(track);
-        await _manager.SaveChangesAsync();
-    }
-
-    public async Task<Result<TrackDetailDTO>> GetTrackAsync(Guid id)
-    {
-        Track? track = await _manager.GetTrackDetailAsync(id);
+        Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
         if (track == null)
             return Result<TrackDetailDTO>.Fail("Track not found");
         else
@@ -114,7 +103,7 @@ public class Orchestrator
         if (string.IsNullOrWhiteSpace(patch.Id) || !Guid.TryParse(patch.Id, out Guid trackId))
             return Result.Fail("Track id is invalid");
 
-        Track? track = await _manager.GetTrackedTrackAsync(trackId);
+        Track? track = await _manager.Tracks.GetTrackedTrackAsync(trackId);
         if (track == null) return Result.Fail("Track not found");
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
@@ -126,7 +115,7 @@ public class Orchestrator
         var others = new List<Artist>();
         foreach (string name in patch.Others ?? Array.Empty<string>())
             if (!string.IsNullOrEmpty(name))
-                others.Add(await _manager.EnsureArtistCreated(name));
+                others.Add(await _manager.Artists.EnsureArtistCreated(name));
         if (!track.SetOthers(others)) return Result.Fail("Wrong others provided");
 
         await _manager.SaveChangesAsync();
@@ -134,9 +123,9 @@ public class Orchestrator
     }
 
     //ALBUM
-    public async Task AddAlbumAsync(AddAlbumRequest info)
+    public async Task CreateAlbumAsync(AddAlbumRequest info)
     {
-        Artist artist = await _manager.EnsureArtistCreated(info.ArtistName);
+        Artist artist = await _manager.Artists.EnsureArtistCreated(info.ArtistName);
         Album album = new(info.Title, info.ReleaseYear, artist, info.ImageUrl);
 
         int n = 1;
@@ -146,18 +135,18 @@ public class Orchestrator
             if (trackInfo.Others != null)
                 foreach (string name in trackInfo.Others)
                     if (!string.IsNullOrEmpty(name))
-                        others.Add(await _manager.EnsureArtistCreated(name));
+                        others.Add(await _manager.Artists.EnsureArtistCreated(name));
             Track track = new(trackInfo.Title, n++, album, artist, others, Enum.Parse<Genre>(trackInfo.Genre, true));
-            await _manager.AddTrackAsync(track);
+            album.Tracks.Add(track);
         }
 
-        await _manager.AddAlbumAsync(album);
+        await _manager.Albums.CreateAlbumAsync(album);
         await _manager.SaveChangesAsync();
     }
 
     public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
     {
-        User? user = await _manager.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
         if (user == null)
             return Result<AlbumDTO[]>.Fail("User not found");
 
@@ -167,46 +156,59 @@ public class Orchestrator
 
     public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
-        return (await _manager.GetMatchingAlbumsAsync(title, toSkip, toTake))
+        return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake))
             .Map(a => AlbumDTO.FromAlbum(a));
     }
 
     public async Task<Result> AddAlbumToFavoritesAsync(Guid albumId, Guid userId)
     {
-        if (await _manager.AddAlbumToFavoritesAsync(userId, albumId))
+        Album? album = await _manager.Albums.GetAlbumAsync(albumId);
+        if (album == null)
+            return Result.Fail("Album not found");
+
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result.Fail("User not found");
+
+        if (user.AddAlbumToFavorites(album))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Album already in favorites");
+        return Result.Fail("Album already in favorites");
     }
 
     public async Task<Result> RemoveAlbumFromFavoritesAsync(Guid albumId, Guid userId)
     {
-        if (await _manager.RemoveAlbumFromFavoritesAsync(userId, albumId))
+        Album? album = await _manager.Albums.GetAlbumAsync(albumId);
+        if (album == null)
+            return Result.Fail("Album not found");
+
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result.Fail("User not found");
+
+        if (user.RemoveAlbumFromFavorites(album))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Album not in favorites");
+        return Result.Fail("Album not in favorites");
     }
 
     public async Task<Result> RemoveAlbumAsync(Guid id)
     {
-        if (await _manager.RemoveAlbumAsync(id))
+        if (await _manager.Albums.RemoveAlbumAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        else
-            return Result.Fail("Album not found");
+        return Result.Fail("Album not found");
     }
 
     public async Task<Result<AlbumDetailDTO?>> GetAlbumDetailAsync(Guid id)
     {
-        Album? album = await _manager.GetAlbumDetailAsync(id);
+        Album? album = await _manager.Albums.GetAlbumDetailAsync(id);
         if (album != null)
         {
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
@@ -216,27 +218,13 @@ public class Orchestrator
             return Result<AlbumDetailDTO?>.Fail("Album not found");
     }
 
-    public async Task<Result> UpdateAlbumAsync(AlbumDTO patch)
+    public async Task<Result> UpdateAlbumAsync(UpdateAlbumRequest patch)
     {
         /*
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
         in the same HTML request can cause some problems.
         */
-        Album? album = await _manager.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
-        if (album != null)
-        {
-            if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
-            if (!album.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        else
-            return Result.Fail("Album Not Found");
-    }
-
-    public async Task<Result> UpdateAlbumAsync(UpdateAlbumRequest patch)
-    {
-        Album? album = await _manager.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
+        Album? album = await _manager.Albums.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
         if (album == null) return Result.Fail("Album not found");
 
         if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
@@ -252,7 +240,7 @@ public class Orchestrator
     //ARTIST
     public async Task<Result<ArtistDTO[]>> GetFavoriteArtistsAsync(Guid userId)
     {
-        User? user = await _manager.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId);
         if (user == null)
             return Result<ArtistDTO[]>.Fail("User not found");
 
@@ -262,13 +250,21 @@ public class Orchestrator
 
     public async Task<PagedResult<ArtistDTO>> GetMatchingArtistsAsync(string name, int toSkip, int toTake)
     {
-        return (await _manager.GetMatchingArtistsAsync(name, toSkip, toTake))
+        return (await _manager.Artists.GetMatchingArtistsAsync(name, toSkip, toTake))
             .Map(a => ArtistDTO.FromArtist(a));
     }
 
     public async Task<Result> AddArtistToFavoritesAsync(Guid userId, Guid artistId)
     {
-        if (await _manager.AddArtistToFavoritesAsync(userId, artistId))
+        Artist? artist = await _manager.Artists.GetArtistAsync(artistId);
+        if (artist == null)
+            return Result.Fail("Artist not found");
+
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result.Fail("User not found");
+
+        if (user.AddArtistToFavorites(artist))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -278,7 +274,15 @@ public class Orchestrator
 
     public async Task<Result> RemoveArtistFromFavoritesAsync(Guid userId, Guid artistId)
     {
-        if (await _manager.RemoveArtistFromFavoritesAsync(userId, artistId))
+        Artist? artist = await _manager.Artists.GetArtistAsync(artistId);
+        if (artist == null)
+            return Result.Fail("Artist not found");
+        
+        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        if (user == null)
+            return Result.Fail("User not found");
+
+        if (user.RemoveArtistFromFavorites(artist))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -288,7 +292,7 @@ public class Orchestrator
 
     public async Task<Result> RemoveArtistAsync(Guid id)
     {
-        if (await _manager.RemoveArtistAsync(id))
+        if (await _manager.Artists.RemoveArtistAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -296,26 +300,26 @@ public class Orchestrator
         return Result.Fail("Artist not found");
     }
 
+    // It should use ArtistUpdateRequest
     public async Task<Result> UpdateArtistAsync(ArtistDTO patch)
     {
         /*
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
         in the same HTML request can cause some problems.
         */
-        Artist? artist = await _manager.GetTrackedArtistAsync(Guid.Parse(patch.Id));
-        if (artist != null)
-        {
-            if (!artist.SetName(patch.Name)) return Result.Fail("Empty name provided");
-            if (!artist.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        return Result.Fail("Artist not found");
+        Artist? artist = await _manager.Artists.GetTrackedArtistAsync(Guid.Parse(patch.Id));
+
+        if (artist == null) return Result.Fail("Artist not found");
+        if (!artist.SetName(patch.Name)) return Result.Fail("Empty name provided");
+        if (!artist.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
+
+        await _manager.SaveChangesAsync();
+        return Result.Ok();
     }
 
-    public async Task<Result<ArtistDetailDTO>> GetArtistAsync(Guid id)
+    public async Task<Result<ArtistDetailDTO>> GetArtistDetailAsync(Guid id)
     {
-        Artist? artist = await _manager.GetArtistDetailAsync(id);
+        Artist? artist = await _manager.Artists.GetArtistDetailAsync(id);
         if (artist == null)
             return Result<ArtistDetailDTO>.Fail("Artist not found");
         else
@@ -325,7 +329,7 @@ public class Orchestrator
     //USER
     public async Task<Result> RemoveUserAsync(Guid id)
     {
-        if (await _manager.RemoveUserAsync(id))
+        if (await _manager.Users.RemoveUserAsync(id))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -335,13 +339,13 @@ public class Orchestrator
 
     public async Task<PagedResult<UserDTO>> GetMatchingUsersAsync(string name, int toSkip, int toTake)
     {
-        return (await _manager.GetMatchingUsersAsync(name, toSkip, toTake))
+        return (await _manager.Users.GetMatchingUsersAsync(name, toSkip, toTake))
             .Map(u => UserDTO.FromUser(u));
     }
 
     public async Task<Result<UserDTO>> GetUserAsync(Guid id)
     {
-        User? user = await _manager.GetUserAsync(id);
+        User? user = await _manager.Users.GetUserAsync(id);
         if (user == null)
             return Result<UserDTO>.Fail("User not found");
         else
@@ -350,26 +354,28 @@ public class Orchestrator
 
     public async Task<Result<UserDetailDTO>> GetUserDetailAsync(Guid id)
     {
-        User? user = await _manager.GetUserDetailAsync(id);
+        User? user = await _manager.Users.GetUserDetailAsync(id);
         if (user == null)
             return Result<UserDetailDTO>.Fail("User not found");
         else
             return Result<UserDetailDTO>.Ok(UserDetailDTO.FromUser(user));
     }
     
-    public async Task<Result> AddUserAsync(string name, string role, string password)
+    public async Task<Result> CreateUserAsync(string name, string role, string password)
     {
-        if (await _manager.UserExistsAsync(name))
-            return Result.Fail("User with this name already exists");
-        await _manager.AddUserAsync(name, Enum.Parse<UserRole>(role), password);
-        await _manager.SaveChangesAsync();
-        return Result.Ok();
+        if (await _manager.Users.CreateUserAsync(name, Enum.Parse<UserRole>(role), password))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        return Result.Fail("User already exists");
+        
     }
 
     public async Task<AuthDTO?> LogInAsync(string name, string password)
     {
         AuthDTO? auth = null;
-        User? user = await _manager.AuthenticateUser(name, password);
+        User? user = await _manager.Users.AuthenticateUser(name, password);
         if (user != null)
         {
             string role = user.Role.ToString();

@@ -113,7 +113,7 @@ app.MapPost("/login", async (Orchestrator o, LogInRequest request) =>
 
 app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
 {
-    Result result = await o.AddUserAsync(request.Username, request.Role, request.Password);
+    Result result = await o.CreateUserAsync(request.Username, request.Role, request.Password);
     if (result.Success)
         return Results.Created();
     else

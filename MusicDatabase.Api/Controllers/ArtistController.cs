@@ -17,7 +17,7 @@ public class ArtistController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<ArtistDetailDTO> result = await _orchestrator.GetArtistAsync(id);
+        Result<ArtistDetailDTO> result = await _orchestrator.GetArtistDetailAsync(id);
         if (result.Success)
             return Ok(result.Data);
         else

@@ -47,7 +47,7 @@ public class AlbumController : ControllerBase
         if (info.Tracks.Any(t => t.Genre == null || t.Genre.Trim().Length == 0)) return BadRequest("All tracks must have a genre.");
         if (info.Tracks.Any(t => t.Others != null && t.Others.Any(o => o == null || o.Trim().Length == 0))) return BadRequest("All other artists must have a name.");
 
-        await _orchestrator.AddAlbumAsync(info);
+        await _orchestrator.CreateAlbumAsync(info);
         return Created();
     }
 
@@ -64,7 +64,7 @@ public class AlbumController : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] AlbumDTO patch)
+    public async Task<IActionResult> Put([FromBody] UpdateAlbumRequest patch)
     {
         Result result = await _orchestrator.UpdateAlbumAsync(patch);
         if (result.Success)

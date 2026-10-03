@@ -3,13 +3,12 @@ namespace MusicDatabase.Domain;
 public class Album
 {
     public Guid Id {get; private set;}
-    public string Title { get; private set; }
+    public string Title { get; private set; } = null!;
     public int ReleaseYear {get; private set;}
     public Guid ArtistId { get; private set; }
-    public Artist Artist { get; private set; }
+    public Artist Artist { get; private set; } = null!;
     public string ImageUrl {get; private set;} = "";
-    private readonly List<Track> _tracks = new();
-    public IReadOnlyCollection<Track> Tracks => _tracks.AsReadOnly();
+    public List<Track> Tracks {get; private set; } = new List<Track>();
     public AlbumType Type {get; private set;}
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
@@ -44,7 +43,8 @@ public class Album
 
     public bool SetArtist(Artist artist)
     {
-        if (artist == null) return false;
+        ArgumentNullException.ThrowIfNull(artist);
+        //what if new artist is one of the 'Others' in the track?
 
         Artist = artist;
         ArtistId = artist.Id;
@@ -71,10 +71,18 @@ public class Album
 
     public bool SetTracks(List<Track> tracks)
     {
-        if (tracks == null) return false;
+        ArgumentNullException.ThrowIfNull(tracks, nameof(tracks));
+        if (tracks.Any(t => t == null))
+            throw new ArgumentException("Tracks cannot be null.", nameof(tracks));
 
-        _tracks.Clear();
-        _tracks.AddRange(tracks);
+        tracks.OrderBy(t => t.NumberInTheAlbum);
+        Tracks.Clear();
+        for (int i = 1; i <= tracks.Count; i++)
+        {
+            var track = tracks[i - 1];
+            track.SetNumberInTheAlbum(i);
+            Tracks.Add(track);
+        }
         return true;
     }
 

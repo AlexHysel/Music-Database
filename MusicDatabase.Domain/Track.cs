@@ -48,8 +48,14 @@ public class Track
 
     public bool SetOthers(List<Artist> others)
     {
+        ArgumentNullException.ThrowIfNull(others, nameof(others));
+        if (others.Any(a => a == null))
+            throw new ArgumentException("Others cannot contain null values.", nameof(others));
+
+        // What if one of the 'others' is the main artist?
+        // Should it just be removed or raise an exception?
         _others.Clear();
-        _others.AddRange(others);
+        _others.AddRange(others.DistinctBy(o => o.Id));
         return true;
     }
 
@@ -66,6 +72,8 @@ public class Track
 
     internal void SetNumberInTheAlbum(int number)
     {
+        // Decided to throw an exception here instead of returning a bool, 
+        // because this is an internal method and should not be called with invalid data.
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(number, nameof(number));
 
         NumberInTheAlbum = number;

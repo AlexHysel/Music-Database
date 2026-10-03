@@ -18,7 +18,7 @@ public class TrackController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<TrackDetailDTO> result = await _orchestrator.GetTrackAsync(id);
+        Result<TrackDetailDTO> result = await _orchestrator.GetTrackDetailAsync(id);
         if (result.Success)
             return Ok(result.Data);
         else
