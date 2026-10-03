@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using MusicDatabase.Domain;
 
 namespace MusicDatabase.Data;
 
@@ -9,7 +10,6 @@ public class MusicDb : DbContext
     public DbSet<Album> Albums => Set<Album>();
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<Playlist> Playlists => Set<Playlist>();
 
     public MusicDb(DbContextOptions<MusicDb> options) : base(options) {}
 
@@ -96,17 +96,5 @@ public class MusicDb : DbContext
             .HasMany(u => u.FavoriteAlbums)
             .WithMany()
             .UsingEntity(j => j.ToTable("UserAlbums"));
-        
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Playlists)
-            .WithOne(p => p.Creator)
-            .HasForeignKey(p => p.CreatorId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // PLAYLIST
-        modelBuilder.Entity<Playlist>()
-            .HasMany(p => p.Tracks)
-            .WithMany()
-            .UsingEntity(j => j.ToTable("PlaylistTracks"));
     }
 }

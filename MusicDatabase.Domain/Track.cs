@@ -1,4 +1,4 @@
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Domain;
 
 public class Track
 {
@@ -9,7 +9,8 @@ public class Track
     public Album Album {get; private set;}
     public Guid ArtistId {get; private set;}
     public Artist Artist {get; private set;}
-    public List<Artist> Others {get; private set;}
+    private readonly List<Artist> _others = new();
+    public IReadOnlyCollection<Artist> Others => _others.AsReadOnly();
     public Genre Genre {get; private set;}
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
@@ -30,7 +31,7 @@ public class Track
         Album = album;
         ArtistId = artist.Id;
         Artist = artist;
-        Others = others;
+        _others.AddRange(others);
         Genre = genre;
     }
 
@@ -45,27 +46,10 @@ public class Track
         return true;
     }
 
-    public bool SetAlbum(Album album)
-    {
-        if (album == null) return false;
-        
-        Album = album;
-        AlbumId = album.Id;
-        return true;
-    }
-
-    public bool SetArtist(Artist artist)
-    {
-        if (artist == null) return false;
-
-        Artist = artist;
-        ArtistId = artist.Id;
-        return true;
-    }
-
     public bool SetOthers(List<Artist> others)
     {
-        Others = others;
+        _others.Clear();
+        _others.AddRange(others);
         return true;
     }
 
@@ -75,12 +59,20 @@ public class Track
         return true;
     }
 
-    internal void UpdateUpdatedAt()
+    public void UpdateUpdatedAt()
     {
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void InitializeTimestamps()
+    internal void SetNumberInTheAlbum(int number)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(number, nameof(number));
+
+        NumberInTheAlbum = number;
+        return;
+    }
+
+    public void InitializeTimestamps()
     {
         if (CreatedAt == default)
         {

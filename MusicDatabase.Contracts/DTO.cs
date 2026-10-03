@@ -1,5 +1,5 @@
 using MusicDatabase.Common;
-using MusicDatabase.Data;
+using MusicDatabase.Domain;
 
 namespace MusicDatabase.Contracts;
 

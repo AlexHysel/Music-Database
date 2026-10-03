@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MusicDatabase.Common;
+using MusicDatabase.Domain;
 
 namespace MusicDatabase.Data;
 

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
+using MusicDatabase.Domain;
 using MusicDatabase.Common;
 
 namespace MusicDatabase.Core;
@@ -34,7 +35,7 @@ public class Orchestrator
     public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
     {
         PagedResult<Track> tracks = await _manager.GetArtistTracksAsync(artistId, toSkip, toTake);
-        return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(t => TrackDTO.FromTrack(t)));
+        return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(TrackDTO.FromTrack));
     }
 
     public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)
@@ -43,13 +44,13 @@ public class Orchestrator
         if (user == null)
             return Result<TrackDTO[]>.Fail("User not found");
         else
-            return Result<TrackDTO[]>.Ok(user.GetFavoriteTracks().Select(t => TrackDTO.FromTrack(t)).ToArray());
+            return Result<TrackDTO[]>.Ok(user.FavoriteTracks.Select(TrackDTO.FromTrack).ToArray());
     }
 
     public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.GetMatchingTracksAsync(title, toSkip, toTake))
-            .Map(t => TrackDTO.FromTrack(t));
+            .Map(TrackDTO.FromTrack);
     }
 
     public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
@@ -160,7 +161,7 @@ public class Orchestrator
         if (user == null)
             return Result<AlbumDTO[]>.Fail("User not found");
 
-        var albums = user.GetFavoriteAlbums().Select(a => AlbumDTO.FromAlbum(a)).ToArray();
+        var albums = user.FavoriteAlbums.Select(AlbumDTO.FromAlbum).ToArray();
         return Result<AlbumDTO[]>.Ok(albums);
     }
 
@@ -255,7 +256,7 @@ public class Orchestrator
         if (user == null)
             return Result<ArtistDTO[]>.Fail("User not found");
 
-        var artists = user.GetFavoriteArtists().Select(a => ArtistDTO.FromArtist(a)).ToArray();
+        var artists = user.FavoriteArtists.Select(ArtistDTO.FromArtist).ToArray();
         return Result<ArtistDTO[]>.Ok(artists);
     }
 

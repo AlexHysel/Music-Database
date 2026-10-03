@@ -1,4 +1,4 @@
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Domain;
 
 public enum Genre
 {

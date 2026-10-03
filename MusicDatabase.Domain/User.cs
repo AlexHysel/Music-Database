@@ -1,4 +1,4 @@
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Domain;
 
 public class User
 {
@@ -6,10 +6,12 @@ public class User
     public string Name {get; private set;}
     public UserRole Role {get; private set;}
     public string Password {get; private set;}
-    public List<Track> FavoriteTracks {get; private set;} = null!;
-    public List<Album> FavoriteAlbums {get; private set;} = null!;
-    public List<Artist> FavoriteArtists {get; private set;} = null!;
-    public List<Playlist> Playlists {get; private set;} = null!;
+    private readonly List<Track> _favoriteTracks = new();
+    public IReadOnlyCollection<Track> FavoriteTracks => _favoriteTracks.AsReadOnly();
+    private readonly List<Album> _favoriteAlbums = new();
+    public IReadOnlyCollection<Album> FavoriteAlbums => _favoriteAlbums.AsReadOnly();
+    private readonly List<Artist> _favoriteArtists = new();
+    public IReadOnlyCollection<Artist> FavoriteArtists => _favoriteArtists.AsReadOnly();
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
@@ -41,8 +43,6 @@ public class User
 
     public bool SetPassword(string password)
     {
-        if (password.Trim().Length < 1) return false;
-
         Password = password;
         return true;
     }
@@ -51,7 +51,7 @@ public class User
     {
         if (!FavoriteTracks.Any(t => t.Id == track.Id))
         {
-            FavoriteTracks.Add(track);
+            _favoriteTracks.Add(track);
             return true;
         }
         return false;
@@ -59,24 +59,14 @@ public class User
 
     public bool RemoveTrackFromFavorites(Track track)
     {
-        if (FavoriteTracks.Any(t => t.Id == track.Id))
-        {
-            FavoriteTracks.Remove(track);
-            return true;
-        }
-        return false;
-    }
-
-    public List<Track> GetFavoriteTracks()
-    {
-        return FavoriteTracks;
+        return _favoriteTracks.RemoveAll(t => t.Id == track.Id) > 0;
     }
 
     public bool AddAlbumToFavorites(Album album)
     {
         if (!FavoriteAlbums.Any(a => a.Id == album.Id))
         {
-            FavoriteAlbums.Add(album);
+            _favoriteAlbums.Add(album);
             return true;
         }
         return false;
@@ -84,24 +74,14 @@ public class User
 
     public bool RemoveAlbumFromFavorites(Album album)
     {
-        if (FavoriteAlbums.Any(a => a.Id == album.Id))
-        {
-            FavoriteAlbums.Remove(album);
-            return true;
-        }
-        return false;
-    }
-
-    public List<Album> GetFavoriteAlbums()
-    {
-        return FavoriteAlbums;
+        return _favoriteAlbums.RemoveAll(a => a.Id == album.Id) > 0;
     }
 
     public bool AddArtistToFavorites(Artist artist)
     {
         if (!FavoriteArtists.Any(a => a.Id == artist.Id))
         {
-            FavoriteArtists.Add(artist);
+            _favoriteArtists.Add(artist);
             return true;
         }
         return false;
@@ -109,20 +89,10 @@ public class User
 
     public bool RemoveArtistFromFavorites(Artist artist)
     {
-        if (FavoriteArtists.Any(a => a.Id == artist.Id))
-        {
-            FavoriteArtists.Remove(artist);
-            return true;
-        }
-        return false;
+        return _favoriteArtists.RemoveAll(a => a.Id == artist.Id) > 0;
     }
 
-    public List<Artist> GetFavoriteArtists()
-    {
-        return FavoriteArtists;
-    }
-
-    internal void InitializeTimestamps()
+    public void InitializeTimestamps()
     {
         if (CreatedAt == default)
         {
@@ -133,7 +103,7 @@ public class User
             throw new InvalidOperationException("CreatedAt has already been initialized.");
     }
 
-    internal void UpdateUpdatedAt()
+    public void UpdateUpdatedAt()
     {
         UpdatedAt = DateTimeOffset.UtcNow;
     }

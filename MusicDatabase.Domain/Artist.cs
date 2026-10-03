@@ -1,18 +1,24 @@
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Domain;
 
 public class Artist
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; } = null!;
     public string ImageUrl { get; private set; } = "";
-    public List<Album> Albums { get; private set; } = new();
-    public List<Track> Tracks { get; private set; } = new();
-    public List<Track> AppearsOn {get; private set;} = new();
+    private readonly List<Album> _albums = new();
+    public IReadOnlyCollection<Album> Albums => _albums.AsReadOnly();
+    private readonly List<Track> _tracks = new();
+    public IReadOnlyCollection<Track> Tracks => _tracks.AsReadOnly();
+    private readonly List<Track> _appearsOn = new();
+    public IReadOnlyCollection<Track> AppearsOn => _appearsOn.AsReadOnly();
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
     public Artist(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Artist name cannot be null or whitespace.", nameof(name));
+    
         Id = Guid.NewGuid();
         Name = name;
     }
@@ -21,23 +27,28 @@ public class Artist
 
     public bool SetName(string name)
     {
-        if (name.Trim().Length < 1) return false;
+        name = name.Trim();
+        if (name.Length < 1) return false;
+
         Name = name;
         return true;
     }
 
     public bool SetImageUrl(string imageUrl)
     {
+        imageUrl = imageUrl.Trim();
+        if (imageUrl.Length < 1) return false;
+
         ImageUrl = imageUrl;
         return true;
     }
 
-    internal void UpdateUpdatedAt()
+    public void UpdateUpdatedAt()
     {
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void InitializeTimestamps()
+    public void InitializeTimestamps()
     {
         if (CreatedAt == default)
         {

@@ -1,4 +1,4 @@
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Domain;
 
 public class Album
 {
@@ -8,7 +8,8 @@ public class Album
     public Guid ArtistId { get; private set; }
     public Artist Artist { get; private set; }
     public string ImageUrl {get; private set;} = "";
-    public List<Track> Tracks {get; private set; } = new List<Track>();
+    private readonly List<Track> _tracks = new();
+    public IReadOnlyCollection<Track> Tracks => _tracks.AsReadOnly();
     public AlbumType Type {get; private set;}
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
@@ -70,16 +71,19 @@ public class Album
 
     public bool SetTracks(List<Track> tracks)
     {
-        Tracks = tracks;
+        if (tracks == null) return false;
+
+        _tracks.Clear();
+        _tracks.AddRange(tracks);
         return true;
     }
 
-    internal void UpdateUpdatedAt()
+    public void UpdateUpdatedAt()
     {
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void InitializeTimestamps()
+    public void InitializeTimestamps()
     {
         if (CreatedAt == default)
         {
