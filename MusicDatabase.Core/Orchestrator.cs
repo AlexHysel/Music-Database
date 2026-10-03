@@ -300,8 +300,7 @@ public class Orchestrator
         return Result.Fail("Artist not found");
     }
 
-    // It should use ArtistUpdateRequest
-    public async Task<Result> UpdateArtistAsync(ArtistDTO patch)
+    public async Task<Result> UpdateArtistAsync(UpdateArtistRequest patch)
     {
         /*
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges

@@ -57,7 +57,7 @@ public class ArtistController : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] ArtistDTO patch)
+    public async Task<IActionResult> Put([FromBody] UpdateArtistRequest patch)
     {
         Result result = await _orchestrator.UpdateArtistAsync(patch);
         if (result.Success)

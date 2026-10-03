@@ -40,3 +40,9 @@ public record UpdateAlbumRequest(
     string Id,
     UpdateTrackRequest[] Tracks
 );
+
+public record UpdateArtistRequest(
+    string Name,
+    string ImageUrl,
+    string Id
+);
