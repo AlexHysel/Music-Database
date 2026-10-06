@@ -44,6 +44,15 @@ public class AlbumRepository
         return await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    async public Task<Album?> GetTrackedAlbumDetailAsync(Guid id)
+    {
+        return await _context.Albums
+            .Include(a => a.Artist)
+            .Include(a => a.Tracks).ThenInclude(t => t.Artist)
+            .Include(a => a.Tracks).ThenInclude(t => t.Others)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+
     public async Task<Album?> GetAlbumAsync(Guid id)
     {
         Album? album = await _context.Albums.AsNoTracking()

@@ -28,6 +28,7 @@ public record AddAlbumRequest(
 public record UpdateTrackRequest(
     string Title,
     string Genre,
+    int NumberInTheAlbum,
     string[]? Others,
     string Id
 );

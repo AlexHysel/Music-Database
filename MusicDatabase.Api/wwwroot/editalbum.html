@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="styling/main.css">
+        <title>Edit Album</title>
+    </head>
+    <body>
+        <div class="container py-4">
+            <div class="card p-4">
+                <h2>Edit Album</h2>
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input id="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Artist</label>
+                        <input id="artistName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cover URL</label>
+                        <input id="imageUrl" class="form-control" type="url">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Release Year</label>
+                        <input id="releaseYear" class="form-control" type="number" min="1900" max="2100">
+                    </div>
+
+                    <h4>Tracks</h4>
+                    <div id="tracksContainer"></div>
+                    <div class="mt-2 d-flex gap-2">
+                        <button id="addTrack" type="button" class="btn btn-sm btn-outline-light">Add Track</button>
+                        <button id="save" type="submit" class="btn btn-success btn-sm">Save Album</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="auth.js"></script>
+        <script src="trackElement.js"></script>
+        <script>
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const tracksContainer = document.getElementById('tracksContainer');
+
+            function syncOrder() {
+                Array.from(tracksContainer.children).forEach((c, i) => {
+                    c.querySelector('.track-order-label').textContent = `Track ${i+1}`;
+                });
+            }
+
+            function createTrackCard(track) {
+                const card = document.createElement('div');
+                card.className = 'album-track-card';
+
+                const header = document.createElement('div'); header.className='track-card-header';
+                const label = document.createElement('strong'); label.className='track-order-label';
+                label.textContent = 'Track';
+                const actions = document.createElement('div'); actions.className='track-card-actions';
+
+                const up = document.createElement('button'); up.type='button'; up.className='btn btn-sm btn-outline-light'; up.textContent='↑'; up.addEventListener('click', () => move(card, -1));
+                const down = document.createElement('button'); down.type='button'; down.className='btn btn-sm btn-outline-light'; down.textContent='↓'; down.addEventListener('click', () => move(card, 1));
+                const remove = document.createElement('button'); remove.type='button'; remove.className='btn btn-sm btn-outline-light'; remove.textContent='Remove'; remove.addEventListener('click', () => { card.remove(); syncOrder(); });
+                actions.appendChild(up); actions.appendChild(down); actions.appendChild(remove);
+
+                header.appendChild(label); header.appendChild(actions);
+
+                const titleWrap = document.createElement('div'); titleWrap.className='mb-2';
+                const titleLabel = document.createElement('label'); titleLabel.className='form-label'; titleLabel.textContent='Title';
+                const titleInput = document.createElement('input'); titleInput.className='form-control track-title-input'; titleInput.type='text'; titleInput.required=true; titleInput.value = track?.title ?? '';
+                titleWrap.appendChild(titleLabel); titleWrap.appendChild(titleInput);
+
+                const genreWrap = document.createElement('div'); genreWrap.className='mb-2';
+                const genreLabel = document.createElement('label'); genreLabel.className='form-label'; genreLabel.textContent='Genre';
+                const genreSelect = document.createElement('select'); genreSelect.className='form-select'; genreSelect.required=true;
+                ['Rock','Metal','Darksynth','Ambient'].forEach(g => genreSelect.innerHTML += `<option value="${g}">${g}</option>`);
+                if (track?.genre) genreSelect.value = track.genre;
+                genreWrap.appendChild(genreLabel); genreWrap.appendChild(genreSelect);
+
+                const othersWrap = document.createElement('div'); othersWrap.className='mb-2';
+                const othersList = document.createElement('div'); othersList.className='album-others-list';
+                (track?.others||[]).forEach(o => {
+                    const row = document.createElement('div'); row.className='album-other-row';
+                    const input = document.createElement('input'); input.type='text'; input.className='form-control'; input.value=o;
+                    const btn = document.createElement('button'); btn.type='button'; btn.className='btn btn-sm btn-outline-light'; btn.textContent='Remove'; btn.addEventListener('click', () => row.remove());
+                    row.appendChild(input); row.appendChild(btn); othersList.appendChild(row);
+                });
+                const addOther = document.createElement('button'); addOther.type='button'; addOther.className='btn btn-sm btn-outline-light'; addOther.textContent='Add artist'; addOther.addEventListener('click', () => {
+                    const row = document.createElement('div'); row.className='album-other-row';
+                    const input = document.createElement('input'); input.type='text'; input.className='form-control';
+                    const btn = document.createElement('button'); btn.type='button'; btn.className='btn btn-sm btn-outline-light'; btn.textContent='Remove'; btn.addEventListener('click', () => row.remove());
+                    row.appendChild(input); row.appendChild(btn); othersList.appendChild(row);
+                });
+                othersWrap.appendChild(othersList); othersWrap.appendChild(addOther);
+
+                card.appendChild(header); card.appendChild(titleWrap); card.appendChild(genreWrap); card.appendChild(othersWrap);
+                if (track?.id) card.dataset.trackId = track.id;
+                tracksContainer.appendChild(card);
+                syncOrder();
+                return card;
+            }
+
+            function move(card, dir){
+                const cards = Array.from(tracksContainer.children);
+                const idx = cards.indexOf(card);
+                const target = idx + dir;
+                if (target < 0 || target >= cards.length) return;
+                const ref = dir < 0 ? cards[target] : cards[target].nextSibling;
+                tracksContainer.insertBefore(card, ref);
+                syncOrder();
+            }
+
+            document.getElementById('addTrack').addEventListener('click', () => createTrackCard(null));
+
+            async function load(){
+                const res = await fetch(`album?id=${id}`);
+                if (!res.ok) { alert('Album not found'); return; }
+                const album = await res.json();
+                document.getElementById('title').value = album.title;
+                document.getElementById('artistName').value = album.artistName;
+                document.getElementById('imageUrl').value = album.imageUrl;
+                document.getElementById('releaseYear').value = album.releaseYear;
+                album.tracks.forEach(t => createTrackCard({ id: t.id, title: t.title, genre: t.genre, others: t.others?.map(o => o.name) }));
+            }
+
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('title').value.trim();
+                const artistName = document.getElementById('artistName').value.trim();
+                const imageUrl = document.getElementById('imageUrl').value.trim();
+                const releaseYear = Number(document.getElementById('releaseYear').value);
+
+                const tracks = Array.from(tracksContainer.children).map((card, i) => {
+                    const titleInput = card.querySelector('.track-title-input');
+                    const genre = card.querySelector('select').value;
+                    const others = Array.from(card.querySelectorAll('.album-other-row input')).map(inp => inp.value.trim()).filter(Boolean);
+                    return { Title: titleInput.value.trim(), Genre: genre, Others: others, NumberInTheAlbum: i + 1, Id: card.dataset.trackId ?? '' };
+                });
+
+                const body = { Title: title, ArtistName: artistName, ImageUrl: imageUrl, ReleaseYear: releaseYear, Id: id, Tracks: tracks };
+                const response = await fetch('album', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) { alert('Saved'); window.location.href = `album.html?id=${id}`; }
+                else { alert('Save failed'); }
+            });
+
+            load();
+        </script>
+    </body>
+</html>

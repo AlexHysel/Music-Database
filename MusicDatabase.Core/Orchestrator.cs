@@ -220,18 +220,69 @@ public class Orchestrator
 
     public async Task<Result> UpdateAlbumAsync(UpdateAlbumRequest patch)
     {
-        /*
-        IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
-        in the same HTML request can cause some problems.
-        */
-        Album? album = await _manager.Albums.GetTrackedAlbumAsync(Guid.Parse(patch.Id));
+        if (patch.Tracks == null || patch.Tracks.Length == 0)
+            return Result.Fail("At least one track is required");
+
+        Album? album = await _manager.Albums.GetTrackedAlbumDetailAsync(Guid.Parse(patch.Id));
         if (album == null) return Result.Fail("Album not found");
 
         if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
         if (!album.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
+        if (!album.SetReleaseYear(patch.ReleaseYear)) return Result.Fail("Invalid release year provided");
+        
+        ArgumentNullException.ThrowIfNull(patch.ArtistName, nameof(patch.ArtistName));
+        Artist artist = await _manager.Artists.EnsureArtistCreated(patch.ArtistName);
+        if (!album.SetArtist(artist)) return Result.Fail("Invalid artist provided");
 
-        if (patch.ReleaseYear > 0 && !album.SetReleaseYear(patch.ReleaseYear))
-            return Result.Fail("Wrong release year provided");
+        // 1. Собираем ID треков, пришедших в PATCH
+        var requestTrackIds = patch.Tracks
+            .Where(t => !string.IsNullOrWhiteSpace(t.Id) && Guid.TryParse(t.Id, out _))
+            .Select(t => Guid.Parse(t.Id))
+            .ToHashSet();
+
+        // 2. УДАЛЕНИЕ: Находим треки, которых НЕТ в запросе, и удаляем из коллекции
+        var tracksToRemove = album.Tracks.Where(t => !requestTrackIds.Contains(t.Id)).ToList();
+        foreach (var track in tracksToRemove)
+        {
+            album.Tracks.Remove(track);
+            await _manager.Tracks.RemoveTrackAsync(track); // Вызывает Tracks.Remove(track) и пересчитывает номера
+        }
+
+        // 3. ОБНОВЛЕНИЕ И ДОБАВЛЕНИЕ
+        foreach (UpdateTrackRequest trackInfo in patch.Tracks)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(trackInfo.Title, nameof(trackInfo.Title));
+            if (!Enum.TryParse(trackInfo.Genre, true, out Genre genre))
+                return Result.Fail("Wrong genre provided");
+
+            var others = new List<Artist>();
+            foreach (string name in trackInfo.Others ?? Array.Empty<string>())
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(trackInfo.Others));
+                others.Add(await _manager.Artists.EnsureArtistCreated(name));
+            }
+
+            Track? existing = null;
+            if (!string.IsNullOrWhiteSpace(trackInfo.Id) && Guid.TryParse(trackInfo.Id, out Guid tid))
+            {
+                existing = album.Tracks.FirstOrDefault(t => t.Id == tid);
+            }
+
+            if (existing != null)
+            {
+                // ОБНОВЛЕНИЕ СУЩЕСТВУЮЩЕГО: Не вызываем AddTrack!
+                if (!existing.SetTitle(trackInfo.Title)) return Result.Fail("Empty title provided");
+                existing.SetGenre(genre);
+                existing.SetNumberInTheAlbum(trackInfo.NumberInTheAlbum);
+                if (!existing.SetOthers(others)) return Result.Fail("Invalid others provided");
+            }
+            else
+            {
+                // ДОБАВЛЕНИЕ НОВОГО: Создаем объект и добавляем через AddTrack
+                var newTrack = new Track(trackInfo.Title, trackInfo.NumberInTheAlbum, album, album.Artist, others, genre);
+                album.AddTrack(newTrack);
+            }
+        }
 
         await _manager.SaveChangesAsync();
         return Result.Ok();

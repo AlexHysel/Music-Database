@@ -69,19 +69,36 @@ public class Album
         return true;
     }
 
-    public bool SetTracks(List<Track> tracks)
+    public bool AddTrack(Track track)
     {
-        ArgumentNullException.ThrowIfNull(tracks, nameof(tracks));
-        if (tracks.Any(t => t == null))
-            throw new ArgumentException("Tracks cannot be null.", nameof(tracks));
+        ArgumentNullException.ThrowIfNull(track, nameof(track));
 
-        tracks.OrderBy(t => t.NumberInTheAlbum);
-        Tracks.Clear();
-        for (int i = 1; i <= tracks.Count; i++)
-        {
-            var track = tracks[i - 1];
-            track.SetNumberInTheAlbum(i);
+        if (Tracks.Any(t => t.Id == track.Id)) return false;
+
+        int targetIndex = track.NumberInTheAlbum - 1;
+        if (targetIndex >= 0 && targetIndex <= Tracks.Count)
+            Tracks.Insert(targetIndex, track);
+        else
             Tracks.Add(track);
+
+        for (int i = 0; i < Tracks.Count; i++)
+            Tracks[i].SetNumberInTheAlbum(i + 1);
+
+        return true;
+    }
+
+    public bool RemoveTrack(Track track)
+    {
+        ArgumentNullException.ThrowIfNull(track, nameof(track));
+
+        if (!Tracks.Remove(track))
+            return false;
+
+        int i = 1;
+        foreach (var t in Tracks)
+        {
+            t.SetNumberInTheAlbum(i);
+            i++;
         }
         return true;
     }

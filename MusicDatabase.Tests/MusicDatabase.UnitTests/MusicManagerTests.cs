@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MusicDatabase.Data;
+using MusicDatabase.Domain;
 
 namespace MusicDatabase.Tests;
 
@@ -31,7 +32,7 @@ public class MusicManagerTests
         await db.SaveChangesAsync();
 
         var manager = new MusicManager(db);
-        var result = await manager.GetArtistTracksAsync(artistOne.Id, 0, 10);
+        var result = await manager.Tracks.GetArtistTracksAsync(artistOne.Id, 0, 10);
 
         Assert.Equal(new[] { "alpha", "zebra" }, result.Items.Select(t => t.Title).ToArray());
         Assert.Equal(2, result.Items.Count);

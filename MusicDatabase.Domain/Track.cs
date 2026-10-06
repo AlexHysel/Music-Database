@@ -20,7 +20,7 @@ public class Track
         title = title.Trim();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberInTheAlbum);
+        ArgumentOutOfRangeException.ThrowIfNegative(numberInTheAlbum);
         ArgumentNullException.ThrowIfNull(album);
         ArgumentNullException.ThrowIfNull(artist);
 
@@ -70,7 +70,7 @@ public class Track
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void SetNumberInTheAlbum(int number)
+    public void SetNumberInTheAlbum(int number)
     {
         // Decided to throw an exception here instead of returning a bool, 
         // because this is an internal method and should not be called with invalid data.

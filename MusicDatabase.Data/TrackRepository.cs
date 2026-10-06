@@ -61,4 +61,10 @@ public class TrackRepository
             .Include(t => t.Others)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
+
+    async public Task<bool> RemoveTrackAsync(Track track)
+    {
+        _context.Tracks.Remove(track);
+        return true;
+    }
 }
