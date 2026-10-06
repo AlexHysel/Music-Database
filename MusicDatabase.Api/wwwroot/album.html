@@ -17,13 +17,9 @@
                 <a id="albumArtist"></a>
                 <div id="albumMeta" class="detail-meta" style="display: none;"></div>
                 <div id="adminPanel" style="display: none;">
-                    <input id="albumTitleInput" class="form-control mb-2" type="text" placeholder="New Title" required style="display: none">
-                    <input id="newImageUrl" class="form-control mb-2" type="text" placeholder="New Cover URL" required style="display: none">
                     <div class="d-flex gap-2">
                         <button id="updateButton" type="button" class="btn btn-sm btn-outline-light">Update</button>
                         <button id="removeButton" type="button" class="btn btn-sm btn-danger">Remove</button>
-                        <button id="cancelButton" type="button" class="btn btn-sm btn-secondary" style="display: none">Cancel</button>
-                        <button id="saveButton" type="button" class="btn btn-sm btn-success" style="display: none">Save</button>
                     </div>
                 </div>
             </div>
@@ -35,24 +31,6 @@
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
-
-            function viewMode(){
-                document.getElementById('albumTitleInput').style.display = 'none';
-                document.getElementById('newImageUrl').style.display = 'none';
-                document.getElementById('updateButton').style.display = 'inline-block';
-                document.getElementById('removeButton').style.display = 'inline-block';
-                document.getElementById('cancelButton').style.display = 'none';
-                document.getElementById('saveButton').style.display = 'none';
-            }
-
-            function editMode(){
-                document.getElementById('albumTitleInput').style.display = 'inline-block';
-                document.getElementById('newImageUrl').style.display = 'inline-block';
-                document.getElementById('updateButton').style.display = 'none';
-                document.getElementById('removeButton').style.display = 'none';
-                document.getElementById('cancelButton').style.display = 'inline-block';
-                document.getElementById('saveButton').style.display = 'inline-block';
-            }
 
             function createRemoveButtonEvent(){
                 document.getElementById('removeButton').addEventListener('click', async (event) => {
@@ -73,41 +51,10 @@
                 });
             }
 
-            function createSaveButtonEvent(){
-                document.getElementById('saveButton').addEventListener('click', async (event) => {
-                    event.preventDefault();
-                    let title = document.getElementById('albumTitleInput').value;
-                    let imageUrl = document.getElementById('newImageUrl').value;
-                    let body = { Title: title, ImageUrl: imageUrl, Id: id };
-                    let response = await fetch('album', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type':'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify(body)
-                    });
-                    if (response.ok){
-                        alert('Updated successfully');
-                        document.getElementById('albumTitle').textContent = title;
-                        viewMode();
-                    } else {
-                        alert('Album was not updated');
-                    }
-                });
-            }
-
             function createUpdateButtonEvent(){
                 document.getElementById('updateButton').addEventListener('click', (event) => {
                     event.preventDefault();
-                    editMode();
-                });
-            }
-
-            function createCancelButtonEvent(){
-                document.getElementById('cancelButton').addEventListener('click', () => {
-                    event.preventDefault();
-                    viewMode();
+                    window.location.href = `editalbum.html?id=${id}`;
                 });
             }
 
@@ -150,9 +97,6 @@
                     {
                         createRemoveButtonEvent();
                         createUpdateButtonEvent();
-                        createCancelButtonEvent();
-                        createSaveButtonEvent();
-                        fillAlbumFields(album);
                         document.getElementById('adminPanel').style.display = 'block';
                     }
                 }
