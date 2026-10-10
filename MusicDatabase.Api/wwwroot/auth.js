@@ -29,13 +29,19 @@ function renderBrandHeader(){
     let header = document.querySelector('header.app-header');
     if (header) {
         if (!header.querySelector('.brand')) {
-            const brand = document.createElement('div');
+            const brand = document.createElement('a');
             brand.className = 'brand';
+            brand.href = '/search.html';
             brand.innerHTML = `
                 <h1>MusicDatabase</h1>
                 <small>by AlexHysel</small>
             `;
             header.insertBefore(brand, header.firstChild);
+        } else {
+            const existingBrand = header.querySelector('.brand');
+            if (existingBrand.tagName !== 'A') {
+                existingBrand.outerHTML = `<a href="/search" class="brand"><h1>MusicDatabase</h1><small>by AlexHysel</small></a>`;
+            }
         }
         return header;
     }
@@ -44,8 +50,9 @@ function renderBrandHeader(){
     header = document.createElement('header');
     header.className = 'app-header';
 
-    const brand = document.createElement('div');
+    const brand = document.createElement('a');
     brand.className = 'brand';
+    brand.href = '/search.html'
     brand.innerHTML = `
         <h1>MusicDatabase</h1>
         <small>by AlexHysel</small>
@@ -59,6 +66,7 @@ function renderBrandHeader(){
     container.parentNode.insertBefore(header, container);
     return header;
 }
+
 
 function renderAuthHeader(){
     renderBrandHeader();
