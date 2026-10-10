@@ -24,8 +24,8 @@
         <script src="albumElement.js"></script>
         <script src="artistElement.js"></script>
         <script>
-            document.getElementById('searchButton').addEventListener('click', async (event) => {
-                event.preventDefault();
+            async function search()
+            {
                 let searchLine = document.getElementById('searchLine').value;
                 let response = await fetch(`search?searchLine=${searchLine}`);
                 if (response.ok){
@@ -57,7 +57,14 @@
                 } else {
                     alert("Something went wrong :(");
                 }
+            }
+
+            document.getElementById('searchButton').addEventListener('click', async (event) => {
+                event.preventDefault();
+                search();
             });
+
+            search();
         </script>
     </body>
 </html>

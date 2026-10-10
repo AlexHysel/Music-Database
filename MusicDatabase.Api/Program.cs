@@ -101,6 +101,12 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.MapGet("/", async context =>
+{
+    context.Response.Redirect("/search.html");
+    await Task.CompletedTask;
+});
+
 app.MapGet("/search", async (Orchestrator o, string searchLine) => await o.Search(searchLine));
 
 app.MapPost("/login", async (Orchestrator o, LogInRequest request) =>
