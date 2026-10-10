@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using MusicDatabase.Data;
 
 #nullable disable
 
@@ -22,9 +23,9 @@ namespace MusicDatabase.Migrations
                 principalColumn: "Id",
                 onDelete: ReferentialAction.SetNull);
 
-            migrationBuilder.Sql(File.ReadAllText(@"Migrations/SQL/ChangeAlbumType.sql"));
+            migrationBuilder.Sql(MigrationHelper.Read(@"ChangeAlbumType.sql"));
             
-            migrationBuilder.Sql(File.ReadAllText(@"Migrations/SQL/TrackChangeTrigger.sql"));
+            migrationBuilder.Sql(MigrationHelper.Read(@"TrackChangeTrigger.sql"));
         }
 
         /// <inheritdoc />

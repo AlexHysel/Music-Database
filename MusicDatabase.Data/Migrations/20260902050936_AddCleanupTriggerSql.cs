@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using MusicDatabase.Data;
 
 #nullable disable
 
@@ -10,7 +11,7 @@ namespace MusicDatabase.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(File.ReadAllText(Path.Combine("Migrations","SQL","CleanupEmptyAlbumsAndArtists.sql")));
+            migrationBuilder.Sql(MigrationHelper.Read("CleanupEmptyAlbumsAndArtists.sql"));
         }
 
         /// <inheritdoc />

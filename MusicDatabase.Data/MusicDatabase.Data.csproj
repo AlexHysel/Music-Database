@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\SQL\*.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MusicDatabase.Common\MusicDatabase.Common.csproj" />
     <ProjectReference Include="..\MusicDatabase.Domain\MusicDatabase.Domain.csproj" />
   </ItemGroup>
