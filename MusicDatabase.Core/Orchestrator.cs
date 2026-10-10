@@ -112,10 +112,17 @@ public class Orchestrator
             return Result.Fail("Wrong genre provided");
         track.SetGenre(genre);
 
+        var normalizedOthers = (patch.Others ?? Array.Empty<string>())
+            .Select(name => name.Trim())
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(name => !string.Equals(name, track.Artist?.Name, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
         var others = new List<Artist>();
-        foreach (string name in patch.Others ?? Array.Empty<string>())
-            if (!string.IsNullOrEmpty(name))
-                others.Add(await _manager.Artists.EnsureArtistCreated(name));
+        foreach (string name in normalizedOthers)
+            others.Add(await _manager.Artists.EnsureArtistCreated(name));
+
         if (!track.SetOthers(others)) return Result.Fail("Wrong others provided");
 
         await _manager.SaveChangesAsync();

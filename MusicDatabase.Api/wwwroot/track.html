@@ -107,8 +107,9 @@
                     removeBtn.type = 'button';
                     removeBtn.className = 'btn btn-sm btn-outline-light';
                     removeBtn.textContent = 'Remove';
-                    removeBtn.addEventListener('click', (event) =>{
-                        event.target.closest('div').remove();
+                    removeBtn.addEventListener('click', (event) => {
+                        const field = event.currentTarget.closest('.d-flex.gap-2.mb-2');
+                        if (field) field.remove();
                     });
 
                     let field = document.createElement('div');
@@ -140,7 +141,8 @@
                     let genre = document.getElementById('newGenre').value;
                     let others = Array.from(document.getElementById('otherArtists').querySelectorAll('input'))
                         .map(input => input.value.trim())
-                        .filter(Boolean);
+                        .filter(Boolean)
+                        .filter((name, index, all) => all.findIndex(value => value.toLowerCase() === name.toLowerCase()) === index);
 
                     let response = await fetch(`track?id=${trackId}`, {
                         method: 'PUT',
@@ -151,6 +153,7 @@
                         body: JSON.stringify({
                             title,
                             genre,
+                            numberInTheAlbum: 1,
                             others,
                             id: trackId
                         })
@@ -180,8 +183,9 @@
                     removeBtn.type = 'button';
                     removeBtn.className = 'btn btn-sm btn-outline-light';
                     removeBtn.textContent = 'Remove';
-                    removeBtn.addEventListener('click', (event) =>{
-                        event.target.closest('div').remove();
+                    removeBtn.addEventListener('click', (event) => {
+                        const field = event.currentTarget.closest('.d-flex.gap-2.mb-2');
+                        if (field) field.remove();
                     });
 
                     let field = document.createElement('div');
