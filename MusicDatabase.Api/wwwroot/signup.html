@@ -16,13 +16,6 @@
                         <label class="form-label">Username</label>
                         <input class="form-control" type="text" id="username" required>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Role</label>
-                        <select id="role" class="form-select">
-                            <option value="User">User</option>
-                            <option value="Admin">Admin</option>
-                        </select>
-                    </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         <input class="form-control" type="password" id="password" required>
@@ -40,14 +33,13 @@
             document.getElementById('signupForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
                 let username = document.getElementById('username').value;
-                let role = document.getElementById('role').value;
                 let password = document.getElementById('password').value;
                 let response = await fetch('signup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({username, role, password})
+                    body: JSON.stringify({username, password})
                 })
                 if (response.ok){
                     alert('You successfully signed up.');

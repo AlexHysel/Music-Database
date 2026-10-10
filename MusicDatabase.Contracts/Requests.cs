@@ -1,13 +1,12 @@
 namespace MusicDatabase.Contracts;
 
 public record LogInRequest(
-    string Name,
+    string Username,
     string Password
 );
 
 public record SignUpRequest(
     string Username,
-    string Role,
     string Password
 );
 

@@ -409,9 +409,9 @@ public class Orchestrator
             return Result<UserDetailDTO>.Ok(UserDetailDTO.FromUser(user));
     }
     
-    public async Task<Result> CreateUserAsync(string name, string role, string password)
+    public async Task<Result> CreateUserAsync(string name, UserRole role, string password)
     {
-        if (await _manager.Users.CreateUserAsync(name, Enum.Parse<UserRole>(role), password))
+        if (await _manager.Users.CreateUserAsync(name, role, password))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
