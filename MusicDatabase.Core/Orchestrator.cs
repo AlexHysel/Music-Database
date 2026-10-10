@@ -103,7 +103,7 @@ public class Orchestrator
         if (string.IsNullOrWhiteSpace(patch.Id) || !Guid.TryParse(patch.Id, out Guid trackId))
             return Result.Fail("Track id is invalid");
 
-        Track? track = await _manager.Tracks.GetTrackedTrackAsync(trackId);
+        Track? track = await _manager.Tracks.GetTrackedTrackDetailAsync(trackId);
         if (track == null) return Result.Fail("Track not found");
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
@@ -115,8 +115,7 @@ public class Orchestrator
         var normalizedOthers = (patch.Others ?? Array.Empty<string>())
             .Select(name => name.Trim())
             .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Where(name => !string.Equals(name, track.Artist?.Name, StringComparison.OrdinalIgnoreCase))
+            .Distinct()
             .ToArray();
 
         var others = new List<Artist>();
@@ -229,33 +228,27 @@ public class Orchestrator
     {
         if (patch.Tracks == null || patch.Tracks.Length == 0)
             return Result.Fail("At least one track is required");
-
         Album? album = await _manager.Albums.GetTrackedAlbumDetailAsync(Guid.Parse(patch.Id));
         if (album == null) return Result.Fail("Album not found");
-
         if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
         if (!album.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
         if (!album.SetReleaseYear(patch.ReleaseYear)) return Result.Fail("Invalid release year provided");
-        
         ArgumentNullException.ThrowIfNull(patch.ArtistName, nameof(patch.ArtistName));
         Artist artist = await _manager.Artists.EnsureArtistCreated(patch.ArtistName);
         if (!album.SetArtist(artist)) return Result.Fail("Invalid artist provided");
 
-        // 1. Собираем ID треков, пришедших в PATCH
         var requestTrackIds = patch.Tracks
             .Where(t => !string.IsNullOrWhiteSpace(t.Id) && Guid.TryParse(t.Id, out _))
             .Select(t => Guid.Parse(t.Id))
             .ToHashSet();
 
-        // 2. УДАЛЕНИЕ: Находим треки, которых НЕТ в запросе, и удаляем из коллекции
         var tracksToRemove = album.Tracks.Where(t => !requestTrackIds.Contains(t.Id)).ToList();
         foreach (var track in tracksToRemove)
         {
             album.Tracks.Remove(track);
-            await _manager.Tracks.RemoveTrackAsync(track); // Вызывает Tracks.Remove(track) и пересчитывает номера
+            await _manager.Tracks.RemoveTrackAsync(track);
         }
 
-        // 3. ОБНОВЛЕНИЕ И ДОБАВЛЕНИЕ
         foreach (UpdateTrackRequest trackInfo in patch.Tracks)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(trackInfo.Title, nameof(trackInfo.Title));
@@ -277,7 +270,6 @@ public class Orchestrator
 
             if (existing != null)
             {
-                // ОБНОВЛЕНИЕ СУЩЕСТВУЮЩЕГО: Не вызываем AddTrack!
                 if (!existing.SetTitle(trackInfo.Title)) return Result.Fail("Empty title provided");
                 existing.SetGenre(genre);
                 existing.SetNumberInTheAlbum(trackInfo.NumberInTheAlbum);
@@ -285,7 +277,6 @@ public class Orchestrator
             }
             else
             {
-                // ДОБАВЛЕНИЕ НОВОГО: Создаем объект и добавляем через AddTrack
                 var newTrack = new Track(trackInfo.Title, trackInfo.NumberInTheAlbum, album, album.Artist, others, genre);
                 album.AddTrack(newTrack);
             }

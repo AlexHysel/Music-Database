@@ -51,11 +51,16 @@ public class Track
         ArgumentNullException.ThrowIfNull(others, nameof(others));
         if (others.Any(a => a == null))
             throw new ArgumentException("Others cannot contain null values.", nameof(others));
+        if (others.Any(a => a.Id == ArtistId))
+            throw new ArgumentException("Main artist cannot be featured", nameof(others));
 
-        // What if one of the 'others' is the main artist?
-        // Should it just be removed or raise an exception?
-        _others.Clear();
-        _others.AddRange(others.DistinctBy(o => o.Id));
+        List<Artist> toDelete = _others.Where(o => !others.Any(other => other.Id == o.Id)).ToList();
+        foreach (var del in toDelete)
+            _others.Remove(del);
+        
+        foreach (var o in others)
+            if (!Others.Any(other => other.Id == o.Id))
+                _others.Add(o);
         return true;
     }
 

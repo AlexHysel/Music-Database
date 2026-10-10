@@ -95,30 +95,43 @@
                 });
             }
 
+            function bindRemoveArtistField(button) {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const row = button.closest('.artist-row');
+                    if (row) {
+                        row.remove();
+                    }
+                });
+            }
+
+            function addArtistField(value = '') {
+                const container = document.getElementById('otherArtists');
+                const row = document.createElement('div');
+                row.className = 'artist-row d-flex gap-2 mb-2';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control';
+                input.placeholder = 'Featured artist';
+                input.required = true;
+                input.value = value;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-sm btn-outline-light';
+                removeBtn.textContent = 'Remove';
+                bindRemoveArtistField(removeBtn);
+
+                row.appendChild(input);
+                row.appendChild(removeBtn);
+                container.appendChild(row);
+            }
+
             function createAddArtistButtonEvent(){
                 document.getElementById('addArtistButton').addEventListener('click', () => {
-                    let input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = 'form-control';
-                    input.placeholder = 'Featured artist';
-                    input.required = true;
-
-                    let removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn btn-sm btn-outline-light';
-                    removeBtn.textContent = 'Remove';
-                    removeBtn.addEventListener('click', (event) => {
-                        const field = event.currentTarget.closest('.d-flex.gap-2.mb-2');
-                        if (field) field.remove();
-                    });
-
-                    let field = document.createElement('div');
-                    field.className = 'd-flex gap-2 mb-2';
-                    field.appendChild(input);
-                    field.appendChild(removeBtn);
-
-                    let doc = document.getElementById('otherArtists');
-                    doc.appendChild(field);
+                    addArtistField('');
                 });
             }
 
@@ -143,7 +156,7 @@
                         .map(input => input.value.trim())
                         .filter(Boolean)
                         .filter((name, index, all) => all.findIndex(value => value.toLowerCase() === name.toLowerCase()) === index);
-
+                    
                     let response = await fetch(`track?id=${trackId}`, {
                         method: 'PUT',
                         headers: {
@@ -153,7 +166,7 @@
                         body: JSON.stringify({
                             title,
                             genre,
-                            numberInTheAlbum: 1,
+                            numberInTheAlbum: 0,
                             others,
                             id: trackId
                         })
@@ -170,29 +183,10 @@
             function fillTrackForm(track){
                 document.getElementById('newTitle').value = track.title;
                 document.getElementById('newGenre').value = track.genre;
-                let otherArtistsDiv = document.getElementById('otherArtists');
+                const otherArtistsDiv = document.getElementById('otherArtists');
                 otherArtistsDiv.innerHTML = '';
                 (track.others || []).forEach(o => {
-                    let input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = 'form-control';
-                    input.placeholder = 'Featured artist';
-                    input.value = o.name || o;
-
-                    let removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn btn-sm btn-outline-light';
-                    removeBtn.textContent = 'Remove';
-                    removeBtn.addEventListener('click', (event) => {
-                        const field = event.currentTarget.closest('.d-flex.gap-2.mb-2');
-                        if (field) field.remove();
-                    });
-
-                    let field = document.createElement('div');
-                    field.className = 'd-flex gap-2 mb-2';
-                    field.appendChild(input);
-                    field.appendChild(removeBtn);
-                    otherArtistsDiv.appendChild(field);
+                    addArtistField(o.name || o);
                 });
             }
 
