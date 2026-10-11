@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 using MusicDatabase.Core;
 using MusicDatabase.Contracts;
-using MusicDatabase.Data;
 using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Common;
 
