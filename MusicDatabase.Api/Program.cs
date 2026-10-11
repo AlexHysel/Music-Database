@@ -16,15 +16,6 @@ builder.Services.AddScoped<MusicManager>();
 builder.Services.AddScoped<Orchestrator>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
-builder.Services.AddCors((options) =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -80,7 +71,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseCors();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
