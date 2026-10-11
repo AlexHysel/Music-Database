@@ -15,16 +15,16 @@ public class UserRepository
 
     public async Task<PagedResult<User>> GetMatchingUsersAsync(string name, int toSkip, int toTake){
         return await _context.Users
+            .AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Name, $"%{name}%"))
             .ToPagedResultAsync(toSkip, toTake);
     }
 
-    public async Task<User?> GetUserAsync(Guid id){
-        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-    }
-
-    public async Task<User?> GetTrackedUserAsync(Guid id){
-        return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+    public async Task<User?> GetUserAsync(Guid id, bool tracked = false){
+        if (tracked)
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        else
+            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<User?> GetUserDetailAsync(Guid id){
@@ -35,14 +35,6 @@ public class UserRepository
             .FirstOrDefaultAsync(u => u.Id == id);
     }
     
-    public async Task<User?> GetTrackedUserDetailAsync(Guid id){
-        return await _context.Users
-            .Include(u => u.FavoriteArtists)
-            .Include(u => u.FavoriteAlbums)
-            .Include(u => u.FavoriteTracks)
-            .FirstOrDefaultAsync(u => u.Id == id);
-    }
-
     async public Task<bool> RemoveUserAsync(Guid id){
         User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 

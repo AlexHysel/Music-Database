@@ -16,6 +16,7 @@ public class AlbumRepository
     async public Task<PagedResult<Album>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return await _context.Albums
+            .AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
             .OrderBy(a => a.Title)
             .ThenBy(a => a.Id)
@@ -39,20 +40,6 @@ public class AlbumRepository
         return false;
     }
 
-    async public Task<Album?> GetTrackedAlbumAsync(Guid id)
-    {
-        return await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
-    }
-
-    async public Task<Album?> GetTrackedAlbumDetailAsync(Guid id)
-    {
-        return await _context.Albums
-            .Include(a => a.Artist)
-            .Include(a => a.Tracks).ThenInclude(t => t.Artist)
-            .Include(a => a.Tracks).ThenInclude(t => t.Others)
-            .FirstOrDefaultAsync(a => a.Id == id);
-    }
-
     public async Task<Album?> GetAlbumAsync(Guid id)
     {
         Album? album = await _context.Albums.AsNoTracking()
@@ -60,25 +47,14 @@ public class AlbumRepository
         return album;
     }
 
-    public async Task<Album?> GetAlbumDetailAsync(Guid id)
+    public async Task<Album?> GetAlbumDetailAsync(Guid id, bool tracked = false)
     {
-        Album? album = await _context.Albums.AsNoTracking()
+        IQueryable<Album> query = _context.Albums
             .Include(a => a.Artist)
             .Include(a => a.Tracks).ThenInclude(t => t.Artist)
-            .Include(a => a.Tracks).ThenInclude(t => t.Others)
-            .FirstOrDefaultAsync(a => a.Id == id);
-        return album;
-    }
+            .Include(a => a.Tracks).ThenInclude(t => t.Others);
+        if (!tracked) query = query.AsNoTracking();
 
-    public async Task<Album> EnsureAlbumCreated(string title, Artist artist)
-    {
-        Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Artist.Id == artist.Id && a.Title == title);
-        if (album == null)
-        {
-            //temporary album with release year 0, will be updated later
-            album = new(title, 0, artist);
-            await _context.Albums.AddAsync(album);
-        }
-        return album;
+        return await query.FirstOrDefaultAsync(a => a.Id == id);
     }
 }

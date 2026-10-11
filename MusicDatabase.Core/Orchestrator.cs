@@ -40,7 +40,7 @@ public class Orchestrator
 
     public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)
     {
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result<TrackDTO[]>.Fail("User not found");
         else
@@ -59,7 +59,7 @@ public class Orchestrator
         if (track == null)
             return Result.Fail("Track not found");
 
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result.Fail("User not found");
 
@@ -77,7 +77,7 @@ public class Orchestrator
         if (track == null)
             return Result.Fail("Track not found");
 
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result.Fail("User not found");
 
@@ -100,10 +100,7 @@ public class Orchestrator
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
     {
-        if (string.IsNullOrWhiteSpace(patch.Id) || !Guid.TryParse(patch.Id, out Guid trackId))
-            return Result.Fail("Track id is invalid");
-
-        Track? track = await _manager.Tracks.GetTrackedTrackDetailAsync(trackId);
+        Track? track = await _manager.Tracks.GetTrackDetailAsync(patch.Id, true);
         if (track == null) return Result.Fail("Track not found");
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
@@ -152,7 +149,7 @@ public class Orchestrator
 
     public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
     {
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result<AlbumDTO[]>.Fail("User not found");
 
@@ -172,7 +169,7 @@ public class Orchestrator
         if (album == null)
             return Result.Fail("Album not found");
 
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result.Fail("User not found");
 
@@ -190,7 +187,7 @@ public class Orchestrator
         if (album == null)
             return Result.Fail("Album not found");
 
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result.Fail("User not found");
 
@@ -228,7 +225,7 @@ public class Orchestrator
     {
         if (patch.Tracks == null || patch.Tracks.Length == 0)
             return Result.Fail("At least one track is required");
-        Album? album = await _manager.Albums.GetTrackedAlbumDetailAsync(Guid.Parse(patch.Id));
+        Album? album = await _manager.Albums.GetAlbumDetailAsync(patch.Id, true);
         if (album == null) return Result.Fail("Album not found");
         if (!album.SetTitle(patch.Title)) return Result.Fail("Empty title provided");
         if (!album.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
@@ -237,16 +234,13 @@ public class Orchestrator
         Artist artist = await _manager.Artists.EnsureArtistCreated(patch.ArtistName);
         if (!album.SetArtist(artist)) return Result.Fail("Invalid artist provided");
 
-        var requestTrackIds = patch.Tracks
-            .Where(t => !string.IsNullOrWhiteSpace(t.Id) && Guid.TryParse(t.Id, out _))
-            .Select(t => Guid.Parse(t.Id))
-            .ToHashSet();
+        var requestTrackIds = patch.Tracks.Select(t => t.Id).ToHashSet();
 
         var tracksToRemove = album.Tracks.Where(t => !requestTrackIds.Contains(t.Id)).ToList();
         foreach (var track in tracksToRemove)
         {
             album.Tracks.Remove(track);
-            await _manager.Tracks.RemoveTrackAsync(track);
+            _manager.Tracks.RemoveTrack(track);
         }
 
         foreach (UpdateTrackRequest trackInfo in patch.Tracks)
@@ -262,11 +256,7 @@ public class Orchestrator
                 others.Add(await _manager.Artists.EnsureArtistCreated(name));
             }
 
-            Track? existing = null;
-            if (!string.IsNullOrWhiteSpace(trackInfo.Id) && Guid.TryParse(trackInfo.Id, out Guid tid))
-            {
-                existing = album.Tracks.FirstOrDefault(t => t.Id == tid);
-            }
+            Track? existing = album.Tracks.FirstOrDefault(t => t.Id == t.Id);
 
             if (existing != null)
             {
@@ -309,7 +299,7 @@ public class Orchestrator
         if (artist == null)
             return Result.Fail("Artist not found");
 
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result.Fail("User not found");
 
@@ -327,7 +317,7 @@ public class Orchestrator
         if (artist == null)
             return Result.Fail("Artist not found");
         
-        User? user = await _manager.Users.GetTrackedUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, true);
         if (user == null)
             return Result.Fail("User not found");
 
@@ -355,7 +345,7 @@ public class Orchestrator
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
         in the same HTML request can cause some problems.
         */
-        Artist? artist = await _manager.Artists.GetTrackedArtistAsync(Guid.Parse(patch.Id));
+        Artist? artist = await _manager.Artists.GetArtistAsync(patch.Id, true);
 
         if (artist == null) return Result.Fail("Artist not found");
         if (!artist.SetName(patch.Name)) return Result.Fail("Empty name provided");

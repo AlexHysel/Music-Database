@@ -29,7 +29,7 @@ public record UpdateTrackRequest(
     string Genre,
     int NumberInTheAlbum,
     string[]? Others,
-    string Id
+    Guid Id
 );
 
 public record UpdateAlbumRequest(
@@ -37,12 +37,12 @@ public record UpdateAlbumRequest(
     string ArtistName,
     string ImageUrl,
     int ReleaseYear,
-    string Id,
+    Guid Id,
     UpdateTrackRequest[] Tracks
 );
 
 public record UpdateArtistRequest(
     string Name,
     string ImageUrl,
-    string Id
+    Guid Id
 );

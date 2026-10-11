@@ -61,9 +61,6 @@ public class TrackController : ControllerBase
         if (string.IsNullOrWhiteSpace(patch.Genre))
             return BadRequest("Genre is required.");
 
-        if (string.IsNullOrWhiteSpace(patch.Id) || !Guid.TryParse(patch.Id, out _))
-            return BadRequest("Track id is invalid.");
-
         Result result = await _orchestrator.UpdateTrackAsync(patch);
         if (result.Success)
             return Ok();
