@@ -144,10 +144,6 @@ namespace MusicDatabase.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Genre")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("NumberInTheAlbum")
                         .HasColumnType("integer");
 
@@ -196,6 +192,48 @@ namespace MusicDatabase.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("TrackTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TaggedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TrackId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TrackId1")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaggedById");
+
+                    b.HasIndex("TrackId");
+
+                    b.HasIndex("TrackId1");
+
+                    b.ToTable("TrackTags");
                 });
 
             modelBuilder.Entity("TrackUser", b =>
@@ -288,6 +326,37 @@ namespace MusicDatabase.Migrations
                     b.Navigation("Artist");
                 });
 
+            modelBuilder.Entity("TrackTag", b =>
+                {
+                    b.HasOne("Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MusicDatabase.Domain.User", "TaggedBy")
+                        .WithMany()
+                        .HasForeignKey("TaggedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MusicDatabase.Domain.Track", "Track")
+                        .WithMany()
+                        .HasForeignKey("TrackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MusicDatabase.Domain.Track", null)
+                        .WithMany("Tags")
+                        .HasForeignKey("TrackId1");
+
+                    b.Navigation("Tag");
+
+                    b.Navigation("TaggedBy");
+
+                    b.Navigation("Track");
+                });
+
             modelBuilder.Entity("TrackUser", b =>
                 {
                     b.HasOne("MusicDatabase.Domain.Track", null)
@@ -313,6 +382,11 @@ namespace MusicDatabase.Migrations
                     b.Navigation("Albums");
 
                     b.Navigation("Tracks");
+                });
+
+            modelBuilder.Entity("MusicDatabase.Domain.Track", b =>
+                {
+                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }

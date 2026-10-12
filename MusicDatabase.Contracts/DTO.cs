@@ -36,7 +36,7 @@ public record TrackDetailDTO(
     string ArtistName,
     string ArtistId,
     ArtistDTO[] Others,
-    string Genre,
+    string[] Tags,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     string Id)
@@ -51,7 +51,7 @@ public record TrackDetailDTO(
             track.Artist?.Name ?? "",
             track.Artist?.Id.ToString() ?? "",
             track.Others.Select(o => ArtistDTO.FromArtist(o)).ToArray(),
-            track.Genre.ToString(),
+            track.Tags.Select(t => t.Tag.Name).ToArray(),
             track.CreatedAt,
             track.UpdatedAt,
             track.Id.ToString());

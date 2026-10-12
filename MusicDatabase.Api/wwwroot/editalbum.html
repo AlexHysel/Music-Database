@@ -74,13 +74,6 @@
                 const titleInput = document.createElement('input'); titleInput.className='form-control track-title-input'; titleInput.type='text'; titleInput.required=true; titleInput.value = track?.title ?? '';
                 titleWrap.appendChild(titleLabel); titleWrap.appendChild(titleInput);
 
-                const genreWrap = document.createElement('div'); genreWrap.className='mb-2';
-                const genreLabel = document.createElement('label'); genreLabel.className='form-label'; genreLabel.textContent='Genre';
-                const genreSelect = document.createElement('select'); genreSelect.className='form-select'; genreSelect.required=true;
-                ['Rock','Metal','Darksynth','Ambient'].forEach(g => genreSelect.innerHTML += `<option value="${g}">${g}</option>`);
-                if (track?.genre) genreSelect.value = track.genre;
-                genreWrap.appendChild(genreLabel); genreWrap.appendChild(genreSelect);
-
                 const othersWrap = document.createElement('div'); othersWrap.className='mb-2';
                 const othersList = document.createElement('div'); othersList.className='album-others-list';
                 (track?.others||[]).forEach(o => {
@@ -136,9 +129,8 @@
 
                 const tracks = Array.from(tracksContainer.children).map((card, i) => {
                     const titleInput = card.querySelector('.track-title-input');
-                    const genre = card.querySelector('select').value;
                     const others = Array.from(card.querySelectorAll('.album-other-row input')).map(inp => inp.value.trim()).filter(Boolean);
-                    return { Title: titleInput.value.trim(), Genre: genre, Others: others, NumberInTheAlbum: i + 1, Id: card.dataset.trackId ?? '' };
+                    return { Title: titleInput.value.trim(), Others: others, NumberInTheAlbum: i + 1, Id: card.dataset.trackId ?? '' };
                 });
 
                 const body = { Title: title, ArtistName: artistName, ImageUrl: imageUrl, ReleaseYear: releaseYear, Id: id, Tracks: tracks };

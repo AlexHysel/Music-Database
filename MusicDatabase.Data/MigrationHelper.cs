@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace MusicDatabase.Data;
 
 internal static class MigrationHelper

@@ -10,6 +10,8 @@ public class MusicDb : DbContext
     public DbSet<Album> Albums => Set<Album>();
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<TrackTag> TrackTags => Set<TrackTag>();
 
     public MusicDb(DbContextOptions<MusicDb> options) : base(options) {}
 
@@ -66,8 +68,8 @@ public class MusicDb : DbContext
             .UsingEntity(j => j.ToTable("TrackArtists"));
         
         modelBuilder.Entity<Track>()
-            .Property(t => t.Genre)
-            .HasConversion<string>();
+            .HasMany(t => t.Tags)
+            .WithOne(t => t.Track);
         
         // USER
         modelBuilder.Entity<User>()
@@ -96,5 +98,28 @@ public class MusicDb : DbContext
             .HasMany(u => u.FavoriteAlbums)
             .WithMany()
             .UsingEntity(j => j.ToTable("UserAlbums"));
+        
+        // TAGS
+        modelBuilder.Entity<Tag>().HasIndex(t => t.Name);
+
+        modelBuilder.Ignore<EntityTag>();
+
+        modelBuilder.Entity<TrackTag>()
+            .HasOne(t => t.TaggedBy)
+            .WithMany()
+            .HasForeignKey(t => t.TaggedById)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<TrackTag>()
+            .HasOne(t => t.Tag)
+            .WithMany()
+            .HasForeignKey(t => t.Id)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<TrackTag>()
+            .HasOne(t => t.Track)
+            .WithMany()
+            .HasForeignKey(t => t.TrackId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

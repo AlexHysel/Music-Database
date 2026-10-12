@@ -44,7 +44,6 @@ public class AlbumController : ControllerBase
         if (info.ReleaseYear < 1900 || info.ReleaseYear > DateTimeOffset.UtcNow.Year + 1) return BadRequest($"Release year must be between 1900 and {DateTimeOffset.UtcNow.Year + 1}.");
         if (info.Tracks == null || info.Tracks.Length == 0) return BadRequest("At least one track is required.");
         if (info.Tracks.Any(t => t.Title == null || t.Title.Trim().Length == 0)) return BadRequest("All tracks must have a title.");
-        if (info.Tracks.Any(t => t.Genre == null || t.Genre.Trim().Length == 0)) return BadRequest("All tracks must have a genre.");
         if (info.Tracks.Any(t => t.Others != null && t.Others.Any(o => o == null || o.Trim().Length == 0))) return BadRequest("All other artists must have a name.");
 
         await _orchestrator.CreateAlbumAsync(info);

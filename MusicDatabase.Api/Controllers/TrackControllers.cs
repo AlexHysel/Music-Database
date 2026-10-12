@@ -57,9 +57,6 @@ public class TrackController : ControllerBase
         if (string.IsNullOrWhiteSpace(patch.Title))
             return BadRequest("Title is required.");
 
-        if (string.IsNullOrWhiteSpace(patch.Genre))
-            return BadRequest("Genre is required.");
-
         Result result = await _orchestrator.UpdateTrackAsync(patch);
         if (result.Success)
             return Ok();

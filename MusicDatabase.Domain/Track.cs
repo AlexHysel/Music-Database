@@ -11,11 +11,11 @@ public class Track
     public Artist Artist {get; private set;}
     private readonly List<Artist> _others = new();
     public IReadOnlyCollection<Artist> Others => _others.AsReadOnly();
-    public Genre Genre {get; private set;}
+    public List<TrackTag> Tags {get; private set;}
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
-    public Track(string title, int numberInTheAlbum, Album album, Artist artist, List<Artist> others, Genre genre)
+    public Track(string title, int numberInTheAlbum, Album album, Artist artist, List<Artist> others)
     {
         title = title.Trim();
 
@@ -32,7 +32,6 @@ public class Track
         ArtistId = artist.Id;
         Artist = artist;
         _others.AddRange(others);
-        Genre = genre;
     }
 
     private Track () {}
@@ -61,12 +60,6 @@ public class Track
         foreach (var o in others)
             if (!Others.Any(other => other.Id == o.Id))
                 _others.Add(o);
-        return true;
-    }
-
-    public bool SetGenre(Genre genre)
-    {
-        Genre = genre;
         return true;
     }
 

@@ -105,10 +105,6 @@ public class Orchestrator
 
         if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
 
-        if (!Enum.TryParse(patch.Genre, true, out Genre genre))
-            return Result.Fail("Wrong genre provided");
-        track.SetGenre(genre);
-
         var normalizedOthers = (patch.Others ?? Array.Empty<string>())
             .Select(name => name.Trim())
             .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -139,7 +135,7 @@ public class Orchestrator
                 foreach (string name in trackInfo.Others)
                     if (!string.IsNullOrEmpty(name))
                         others.Add(await _manager.Artists.EnsureArtistCreated(name));
-            Track track = new(trackInfo.Title, n++, album, artist, others, Enum.Parse<Genre>(trackInfo.Genre, true));
+            Track track = new(trackInfo.Title, n++, album, artist, others);
             album.Tracks.Add(track);
         }
 
@@ -246,8 +242,6 @@ public class Orchestrator
         foreach (UpdateTrackRequest trackInfo in patch.Tracks)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(trackInfo.Title, nameof(trackInfo.Title));
-            if (!Enum.TryParse(trackInfo.Genre, true, out Genre genre))
-                return Result.Fail("Wrong genre provided");
 
             var others = new List<Artist>();
             foreach (string name in trackInfo.Others ?? Array.Empty<string>())
@@ -261,13 +255,12 @@ public class Orchestrator
             if (existing != null)
             {
                 if (!existing.SetTitle(trackInfo.Title)) return Result.Fail("Empty title provided");
-                existing.SetGenre(genre);
                 existing.SetNumberInTheAlbum(trackInfo.NumberInTheAlbum);
                 if (!existing.SetOthers(others)) return Result.Fail("Invalid others provided");
             }
             else
             {
-                var newTrack = new Track(trackInfo.Title, trackInfo.NumberInTheAlbum, album, album.Artist, others, genre);
+                var newTrack = new Track(trackInfo.Title, trackInfo.NumberInTheAlbum, album, album.Artist, others);
                 album.AddTrack(newTrack);
             }
         }

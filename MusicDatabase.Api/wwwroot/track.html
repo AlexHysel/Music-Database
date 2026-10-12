@@ -13,22 +13,12 @@
                 <h1 id="trackTitle"></h1>
                 <a id="artistName"></a>
                 <a id="albumTitle"></a>
-                <p id="trackGenre"></p>
                 <div id="trackMeta" class="detail-meta" style="display: none;"></div>
                 <div id="adminPanel" style="display: none">
                     <form id="newTrackInfo" style="display: none" class="mt-3">
                         <div class="mb-2">
                             <label class="form-label">Title</label>
                             <input type="text" class="form-control" placeholder="Title" id="newTitle" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Genre</label>
-                            <select id="newGenre" class="form-select" required>
-                                <option value="Rock">Rock</option>
-                                <option value="Metal">Metal</option>
-                                <option value="Darksynth">Darksynth</option>
-                                <option value="Ambient">Ambient</option>
-                            </select>
                         </div>
                         <div class="mb-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -59,7 +49,6 @@
                 document.getElementById('trackTitle').style.display = 'none';
                 document.getElementById('artistName').style.display = 'none';
                 document.getElementById('albumTitle').style.display = 'none';
-                document.getElementById('trackGenre').style.display = 'none';
                 
                 document.getElementById('newTrackInfo').style.display = 'inline';
                 document.getElementById('removeButton').style.display = 'none';
@@ -70,7 +59,6 @@
                 document.getElementById('trackTitle').style.display = 'inline';
                 document.getElementById('artistName').style.display = 'inline';
                 document.getElementById('albumTitle').style.display = 'inline';
-                document.getElementById('trackGenre').style.display = 'inline';
 
                 document.getElementById('newTrackInfo').style.display = 'none';
                 document.getElementById('removeButton').style.display = 'inline';
@@ -151,7 +139,6 @@
                 document.getElementById('newTrackInfo').addEventListener('submit', async (event) => {
                     event.preventDefault();
                     let title = document.getElementById('newTitle').value.trim();
-                    let genre = document.getElementById('newGenre').value;
                     let others = Array.from(document.getElementById('otherArtists').querySelectorAll('input'))
                         .map(input => input.value.trim())
                         .filter(Boolean)
@@ -165,7 +152,6 @@
                         },
                         body: JSON.stringify({
                             title,
-                            genre,
                             numberInTheAlbum: 0,
                             others,
                             id: trackId
@@ -182,7 +168,6 @@
 
             function fillTrackForm(track){
                 document.getElementById('newTitle').value = track.title;
-                document.getElementById('newGenre').value = track.genre;
                 const otherArtistsDiv = document.getElementById('otherArtists');
                 otherArtistsDiv.innerHTML = '';
                 (track.others || []).forEach(o => {
@@ -217,7 +202,6 @@
                     document.getElementById('artistName').href = `artist.html?id=${track.artistId}`;
                     document.getElementById('albumTitle').textContent = track.albumTitle;
                     document.getElementById('albumTitle').href = `album.html?id=${track.albumId}`;
-                    document.getElementById('trackGenre').textContent = track.genre;
                     document.getElementById('cover').src = track.albumImageUrl;
                     renderDetailMeta('trackMeta', track.createdAt, track.updatedAt);
 

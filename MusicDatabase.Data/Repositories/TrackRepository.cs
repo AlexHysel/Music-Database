@@ -45,6 +45,7 @@ public class TrackRepository
         IQueryable<Track> query = _context.Tracks
             .Include(t => t.Album)
             .Include(t => t.Artist)
+            .Include(t => t.Tags)
             .Include(t => t.Others);
         if (!tracked) query = query.AsNoTracking();
 
