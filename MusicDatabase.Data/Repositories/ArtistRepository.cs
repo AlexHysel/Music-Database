@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MusicDatabase.Domain;
 using MusicDatabase.Common;
 
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Data.Repositories;
 
 public class ArtistRepository
 {

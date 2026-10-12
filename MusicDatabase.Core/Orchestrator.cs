@@ -121,6 +121,18 @@ public class Orchestrator
         return Result.Ok();
     }
 
+    public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request)
+    {
+        Tag tag = await _manager.Tags.EnsureTagCreated(request.TagName);
+        TrackTag trackTag = new(request.UserId, tag.Id, request.TrackId);
+        if (await _manager.Tracks.AddTagOnTrackAsync(trackTag))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        return Result.Fail("You've already added this tag.");
+    }
+
     //ALBUM
     public async Task CreateAlbumAsync(AddAlbumRequest info)
     {

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MusicDatabase.Data.Repositories;
 using MusicDatabase.Domain;
 
 namespace MusicDatabase.Data;
@@ -11,6 +12,7 @@ public class MusicManager: IMusicManager
     public ArtistRepository Artists {get;}
     public AlbumRepository Albums {get;}
     public TrackRepository Tracks {get;}
+    public TagRepository Tags {get;}
 
     public MusicManager(MusicDb context)
     {
@@ -19,6 +21,7 @@ public class MusicManager: IMusicManager
         Artists = new ArtistRepository(_context);
         Albums = new AlbumRepository(_context);
         Tracks = new TrackRepository(_context);
+        Tags = new TagRepository(_context);
     } 
 
     async public Task SaveChangesAsync()

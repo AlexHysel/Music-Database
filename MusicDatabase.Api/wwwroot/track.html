@@ -14,6 +14,18 @@
                 <a id="artistName"></a>
                 <a id="albumTitle"></a>
                 <div id="trackMeta" class="detail-meta" style="display: none;"></div>
+                <div id="tagsSection" class="mt-3">
+                <button type="button" class="btn btn-outline-light btn-sm" id="addTagButton" style="display: none">Add tag</button>
+                <form id="newTagForm" style="display: none" class="d-flex gap-2 align-items-start" novalidate>
+                    <div>
+                        <input type="text" class="form-control form-control-sm" id="newTagInput"
+                            placeholder="Tag" maxlength="20" autocomplete="off">
+                        <div id="tagError" class="text-danger small mt-1"></div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm">Add</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="cancelTagButton">Cancel</button>
+                </form>
+            </div>
                 <div id="adminPanel" style="display: none">
                     <form id="newTrackInfo" style="display: none" class="mt-3">
                         <div class="mb-2">
@@ -45,6 +57,59 @@
             let params = new URLSearchParams(window.location.search);
             let trackId = params.get('id');
             
+            function normalizeTag(value) {
+                return value.trim().replace(/\s+/g, ' ').toLowerCase();
+            }
+
+            function showTagForm(show) {
+                document.getElementById('newTagForm').style.display = show ? 'flex' : 'none';
+                document.getElementById('addTagButton').style.display = show ? 'none' : 'inline-block';
+                document.getElementById('tagError').textContent = '';
+                const input = document.getElementById('newTagInput');
+                input.value = '';
+                if (show) input.focus();
+            }
+
+            function createTagEvents(trackId) {
+                document.getElementById('addTagButton').style.display = 'inline-block';
+
+                document.getElementById('addTagButton').addEventListener('click', () => showTagForm(true));
+                document.getElementById('cancelTagButton').addEventListener('click', () => showTagForm(false));
+
+                document.getElementById('newTagForm').addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const error = document.getElementById('tagError');
+                    const name = normalizeTag(document.getElementById('newTagInput').value);
+
+                    if (!name) {
+                        error.textContent = 'Tag cannot be empty';
+                        return;
+                    }
+                    if (name.length > 20) {
+                        error.textContent = 'Tag must be at most 20 characters';
+                        return;
+                    }
+                    const userId = getPayload().nameid;
+                    const response = await fetch(`track/addtag`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({tagName: name, trackId, userId})
+                    });
+
+                    if (response.ok) {
+                        showTagForm(false);
+                        alert('Tag added');
+                    } else if (response.status === 409) {
+                        error.textContent = 'You already added this tag';
+                    } else {
+                        error.textContent = 'Tag was not added';
+                    }
+                });
+            }
+
             function editMode(){
                 document.getElementById('trackTitle').style.display = 'none';
                 document.getElementById('artistName').style.display = 'none';
@@ -206,6 +271,7 @@
                     renderDetailMeta('trackMeta', track.createdAt, track.updatedAt);
 
                     let role = getRole();
+                    if (role) createTagEvents(trackId);
                     if (role == 'Admin')
                     {
                         createCancelButtonEvent();

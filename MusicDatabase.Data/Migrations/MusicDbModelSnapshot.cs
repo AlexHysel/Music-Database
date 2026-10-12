@@ -222,16 +222,11 @@ namespace MusicDatabase.Migrations
                     b.Property<Guid>("TrackId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("TrackId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TaggedById");
 
                     b.HasIndex("TrackId");
-
-                    b.HasIndex("TrackId1");
 
                     b.ToTable("TrackTags");
                 });
@@ -341,14 +336,10 @@ namespace MusicDatabase.Migrations
                         .IsRequired();
 
                     b.HasOne("MusicDatabase.Domain.Track", "Track")
-                        .WithMany()
+                        .WithMany("Tags")
                         .HasForeignKey("TrackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("MusicDatabase.Domain.Track", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("TrackId1");
 
                     b.Navigation("Tag");
 

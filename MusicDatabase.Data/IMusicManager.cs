@@ -1,3 +1,5 @@
+using MusicDatabase.Data.Repositories;
+
 namespace MusicDatabase.Data;
 
 public interface IMusicManager
@@ -6,5 +8,6 @@ public interface IMusicManager
     public ArtistRepository Artists {get;}
     public AlbumRepository Albums {get;}
     public TrackRepository Tracks {get;}
+    public TagRepository Tags {get;}
     public Task SaveChangesAsync();
 }

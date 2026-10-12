@@ -44,3 +44,9 @@ public record UpdateArtistRequest(
     string ImageUrl,
     Guid Id
 );
+
+public record AddTagOnTrackRequest(
+    string TagName,
+    Guid TrackId,
+    Guid UserId
+);

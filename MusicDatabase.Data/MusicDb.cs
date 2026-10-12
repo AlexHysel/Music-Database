@@ -118,7 +118,7 @@ public class MusicDb : DbContext
         
         modelBuilder.Entity<TrackTag>()
             .HasOne(t => t.Track)
-            .WithMany()
+            .WithMany(t => t.Tags)
             .HasForeignKey(t => t.TrackId)
             .OnDelete(DeleteBehavior.Cascade);
     }

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MusicDatabase.Domain;
 using MusicDatabase.Common;
 
-namespace MusicDatabase.Data;
+namespace MusicDatabase.Data.Repositories;
 
 public class TrackRepository
 {
@@ -11,6 +11,15 @@ public class TrackRepository
     internal TrackRepository(MusicDb context)
     {
         _context = context;
+    }
+
+    async public Task<bool> AddTagOnTrackAsync(TrackTag trackTag)
+    {
+        if (await _context.TrackTags.AnyAsync(t => t == trackTag))
+            return false;
+
+        await _context.TrackTags.AddAsync(trackTag);
+        return true;
     }
 
     async public Task<PagedResult<Track>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
@@ -45,7 +54,7 @@ public class TrackRepository
         IQueryable<Track> query = _context.Tracks
             .Include(t => t.Album)
             .Include(t => t.Artist)
-            .Include(t => t.Tags)
+            .Include(t => t.Tags).ThenInclude(t => t.Tag)
             .Include(t => t.Others);
         if (!tracked) query = query.AsNoTracking();
 
