@@ -41,7 +41,7 @@ public record TrackDetailDTO(
     DateTimeOffset UpdatedAt,
     string Id)
 {
-    public static TrackDetailDTO FromTrack(Track track)
+    public static TrackDetailDTO FromTrack(Track track, string[] tags)
     {
         return new TrackDetailDTO(
             track.Title,
@@ -51,7 +51,7 @@ public record TrackDetailDTO(
             track.Artist?.Name ?? "",
             track.Artist?.Id.ToString() ?? "",
             track.Others.Select(o => ArtistDTO.FromArtist(o)).ToArray(),
-            track.Tags.Select(t => t.Tag.Name).ToArray(),
+            tags,
             track.CreatedAt,
             track.UpdatedAt,
             track.Id.ToString());
@@ -86,11 +86,12 @@ public record AlbumDetailDTO(
     TrackDTO[] Tracks,
     int ReleaseYear,
     string Type,
+    string[] Tags,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     string Id)
 {
-    public static AlbumDetailDTO FromAlbum(Album album)
+    public static AlbumDetailDTO FromAlbum(Album album, string[] tags)
     {
         return new AlbumDetailDTO(
             album.Title,
@@ -103,6 +104,7 @@ public record AlbumDetailDTO(
                 .ToArray(),
             album.ReleaseYear,
             album.Type.ToString(),
+            tags,
             album.CreatedAt,
             album.UpdatedAt,
             album.Id.ToString());

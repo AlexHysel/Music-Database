@@ -94,8 +94,8 @@ public class Orchestrator
         Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
         if (track == null)
             return Result<TrackDetailDTO>.Fail("Track not found");
-        else
-            return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
+        string[] tags = await _manager.Tracks.GetTrackTags(id, 5);
+        return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track, tags));
     }
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
@@ -124,7 +124,7 @@ public class Orchestrator
     public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request)
     {
         Tag tag = await _manager.Tags.EnsureTagCreated(request.TagName);
-        TrackTag trackTag = new(request.UserId, tag.Id, request.TrackId);
+        TrackTagVote trackTag = new(request.TrackId, tag.Id, request.UserId);
         if (await _manager.Tracks.AddTagOnTrackAsync(trackTag))
         {
             await _manager.SaveChangesAsync();
@@ -153,6 +153,18 @@ public class Orchestrator
 
         await _manager.Albums.CreateAlbumAsync(album);
         await _manager.SaveChangesAsync();
+    }
+
+    public async Task<Result> AddTagOnAlbumAsync(AddTagOnAlbumRequest request)
+    {
+        Tag tag = await _manager.Tags.EnsureTagCreated(request.TagName);
+        AlbumTagVote trackTag = new(request.AlbumId, tag.Id, request.UserId);
+        if (await _manager.Albums.AddTagOnAlbumAsync(trackTag))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+        return Result.Fail("You've already added this tag.");
     }
 
     public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
@@ -222,7 +234,8 @@ public class Orchestrator
         Album? album = await _manager.Albums.GetAlbumDetailAsync(id);
         if (album != null)
         {
-            AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
+            string[] tags = await _manager.Albums.GetAlbumTags(id, 5);
+            AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album, tags);
             return Result<AlbumDetailDTO?>.Ok(albumDto);
         }
         else

@@ -9,9 +9,10 @@ public class Track
     public Album Album {get; private set;}
     public Guid ArtistId {get; private set;}
     public Artist Artist {get; private set;}
-    private readonly List<Artist> _others = new();
+    private readonly List<Artist> _others = [];
     public IReadOnlyCollection<Artist> Others => _others.AsReadOnly();
-    public List<TrackTag> Tags {get; private set;}
+    public readonly List<TrackTagVote> _tags = [];
+    public IReadOnlyCollection<TrackTagVote> Tags => _tags.AsReadOnly();
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
@@ -45,6 +46,16 @@ public class Track
         return true;
     }
 
+    public bool AddTag(Tag tag, User user)
+    {
+        if (_tags.Any(t => t.TaggedById == user.Id && t.Tag.Id == tag.Id))
+            return false;
+
+        TrackTagVote trackTag = new(user.Id, tag.Id, Id);
+        _tags.Add(trackTag);
+        return true;
+    }
+
     public bool SetOthers(List<Artist> others)
     {
         ArgumentNullException.ThrowIfNull(others, nameof(others));
@@ -70,8 +81,6 @@ public class Track
 
     public void SetNumberInTheAlbum(int number)
     {
-        // Decided to throw an exception here instead of returning a bool, 
-        // because this is an internal method and should not be called with invalid data.
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(number, nameof(number));
 
         NumberInTheAlbum = number;

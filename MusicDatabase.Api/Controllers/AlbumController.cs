@@ -71,4 +71,17 @@ public class AlbumController : ControllerBase
         else
             return NotFound(result.Message);
     }
+
+    [HttpPut("addtag")]
+    [Authorize]
+    public async Task<IActionResult> AddTag([FromBody] AddTagOnAlbumRequest request)
+    {
+        if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
+
+        Result result = await _orchestrator.AddTagOnAlbumAsync(request);
+        if (result.Success)
+            return Ok();
+        else
+            return NotFound(result.Message);
+    }
 }

@@ -13,6 +13,34 @@ public class AlbumRepository
         _context = context;
     }
 
+    async public Task<bool> AddTagOnAlbumAsync(AlbumTagVote albumTag)
+    {
+        if (await _context.AlbumTagVotes.AnyAsync(t => t == albumTag))
+            return false;
+
+        await _context.AlbumTagVotes.AddAsync(albumTag);
+        return true;
+    }
+
+    public async Task<string[]> GetAlbumTags(Guid id, int count)
+    {
+        var ids = await _context.AlbumTagVotes
+            .Where(v => v.AlbumId == id)
+            .GroupBy(v => v.TagId)
+            .OrderByDescending(g => g.Count())
+            .Take(count)
+            .Select(g => g.Key)
+            .ToListAsync();
+
+        var tags = await _context.Tags
+            .AsNoTracking()
+            .Where(t => ids.Contains(t.Id))
+            .Select(t => t.Name)
+            .ToArrayAsync();
+
+        return tags;
+    }
+
     async public Task<PagedResult<Album>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return await _context.Albums

@@ -13,12 +13,12 @@ public class TrackRepository
         _context = context;
     }
 
-    async public Task<bool> AddTagOnTrackAsync(TrackTag trackTag)
+    async public Task<bool> AddTagOnTrackAsync(TrackTagVote trackTag)
     {
-        if (await _context.TrackTags.AnyAsync(t => t == trackTag))
+        if (await _context.TrackTagVotes.AnyAsync(t => t == trackTag))
             return false;
 
-        await _context.TrackTags.AddAsync(trackTag);
+        await _context.TrackTagVotes.AddAsync(trackTag);
         return true;
     }
 
@@ -54,11 +54,30 @@ public class TrackRepository
         IQueryable<Track> query = _context.Tracks
             .Include(t => t.Album)
             .Include(t => t.Artist)
-            .Include(t => t.Tags).ThenInclude(t => t.Tag)
             .Include(t => t.Others);
         if (!tracked) query = query.AsNoTracking();
 
         return await query.FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    public async Task<string[]> GetTrackTags(Guid id, int count)
+    {
+        var ids = await _context.TrackTagVotes
+            .AsNoTracking()
+            .Where(v => v.TrackId == id)
+            .GroupBy(v => v.TagId)
+            .OrderByDescending(g => g.Count())
+            .Take(count)
+            .Select(g => g.Key)
+            .ToListAsync();
+
+        var tags = await _context.Tags
+            .AsNoTracking()
+            .Where(t => ids.Contains(t.Id))
+            .Select(t => t.Name)
+            .ToArrayAsync();
+
+        return tags;
     }
 
     async public void RemoveTrack(Track track)

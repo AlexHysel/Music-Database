@@ -22,6 +22,32 @@ namespace MusicDatabase.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AlbumTagVote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlbumId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TaggedById")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlbumId");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("TaggedById");
+
+                    b.ToTable("AlbumTagVotes");
+                });
+
             modelBuilder.Entity("AlbumUser", b =>
                 {
                     b.Property<Guid>("FavoriteAlbumsId")
@@ -211,9 +237,13 @@ namespace MusicDatabase.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("TrackTag", b =>
+            modelBuilder.Entity("TrackTagVote", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("TaggedById")
@@ -224,11 +254,13 @@ namespace MusicDatabase.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TagId");
+
                     b.HasIndex("TaggedById");
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("TrackTags");
+                    b.ToTable("TrackTagVotes");
                 });
 
             modelBuilder.Entity("TrackUser", b =>
@@ -244,6 +276,33 @@ namespace MusicDatabase.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserTracks", (string)null);
+                });
+
+            modelBuilder.Entity("AlbumTagVote", b =>
+                {
+                    b.HasOne("MusicDatabase.Domain.Album", "Album")
+                        .WithMany("Tags")
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MusicDatabase.Domain.User", "TaggedBy")
+                        .WithMany()
+                        .HasForeignKey("TaggedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Tag");
+
+                    b.Navigation("TaggedBy");
                 });
 
             modelBuilder.Entity("AlbumUser", b =>
@@ -321,11 +380,11 @@ namespace MusicDatabase.Migrations
                     b.Navigation("Artist");
                 });
 
-            modelBuilder.Entity("TrackTag", b =>
+            modelBuilder.Entity("TrackTagVote", b =>
                 {
                     b.HasOne("Tag", "Tag")
                         .WithMany()
-                        .HasForeignKey("Id")
+                        .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -365,6 +424,8 @@ namespace MusicDatabase.Migrations
 
             modelBuilder.Entity("MusicDatabase.Domain.Album", b =>
                 {
+                    b.Navigation("Tags");
+
                     b.Navigation("Tracks");
                 });
 

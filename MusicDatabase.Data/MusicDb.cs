@@ -11,7 +11,8 @@ public class MusicDb : DbContext
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Tag> Tags => Set<Tag>();
-    public DbSet<TrackTag> TrackTags => Set<TrackTag>();
+    public DbSet<TrackTagVote> TrackTagVotes => Set<TrackTagVote>();
+    public DbSet<AlbumTagVote> AlbumTagVotes => Set<AlbumTagVote>();
 
     public MusicDb(DbContextOptions<MusicDb> options) : base(options) {}
 
@@ -100,26 +101,45 @@ public class MusicDb : DbContext
             .UsingEntity(j => j.ToTable("UserAlbums"));
         
         // TAGS
-        modelBuilder.Entity<Tag>().HasIndex(t => t.Name);
+        modelBuilder.Entity<Tag>()
+            .HasIndex(t => t.Name);
 
-        modelBuilder.Ignore<EntityTag>();
-
-        modelBuilder.Entity<TrackTag>()
+        // TRACK TAG VOTE
+        modelBuilder.Entity<TrackTagVote>()
             .HasOne(t => t.TaggedBy)
             .WithMany()
             .HasForeignKey(t => t.TaggedById)
             .OnDelete(DeleteBehavior.Cascade);
         
-        modelBuilder.Entity<TrackTag>()
+        modelBuilder.Entity<TrackTagVote>()
             .HasOne(t => t.Tag)
             .WithMany()
-            .HasForeignKey(t => t.Id)
+            .HasForeignKey(t => t.TagId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        modelBuilder.Entity<TrackTag>()
+        modelBuilder.Entity<TrackTagVote>()
             .HasOne(t => t.Track)
             .WithMany(t => t.Tags)
             .HasForeignKey(t => t.TrackId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ALBUM TAG VOTE
+        modelBuilder.Entity<AlbumTagVote>()
+            .HasOne(t => t.TaggedBy)
+            .WithMany()
+            .HasForeignKey(t => t.TaggedById)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<AlbumTagVote>()
+            .HasOne(t => t.Tag)
+            .WithMany()
+            .HasForeignKey(t => t.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<AlbumTagVote>()
+            .HasOne(t => t.Album)
+            .WithMany(t => t.Tags)
+            .HasForeignKey(t => t.AlbumId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

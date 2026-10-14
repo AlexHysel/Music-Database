@@ -50,3 +50,9 @@ public record AddTagOnTrackRequest(
     Guid TrackId,
     Guid UserId
 );
+
+public record AddTagOnAlbumRequest(
+    string TagName,
+    Guid AlbumId,
+    Guid UserId
+);

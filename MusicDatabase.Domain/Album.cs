@@ -10,6 +10,8 @@ public class Album
     public string ImageUrl {get; private set;} = "";
     public List<Track> Tracks {get; private set; } = new List<Track>();
     public AlbumType Type {get; private set;}
+    private readonly List<AlbumTagVote> _tags = [];
+    public IReadOnlyCollection<AlbumTagVote> Tags => _tags.AsReadOnly();
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 

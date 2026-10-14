@@ -19,31 +19,38 @@ public class Tag
     }
 }
 
-abstract public class EntityTag
+public class TrackTagVote
 {
-    public Tag Tag {get; private set;}
     public Guid Id {get; private set;}
+    public Track Track {get; private set;}
+    public Guid TrackId {get; private set;}
+    public Tag Tag {get; private set;}
+    public Guid TagId {get; private set;}
     public User TaggedBy {get; private set;}
     public Guid TaggedById {get; private set;}
 
-    protected EntityTag() {}
-
-    protected EntityTag(Guid userId, Guid tagId)
+    public TrackTagVote(Guid trackId, Guid tagId, Guid taggedById)
     {
-        TaggedById = userId;
-        Id = tagId;
+        TrackId = trackId;
+        TagId = tagId;
+        TaggedById = taggedById;
     }
 }
 
-public class TrackTag : EntityTag
+public class AlbumTagVote
 {
-    public Track Track {get; private set;}
-    public Guid TrackId {get; private set;}
+    public Guid Id {get; private set;}
+    public Album Album {get; private set;}
+    public Guid AlbumId {get; private set;}
+    public Tag Tag {get; private set;}
+    public Guid TagId {get; private set;}
+    public User TaggedBy {get; private set;}
+    public Guid TaggedById {get; private set;}
 
-    private TrackTag() {}
-
-    public TrackTag(Guid userId, Guid tagId, Guid trackId) : base(userId, tagId)
+    public AlbumTagVote(Guid albumId, Guid tagId, Guid taggedById)
     {
-        TrackId = trackId;
+        AlbumId = albumId;
+        TagId = tagId;
+        TaggedById = taggedById;
     }
 }
