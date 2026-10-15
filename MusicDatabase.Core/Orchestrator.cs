@@ -264,7 +264,7 @@ public class Orchestrator
             _manager.Tracks.RemoveTrack(track);
         }
 
-        foreach (UpdateTrackRequest trackInfo in patch.Tracks)
+        foreach (UpdateTrackInAlbumRequest trackInfo in patch.Tracks)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(trackInfo.Title, nameof(trackInfo.Title));
 
@@ -275,7 +275,9 @@ public class Orchestrator
                 others.Add(await _manager.Artists.EnsureArtistCreated(name));
             }
 
-            Track? existing = album.Tracks.FirstOrDefault(t => t.Id == t.Id);
+            Track? existing = null;
+            if (trackInfo.Id != null)
+                existing = album.Tracks.FirstOrDefault(t => t.Id == trackInfo.Id);
 
             if (existing != null)
             {

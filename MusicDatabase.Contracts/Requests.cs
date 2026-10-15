@@ -23,9 +23,16 @@ public record AddAlbumRequest(
     AddTrackRequest[] Tracks
 );
 
+public record UpdateTrackInAlbumRequest(
+    string Title,
+    string ArtistName,
+    string[]? Others,
+    int NumberInTheAlbum,
+    Guid? Id
+);
+
 public record UpdateTrackRequest(
     string Title,
-    int NumberInTheAlbum,
     string[]? Others,
     Guid Id
 );
@@ -36,7 +43,7 @@ public record UpdateAlbumRequest(
     string ImageUrl,
     int ReleaseYear,
     Guid Id,
-    UpdateTrackRequest[] Tracks
+    UpdateTrackInAlbumRequest[] Tracks
 );
 
 public record UpdateArtistRequest(

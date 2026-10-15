@@ -172,6 +172,84 @@ header.app-header nav { display:flex; align-items:center; gap:8px; margin-left:a
 .albumBig img { width:100%; height:360px; object-fit:cover; border-radius:8px; }
 .albumBig h1 { font-size:36px; margin-top:12px; }
 
+/* Shared album and track community tags */
+.community-tags {
+  margin-top: 22px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.community-tags [hidden] { display: none !important; }
+.community-tags-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.community-tags h2 { margin:0; font-size:13px; font-weight:650; letter-spacing:0.04em; color:#e9edf2; }
+.community-tags .tag-help { margin:8px 0 12px; font-size:12px; line-height:1.6; color:#a9a6b5; }
+.community-tags .tag-help:last-child { margin-bottom:0; }
+.tag-list { display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none; }
+.tag-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  max-width:100%;
+  padding:6px 11px;
+  border:1px solid rgba(132,217,194,0.18);
+  border-radius:999px;
+  background:rgba(132,217,194,0.07);
+  color:#d2eee5;
+  font-size:12px;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+.tag-hash { color:#77b9a5; }
+.tag-add-button, .tag-cancel-button, .tag-submit-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:36px;
+  padding:6px 11px;
+  border:1px solid transparent;
+  border-radius:9px;
+  font:inherit;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 150ms, border-color 150ms;
+}
+.tag-add-button { color:#a8e4d0; background:transparent; border-color:rgba(132,217,194,0.22); white-space:nowrap; }
+.tag-add-button:hover { background:rgba(132,217,194,0.1); border-color:rgba(132,217,194,0.45); }
+.tag-add-button span { font-size:18px; font-weight:400; line-height:1; }
+.tag-form { margin-top:14px; padding:14px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; background:rgba(255,255,255,0.025); }
+.tag-form label { font-size:13px; font-weight:600; }
+.tag-form .tag-help { margin:5px 0 12px; }
+.tag-input-wrap { position:relative; display:flex; align-items:center; }
+.tag-input-prefix { position:absolute; left:12px; color:#82baa9; pointer-events:none; }
+.tag-input {
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:10px 64px 10px 28px;
+  border:1px solid rgba(255,255,255,0.16);
+  border-radius:8px;
+  background:#201f26;
+  color:#eef2f7;
+  font:inherit;
+  font-size:13px;
+}
+.tag-input::placeholder { color:#898593; }
+.tag-input:focus { outline:2px solid rgba(132,217,194,0.4); outline-offset:2px; border-color:#84d9c2; }
+.tag-input[aria-invalid="true"] { border-color:#efa5ad; }
+.tag-counter { position:absolute; right:10px; color:#a9a6b5; font-size:10px; pointer-events:none; }
+.tag-form-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.tag-cancel-button { color:#c8c4d1; background:transparent; }
+.tag-cancel-button:hover { background:rgba(255,255,255,0.06); }
+.tag-submit-button { color:#122c24; background:#a8e4d0; }
+.tag-submit-button:hover:not(:disabled) { background:#c1f0e0; }
+.community-tags button:focus-visible { outline:2px solid #a8e4d0; outline-offset:3px; }
+.community-tags button:disabled, .tag-input:disabled { opacity:0.5; cursor:not-allowed; }
+.tag-error { margin:10px 0 0; color:#ffb2bb; font-size:12px; line-height:1.5; }
+.tag-status { margin:12px 0 0; padding:10px 12px; border-radius:9px; background:rgba(132,217,194,0.07); color:#bde5d8; font-size:12px; line-height:1.6; }
+.tag-empty { margin:0; padding:12px; border:1px dashed rgba(255,255,255,0.14); border-radius:9px; color:#a9a6b5; font-size:12px; line-height:1.6; }
+
 .artistBig { display:flex; gap:24px; align-items:flex-end; margin: 12px 0 24px; }
 .artist-hero-wrap { width: min(100%, 420px); }
 .artist-hero {

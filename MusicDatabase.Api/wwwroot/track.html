@@ -3,10 +3,12 @@
 <html>
     <head>
         <meta charset="utf-8">
-    </head>
-    <body>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="styling/main.css">
+        <title>Track</title>
+    </head>
+    <body>
         <div id="track" class="trackBig">
             <img id="cover">
             <div class="trackBigInfo">
@@ -14,19 +16,36 @@
                 <a id="artistName"></a>
                 <a id="albumTitle"></a>
                 <div id="trackMeta" class="detail-meta" style="display: none;"></div>
-                <div id="tagsSection" class="mt-3">
-                    <ul id="trackTags"></ul>
-                    <button type="button" class="btn btn-outline-light btn-sm" id="addTagButton" style="display: none">Add tag</button>
-                    <form id="newTagForm" style="display: none" class="d-flex gap-2 align-items-start" novalidate>
-                        <div>
-                            <input type="text" class="form-control form-control-sm" id="newTagInput"
-                                placeholder="Tag" maxlength="20" autocomplete="off">
-                            <div id="tagError" class="text-danger small mt-1"></div>
+                <section id="tagsSection" class="community-tags" aria-labelledby="tagsHeading">
+                    <div class="community-tags-header">
+                        <h2 id="tagsHeading">Community tags</h2>
+                        <button type="button" class="tag-add-button" id="addTagButton"
+                            aria-expanded="false" aria-controls="newTagForm" hidden>
+                            <span aria-hidden="true">+</span> Add tag
+                        </button>
+                    </div>
+                    <p class="tag-help">The community’s top tags for this track.</p>
+                    <ul id="trackTags" class="tag-list" aria-label="Track tags"></ul>
+                    <p id="emptyTags" class="tag-empty" hidden>No tags yet. Help describe this track.</p>
+                    <p id="tagLoginHint" class="tag-help" hidden><a href="login.html">Sign in</a> to add your tags.</p>
+                    <form id="newTagForm" class="tag-form" hidden novalidate>
+                        <label for="newTagInput">Describe the sound</label>
+                        <p id="tagInputHint" class="tag-help">Add a tag or support an existing one. One tag at a time.</p>
+                        <div class="tag-input-wrap">
+                            <span class="tag-input-prefix" aria-hidden="true">#</span>
+                            <input type="text" id="newTagInput" name="tag" class="tag-input"
+                                placeholder="e.g. dream pop" maxlength="20" autocomplete="off"
+                                aria-describedby="tagInputHint tagCounter tagError">
+                            <span id="tagCounter" class="tag-counter">0 / 20</span>
                         </div>
-                        <button type="submit" class="btn btn-success btn-sm">Add</button>
-                        <button type="button" class="btn btn-secondary btn-sm" id="cancelTagButton">Cancel</button>
+                        <p id="tagError" class="tag-error" role="alert" hidden></p>
+                        <div class="tag-form-actions">
+                            <button type="button" class="tag-cancel-button" id="cancelTagButton">Cancel</button>
+                            <button type="submit" class="tag-submit-button" id="submitTagButton" disabled>Add tag</button>
+                        </div>
                     </form>
-                </div>
+                    <p id="tagStatus" class="tag-status" role="status" aria-live="polite" hidden></p>
+                </section>
                 <div id="adminPanel" style="display: none">
                     <form id="newTrackInfo" style="display: none" class="mt-3">
                         <div class="mb-2">
@@ -53,58 +72,10 @@
             </div>
         </div>
         <script src='auth.js'></script>
+        <script src='tags.js'></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let trackId = params.get('id');
-            
-            function showTagForm(show) {
-                document.getElementById('newTagForm').style.display = show ? 'flex' : 'none';
-                document.getElementById('addTagButton').style.display = show ? 'none' : 'inline-block';
-                document.getElementById('tagError').textContent = '';
-                const input = document.getElementById('newTagInput');
-                input.value = '';
-                if (show) input.focus();
-            }
-
-            function createTagEvents(trackId) {
-                document.getElementById('addTagButton').style.display = 'inline-block';
-
-                document.getElementById('addTagButton').addEventListener('click', () => showTagForm(true));
-                document.getElementById('cancelTagButton').addEventListener('click', () => showTagForm(false));
-
-                document.getElementById('newTagForm').addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const error = document.getElementById('tagError');
-                    const name = document.getElementById('newTagInput').value;
-
-                    if (!name) {
-                        error.textContent = 'Tag cannot be empty';
-                        return;
-                    }
-                    if (name.length > 20) {
-                        error.textContent = 'Tag must be at most 20 characters';
-                        return;
-                    }
-                    const userId = getPayload().nameid;
-                    const response = await fetch(`track/addtag`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({tagName: name, trackId, userId})
-                    });
-
-                    if (response.ok) {
-                        showTagForm(false);
-                        alert('Tag added');
-                    } else if (response.status === 409) {
-                        error.textContent = 'You already added this tag';
-                    } else {
-                        error.textContent = 'Tag was not added';
-                    }
-                });
-            }
 
             function editMode(){
                 document.getElementById('trackTitle').style.display = 'none';
@@ -264,16 +235,10 @@
                     document.getElementById('albumTitle').textContent = track.albumTitle;
                     document.getElementById('albumTitle').href = `album.html?id=${track.albumId}`;
                     document.getElementById('cover').src = track.albumImageUrl;
-                    document.getElementById('trackTags').innerHTML = '';
-                    for (let t of track.tags){
-                        const tag = document.createElement('li');
-                        tag.textContent = t;
-                        document.getElementById('trackTags').appendChild(tag);
-                    }
+                    initializeTags('track', track.id, track.tags);
                     renderDetailMeta('trackMeta', track.createdAt, track.updatedAt);
 
                     let role = getRole();
-                    if (role) createTagEvents(trackId);
                     if (role == 'Admin')
                     {
                         createCancelButtonEvent();

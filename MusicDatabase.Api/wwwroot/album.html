@@ -15,19 +15,36 @@
                 <img id="cover">
                 <h1 id="albumTitle"></h1>
                 <a id="albumArtist"></a>
-                <div id="tagsSection" class="mt-3">
-                    <ul id="albumTags"></ul>
-                    <button type="button" class="btn btn-outline-light btn-sm" id="addTagButton" style="display: none">Add tag</button>
-                    <form id="newTagForm" style="display: none" class="d-flex gap-2 align-items-start" novalidate>
-                        <div>
-                            <input type="text" class="form-control form-control-sm" id="newTagInput"
-                                placeholder="Tag" maxlength="20" autocomplete="off">
-                            <div id="tagError" class="text-danger small mt-1"></div>
+                <section id="tagsSection" class="community-tags" aria-labelledby="tagsHeading">
+                    <div class="community-tags-header">
+                        <h2 id="tagsHeading">Community tags</h2>
+                        <button type="button" class="tag-add-button" id="addTagButton"
+                            aria-expanded="false" aria-controls="newTagForm" hidden>
+                            <span aria-hidden="true">+</span> Add tag
+                        </button>
+                    </div>
+                    <p class="tag-help">The community’s top tags for this album.</p>
+                    <ul id="albumTags" class="tag-list" aria-label="Album tags"></ul>
+                    <p id="emptyTags" class="tag-empty" hidden>No tags yet. Help describe this album.</p>
+                    <p id="tagLoginHint" class="tag-help" hidden><a href="login.html">Sign in</a> to add your tags.</p>
+                    <form id="newTagForm" class="tag-form" hidden novalidate>
+                        <label for="newTagInput">Describe the sound</label>
+                        <p id="tagInputHint" class="tag-help">Add a tag or support an existing one. One tag at a time.</p>
+                        <div class="tag-input-wrap">
+                            <span class="tag-input-prefix" aria-hidden="true">#</span>
+                            <input type="text" id="newTagInput" name="tag" class="tag-input"
+                                placeholder="e.g. dream pop" maxlength="20" autocomplete="off"
+                                aria-describedby="tagInputHint tagCounter tagError">
+                            <span id="tagCounter" class="tag-counter">0 / 20</span>
                         </div>
-                        <button type="submit" class="btn btn-success btn-sm">Add</button>
-                        <button type="button" class="btn btn-secondary btn-sm" id="cancelTagButton">Cancel</button>
+                        <p id="tagError" class="tag-error" role="alert" hidden></p>
+                        <div class="tag-form-actions">
+                            <button type="button" class="tag-cancel-button" id="cancelTagButton">Cancel</button>
+                            <button type="submit" class="tag-submit-button" id="submitTagButton" disabled>Add tag</button>
+                        </div>
                     </form>
-                </div>
+                    <p id="tagStatus" class="tag-status" role="status" aria-live="polite" hidden></p>
+                </section>
                 <div id="albumMeta" class="detail-meta" style="display: none;"></div>
                 <div id="adminPanel" style="display: none;">
                     <div class="d-flex gap-2">
@@ -41,6 +58,7 @@
         </div>
         <script src='auth.js'></script>
         <script src='trackElement.js'></script>
+        <script src='tags.js'></script>
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
@@ -68,55 +86,6 @@
                 document.getElementById('updateButton').addEventListener('click', (event) => {
                     event.preventDefault();
                     window.location.href = `editalbum.html?id=${id}`;
-                });
-            }
-
-            function showTagForm(show) {
-                document.getElementById('newTagForm').style.display = show ? 'flex' : 'none';
-                document.getElementById('addTagButton').style.display = show ? 'none' : 'inline-block';
-                document.getElementById('tagError').textContent = '';
-                const input = document.getElementById('newTagInput');
-                input.value = '';
-                if (show) input.focus();
-            }
-
-            function createTagEvents(albumId) {
-                document.getElementById('addTagButton').style.display = 'inline-block';
-
-                document.getElementById('addTagButton').addEventListener('click', () => showTagForm(true));
-                document.getElementById('cancelTagButton').addEventListener('click', () => showTagForm(false));
-
-                document.getElementById('newTagForm').addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const error = document.getElementById('tagError');
-                    const name = document.getElementById('newTagInput').value;
-
-                    if (!name) {
-                        error.textContent = 'Tag cannot be empty';
-                        return;
-                    }
-                    if (name.length > 20) {
-                        error.textContent = 'Tag must be at most 20 characters';
-                        return;
-                    }
-                    const userId = getPayload().nameid;
-                    const response = await fetch(`album/addtag`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({tagName: name, albumId, userId})
-                    });
-
-                    if (response.ok) {
-                        showTagForm(false);
-                        alert('Tag added');
-                    } else if (response.status === 409) {
-                        error.textContent = 'You already added this tag';
-                    } else {
-                        error.textContent = 'Tag was not added';
-                    }
                 });
             }
 
@@ -151,17 +120,10 @@
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artistName;
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artistId}`;
-                    for (const tag of album.tags){
-                        t = document.createElement('li');
-                        t.textContent = tag;
-                        document.getElementById('albumTags').appendChild(t);
-                    }
+                    initializeTags('album', album.id, album.tags);
                     renderDetailMeta('albumMeta', album.createdAt, album.updatedAt);
                     document.getElementById('trackList').appendChild(createTrackList(album.tracks, { showMore: false, compact: true }));
                     let role = getRole();
-                    if (role){
-                        createTagEvents(album.id);
-                    }
                     if (role == 'Admin')
                     {
                         createRemoveButtonEvent();

@@ -117,7 +117,7 @@
                 document.getElementById('artistName').value = album.artistName;
                 document.getElementById('imageUrl').value = album.imageUrl;
                 document.getElementById('releaseYear').value = album.releaseYear;
-                album.tracks.forEach(t => createTrackCard({ id: t.id, title: t.title, genre: t.genre, others: t.others?.map(o => o.name) }));
+                album.tracks.forEach(t => createTrackCard({ id: t.id, title: t.title, others: t.others?.map(o => o.name) }));
             }
 
             document.getElementById('editForm').addEventListener('submit', async (e) => {
