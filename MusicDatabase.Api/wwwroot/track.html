@@ -57,10 +57,6 @@
             let params = new URLSearchParams(window.location.search);
             let trackId = params.get('id');
             
-            function normalizeTag(value) {
-                return value.trim().replace(/\s+/g, ' ').toLowerCase();
-            }
-
             function showTagForm(show) {
                 document.getElementById('newTagForm').style.display = show ? 'flex' : 'none';
                 document.getElementById('addTagButton').style.display = show ? 'none' : 'inline-block';
@@ -79,7 +75,7 @@
                 document.getElementById('newTagForm').addEventListener('submit', async (event) => {
                     event.preventDefault();
                     const error = document.getElementById('tagError');
-                    const name = normalizeTag(document.getElementById('newTagInput').value);
+                    const name = document.getElementById('newTagInput').value;
 
                     if (!name) {
                         error.textContent = 'Tag cannot be empty';

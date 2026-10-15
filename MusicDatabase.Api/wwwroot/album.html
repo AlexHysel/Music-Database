@@ -15,6 +15,19 @@
                 <img id="cover">
                 <h1 id="albumTitle"></h1>
                 <a id="albumArtist"></a>
+                <div id="tagsSection" class="mt-3">
+                    <ul id="albumTags"></ul>
+                    <button type="button" class="btn btn-outline-light btn-sm" id="addTagButton" style="display: none">Add tag</button>
+                    <form id="newTagForm" style="display: none" class="d-flex gap-2 align-items-start" novalidate>
+                        <div>
+                            <input type="text" class="form-control form-control-sm" id="newTagInput"
+                                placeholder="Tag" maxlength="20" autocomplete="off">
+                            <div id="tagError" class="text-danger small mt-1"></div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm">Add</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="cancelTagButton">Cancel</button>
+                    </form>
+                </div>
                 <div id="albumMeta" class="detail-meta" style="display: none;"></div>
                 <div id="adminPanel" style="display: none;">
                     <div class="d-flex gap-2">
@@ -58,6 +71,55 @@
                 });
             }
 
+            function showTagForm(show) {
+                document.getElementById('newTagForm').style.display = show ? 'flex' : 'none';
+                document.getElementById('addTagButton').style.display = show ? 'none' : 'inline-block';
+                document.getElementById('tagError').textContent = '';
+                const input = document.getElementById('newTagInput');
+                input.value = '';
+                if (show) input.focus();
+            }
+
+            function createTagEvents(albumId) {
+                document.getElementById('addTagButton').style.display = 'inline-block';
+
+                document.getElementById('addTagButton').addEventListener('click', () => showTagForm(true));
+                document.getElementById('cancelTagButton').addEventListener('click', () => showTagForm(false));
+
+                document.getElementById('newTagForm').addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const error = document.getElementById('tagError');
+                    const name = document.getElementById('newTagInput').value;
+
+                    if (!name) {
+                        error.textContent = 'Tag cannot be empty';
+                        return;
+                    }
+                    if (name.length > 20) {
+                        error.textContent = 'Tag must be at most 20 characters';
+                        return;
+                    }
+                    const userId = getPayload().nameid;
+                    const response = await fetch(`album/addtag`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({tagName: name, albumId, userId})
+                    });
+
+                    if (response.ok) {
+                        showTagForm(false);
+                        alert('Tag added');
+                    } else if (response.status === 409) {
+                        error.textContent = 'You already added this tag';
+                    } else {
+                        error.textContent = 'Tag was not added';
+                    }
+                });
+            }
+
             function fillAlbumFields(album){
                 document.getElementById('albumTitleInput').value = album.title;
                 document.getElementById('newImageUrl').value = album.imageUrl;
@@ -89,10 +151,17 @@
                     document.getElementById('albumTitle').textContent = album.title;
                     document.getElementById('albumArtist').textContent = album.artistName;
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artistId}`;
+                    for (const tag of album.tags){
+                        t = document.createElement('li');
+                        t.textContent = tag;
+                        document.getElementById('albumTags').appendChild(t);
+                    }
                     renderDetailMeta('albumMeta', album.createdAt, album.updatedAt);
-                    // Use compact track list on album page and disable 'More' (tracks belong to this album)
                     document.getElementById('trackList').appendChild(createTrackList(album.tracks, { showMore: false, compact: true }));
                     let role = getRole();
+                    if (role){
+                        createTagEvents(album.id);
+                    }
                     if (role == 'Admin')
                     {
                         createRemoveButtonEvent();
