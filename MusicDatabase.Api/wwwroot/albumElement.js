@@ -49,7 +49,7 @@ function createAlbumElement(album) {
     let albumMeta = document.createElement('div');
     albumMeta.className = 'album-meta';
     let releaseYear = Number.isFinite(Number(album.releaseYear)) ? Number(album.releaseYear) : null;
-    let artistName = album.artistName ?? album.artist?.name ?? '';
+    let artistName = album.artistName;
     let metaParts = [];
     if (releaseYear !== null) metaParts.push(String(releaseYear));
     if (artistName) metaParts.push(artistName);

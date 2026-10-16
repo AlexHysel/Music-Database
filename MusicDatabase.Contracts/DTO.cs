@@ -3,6 +3,8 @@ using MusicDatabase.Domain;
 
 namespace MusicDatabase.Contracts;
 
+// Using flat DTOs unless the field is an array.
+
 public record TrackDTO(
     string Title,
     string AlbumTitle,

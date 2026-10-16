@@ -126,55 +126,8 @@ function createTrackElement(track) {
     info.appendChild(trackTitle);
     info.appendChild(meta);
 
-    let actions = document.createElement('div');
-    actions.className = 'actions d-flex';
-
-    let addToFavoritesBtn = document.createElement('button')
-    addToFavoritesBtn.className = 'btn-like';
-    addToFavoritesBtn.textContent = 'Like';
-    addToFavoritesBtn.addEventListener('click', async (event) => {
-        event.preventDefault();
-        let response = await fetch(`user/me/favorites/tracks?id=${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type':'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-        if (response.ok){
-            alert('Track was added to favorites');
-        }
-        else{
-            alert('Track was not added to favorites');
-        }
-    });
-
-    let removeFromFavoritesBtn = document.createElement('button')
-    removeFromFavoritesBtn.className = 'btn-unlike';
-    removeFromFavoritesBtn.textContent = 'Unlike'
-    removeFromFavoritesBtn.addEventListener('click', async (event) => {
-        event.preventDefault();
-        let response = await fetch(`user/me/favorites/tracks?id=${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type':'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        })
-        if (response.ok){
-            alert('Track was removed from favorites');
-        }
-        else{
-            alert('Track was not removed from favorites');
-        }
-    });
-
-    actions.appendChild(addToFavoritesBtn);
-    actions.appendChild(removeFromFavoritesBtn);
-
     trackElement.appendChild(trackImage);
     trackElement.appendChild(info);
-    trackElement.appendChild(actions);
     return trackElement;
 }
 

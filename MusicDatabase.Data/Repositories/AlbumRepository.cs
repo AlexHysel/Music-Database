@@ -46,6 +46,7 @@ public class AlbumRepository
         return await _context.Albums
             .AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
+            .Include(a => a.Artist)
             .OrderBy(a => a.Title)
             .ThenBy(a => a.Id)
             .ToPagedResultAsync(toSkip, toTake);
