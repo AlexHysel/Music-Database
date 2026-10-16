@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
-using MusicDatabase.Core;
+using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<MusicDb>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<MusicManager>();
-builder.Services.AddScoped<Orchestrator>();
+builder.Services.AddScoped<AlbumService>();
+builder.Services.AddScoped<TrackService>();
+builder.Services.AddScoped<ArtistService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<SearchService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(options =>
@@ -98,19 +102,19 @@ app.MapGet("/", async context =>
     await Task.CompletedTask;
 });
 
-app.MapGet("/search", async (Orchestrator o, string searchLine) => await o.Search(searchLine));
+app.MapGet("/search", async (SearchService search, string searchLine) => await search.Search(searchLine));
 
-app.MapPost("/login", async (Orchestrator o, LogInRequest request) =>
+app.MapPost("/login", async (UserService users, LogInRequest request) =>
 {
-    AuthDTO? auth = await o.LogInAsync(request.Username, request.Password);
+    AuthDTO? auth = await users.LogInAsync(request.Username, request.Password);
     if (auth != null)
         return Results.Ok(auth);
     return Results.Unauthorized();
 });
 
-app.MapPost("/signup", async (Orchestrator o, SignUpRequest request) =>
+app.MapPost("/signup", async (UserService users, SignUpRequest request) =>
 {
-    Result result = await o.CreateUserAsync(request.Username, UserRole.User, request.Password);
+    Result result = await users.CreateUserAsync(request.Username, UserRole.User, request.Password);
     if (result.Success)
         return Results.Created();
     else

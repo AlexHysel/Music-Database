@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using MusicDatabase.Core;
+using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
 using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Common;
@@ -10,14 +10,19 @@ using MusicDatabase.Common;
 [Route("/[controller]")]
 public class ArtistController : ControllerBase
 {
-    private readonly Orchestrator _orchestrator;
+    private readonly ArtistService _artists;
+    private readonly TrackService _tracks;
 
-    public ArtistController(Orchestrator orchestrator) => _orchestrator = orchestrator;
+    public ArtistController(ArtistService artists, TrackService tracks)
+    {
+        _artists = artists;
+        _tracks = tracks;
+    }
 
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<ArtistDetailDTO> result = await _orchestrator.GetArtistDetailAsync(id);
+        Result<ArtistDetailDTO> result = await _artists.GetArtistDetailAsync(id);
         if (result.Success)
             return Ok(result.Data);
         else
@@ -30,7 +35,7 @@ public class ArtistController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<ArtistDTO> found = await _orchestrator.GetMatchingArtistsAsync(name, toSkip, toTake);
+        PagedResult<ArtistDTO> found = await _artists.GetMatchingArtistsAsync(name, toSkip, toTake);
         return Ok(found);
     }
 
@@ -40,7 +45,7 @@ public class ArtistController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        Result<PagedResult<TrackDTO>> tracks = await _orchestrator.GetArtistTracksAsync(id, toSkip, toTake);
+        Result<PagedResult<TrackDTO>> tracks = await _tracks.GetArtistTracksAsync(id, toSkip, toTake);
         return Ok(tracks.Data);
     }
 
@@ -48,7 +53,7 @@ public class ArtistController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        Result result = await _orchestrator.RemoveArtistAsync(id);
+        Result result = await _artists.RemoveArtistAsync(id);
         if (result.Success)
             return Ok();
         else
@@ -59,7 +64,7 @@ public class ArtistController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Put([FromBody] UpdateArtistRequest patch)
     {
-        Result result = await _orchestrator.UpdateArtistAsync(patch);
+        Result result = await _artists.UpdateArtistAsync(patch);
         if (result.Success)
             return Ok();
         else

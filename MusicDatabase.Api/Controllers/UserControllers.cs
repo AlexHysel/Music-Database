@@ -4,20 +4,29 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MusicDatabase.Common;
 using MusicDatabase.Contracts;
-using MusicDatabase.Core;
+using MusicDatabase.Core.Services;
 
 [ApiController]
 [Route("/[controller]")]
 public class UserController : ControllerBase
 {
-    private readonly Orchestrator _orchestrator;
+    private readonly UserService _users;
+    private readonly AlbumService _albums;
+    private readonly ArtistService _artists;
+    private readonly TrackService _tracks;
 
-    public UserController(Orchestrator orchestrator) => _orchestrator = orchestrator;
+    public UserController(UserService users, AlbumService albums, ArtistService artists, TrackService tracks)
+    {
+        _users = users;
+        _albums = albums;
+        _artists = artists;
+        _tracks = tracks;
+    }
 
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<UserDetailDTO> result = await _orchestrator.GetUserDetailAsync(id);
+        Result<UserDetailDTO> result = await _users.GetUserDetailAsync(id);
         if (result.Success)
             return Ok(result.Data);
         else
@@ -30,7 +39,7 @@ public class UserController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<UserDTO> found = await _orchestrator.GetMatchingUsersAsync(name, toSkip, toTake);
+        PagedResult<UserDTO> found = await _users.GetMatchingUsersAsync(name, toSkip, toTake);
         return Ok(found);
     }
 
@@ -38,7 +47,7 @@ public class UserController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        Result result = await _orchestrator.RemoveUserAsync(id);
+        Result result = await _users.RemoveUserAsync(id);
         if (result.Success)
             return NoContent();
         else
@@ -55,7 +64,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result<AlbumDTO[]> result = await _orchestrator.GetFavoriteAlbumsAsync(userId);
+        Result<AlbumDTO[]> result = await _albums.GetFavoriteAlbumsAsync(userId);
         if (result.Success)
             return Ok(result.Data);
         else
@@ -71,7 +80,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.AddAlbumToFavoritesAsync(id, userId);
+        Result result = await _albums.AddAlbumToFavoritesAsync(id, userId);
         if (result.Success)
             return Ok();
         else
@@ -87,7 +96,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.RemoveAlbumFromFavoritesAsync(id, userId);
+        Result result = await _albums.RemoveAlbumFromFavoritesAsync(id, userId);
         if (result.Success)
             return Ok();
         else
@@ -104,7 +113,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result<ArtistDTO[]> result = await _orchestrator.GetFavoriteArtistsAsync(userId);
+        Result<ArtistDTO[]> result = await _artists.GetFavoriteArtistsAsync(userId);
         if (result.Success)
             return Ok(result.Data);
         else
@@ -120,7 +129,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.AddArtistToFavoritesAsync(userId, id);
+        Result result = await _artists.AddArtistToFavoritesAsync(userId, id);
         if (result.Success)
             return Ok();
         else
@@ -136,7 +145,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.RemoveArtistFromFavoritesAsync(userId, id);
+        Result result = await _artists.RemoveArtistFromFavoritesAsync(userId, id);
         if (result.Success)
             return Ok();
         else
@@ -153,7 +162,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.AddTrackToFavoritesAsync(Id, userId);
+        Result result = await _tracks.AddTrackToFavoritesAsync(Id, userId);
         if (result.Success)
             return Ok();
         else
@@ -169,7 +178,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result<TrackDTO[]> result = await _orchestrator.GetFavoriteTracksAsync(userId);
+        Result<TrackDTO[]> result = await _tracks.GetFavoriteTracksAsync(userId);
         if (result.Success)
             return Ok(result.Data);
         else
@@ -185,7 +194,7 @@ public class UserController : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return BadRequest("Invalid user id in token");
 
-        Result result = await _orchestrator.RemoveTrackFromFavoritesAsync(Id, userId);
+        Result result = await _tracks.RemoveTrackFromFavoritesAsync(Id, userId);
         if (result.Success)
             return Ok();
         else

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using MusicDatabase.Core;
+using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
 using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Common;
@@ -10,14 +10,14 @@ using MusicDatabase.Common;
 [Route("/[controller]")]
 public class AlbumController : ControllerBase
 {
-    private readonly Orchestrator _orchestrator;
+    private readonly AlbumService _albums;
 
-    public AlbumController(Orchestrator orchestrator) => _orchestrator = orchestrator;
+    public AlbumController(AlbumService albums) => _albums = albums;
 
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<AlbumDetailDTO?> result = await _orchestrator.GetAlbumDetailAsync(id);
+        Result<AlbumDetailDTO?> result = await _albums.GetAlbumDetailAsync(id);
         if (result.Success)
             return Ok(result.Data);
         else
@@ -30,7 +30,7 @@ public class AlbumController : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<AlbumDTO> found = await _orchestrator.GetMatchingAlbumsAsync(title, toSkip, toTake);
+        PagedResult<AlbumDTO> found = await _albums.GetMatchingAlbumsAsync(title, toSkip, toTake);
         return Ok(found);
     }
 
@@ -46,7 +46,7 @@ public class AlbumController : ControllerBase
         if (info.Tracks.Any(t => t.Title == null || t.Title.Trim().Length == 0)) return BadRequest("All tracks must have a title.");
         if (info.Tracks.Any(t => t.Others != null && t.Others.Any(o => o == null || o.Trim().Length == 0))) return BadRequest("All other artists must have a name.");
 
-        await _orchestrator.CreateAlbumAsync(info);
+        await _albums.CreateAlbumAsync(info);
         return Created();
     }
 
@@ -54,7 +54,7 @@ public class AlbumController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        Result result = await _orchestrator.RemoveAlbumAsync(id);
+        Result result = await _albums.RemoveAlbumAsync(id);
         if (result.Success)
             return Ok();
         else
@@ -65,7 +65,7 @@ public class AlbumController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Put([FromBody] UpdateAlbumRequest patch)
     {
-        Result result = await _orchestrator.UpdateAlbumAsync(patch);
+        Result result = await _albums.UpdateAlbumAsync(patch);
         if (result.Success)
             return Ok();
         else
@@ -78,7 +78,7 @@ public class AlbumController : ControllerBase
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
-        Result result = await _orchestrator.AddTagOnAlbumAsync(request);
+        Result result = await _albums.AddTagOnAlbumAsync(request);
         if (result.Success)
             return Ok();
         else
