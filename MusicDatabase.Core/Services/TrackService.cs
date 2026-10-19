@@ -20,63 +20,19 @@ public class TrackService
         return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(TrackDTO.FromTrack));
     }
 
-    public async Task<Result<TrackDTO[]>> GetFavoriteTracksAsync(Guid userId)
-    {
-        User? user = await _manager.Users.GetUserAsync(userId, true);
-        if (user == null)
-            return Result<TrackDTO[]>.Fail("User not found");
-        else
-            return Result<TrackDTO[]>.Ok(user.FavoriteTracks.Select(TrackDTO.FromTrack).ToArray());
-    }
-
     public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.Tracks.GetMatchingTracksAsync(title, toSkip, toTake))
             .Map(TrackDTO.FromTrack);
     }
-
-    public async Task<Result> AddTrackToFavoritesAsync(Guid trackId, Guid userId)
-    {
-        Track? track = await _manager.Tracks.GetTrackAsync(trackId);
-        if (track == null)
-            return Result.Fail("Track not found");
-
-        User? user = await _manager.Users.GetUserAsync(userId, true);
-        if (user == null)
-            return Result.Fail("User not found");
-
-        if (user.AddTrackToFavorites(track)) 
-        {
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        return Result.Fail("Track already in favorites");
-    }
-
-    public async Task<Result> RemoveTrackFromFavoritesAsync(Guid trackId, Guid userId)
-    {
-        Track? track = await _manager.Tracks.GetTrackAsync(trackId);
-        if (track == null)
-            return Result.Fail("Track not found");
-
-        User? user = await _manager.Users.GetUserAsync(userId, true);
-        if (user == null)
-            return Result.Fail("User not found");
-
-        if (user.RemoveTrackFromFavorites(track))
-        {
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        return Result.Fail("Track not in favorites");
-    }
-
+    
     public async Task<Result<TrackDetailDTO>> GetTrackDetailAsync(Guid id)
     {
         Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
         if (track == null)
             return Result<TrackDetailDTO>.Fail("Track not found");
-        string[] tags = await _manager.Tracks.GetTrackTags(id, 5);
+        
+        List<Tag> tags = await _manager.Tags.GetTrackTagsAsync(id, 7);
         return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track, tags));
     }
 
@@ -105,9 +61,11 @@ public class TrackService
 
     public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request)
     {
-        Tag tag = await _manager.Tags.EnsureTagCreated(request.TagName);
-        TrackTagVote trackTag = new(request.TrackId, tag.Id, request.UserId);
-        if (await _manager.Tracks.AddTagOnTrackAsync(trackTag))
+        var tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        if (user == null) return Result.Fail("User does not exist.");
+        
+        if (await _manager.Tags.VoteForTrackTagAsync(request.TrackId, tag, user))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();

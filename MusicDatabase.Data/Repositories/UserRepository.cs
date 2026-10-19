@@ -29,9 +29,6 @@ public class UserRepository
 
     public async Task<User?> GetUserDetailAsync(Guid id){
         return await _context.Users.AsNoTracking()
-            .Include(u => u.FavoriteArtists)
-            .Include(u => u.FavoriteAlbums).ThenInclude(a => a.Artist)
-            .Include(u => u.FavoriteTracks)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
     

@@ -43,7 +43,7 @@ public record TrackDetailDTO(
     DateTimeOffset UpdatedAt,
     string Id)
 {
-    public static TrackDetailDTO FromTrack(Track track, string[] tags)
+    public static TrackDetailDTO FromTrack(Track track, List<Tag> tags)
     {
         return new TrackDetailDTO(
             track.Title,
@@ -52,8 +52,8 @@ public record TrackDetailDTO(
             track.Album?.Id.ToString() ?? "",
             track.Artist?.Name ?? "",
             track.Artist?.Id.ToString() ?? "",
-            track.Others.Select(o => ArtistDTO.FromArtist(o)).ToArray(),
-            tags,
+            track.Others.Select(ArtistDTO.FromArtist).ToArray(),
+            tags.Select(t => t.Name).ToArray(),
             track.CreatedAt,
             track.UpdatedAt,
             track.Id.ToString());
@@ -93,20 +93,20 @@ public record AlbumDetailDTO(
     DateTimeOffset UpdatedAt,
     string Id)
 {
-    public static AlbumDetailDTO FromAlbum(Album album, string[] tags)
+    public static AlbumDetailDTO FromAlbum(Album album, List<Tag> tags)
     {
         return new AlbumDetailDTO(
             album.Title,
             album.ImageUrl,
             album.Artist?.Name ?? "",
             album.Artist?.Id.ToString() ?? "",
-            album.Tracks == null ? new TrackDTO[0] : album.Tracks
+            album.Tracks == null ? [] : album.Tracks
                 .OrderBy(t => t.NumberInTheAlbum)
-                .Select(t => TrackDTO.FromTrack(t))
+                .Select(TrackDTO.FromTrack)
                 .ToArray(),
             album.ReleaseYear,
             album.Type.ToString(),
-            tags,
+            tags.Select(t => t.Name).ToArray(),
             album.CreatedAt,
             album.UpdatedAt,
             album.Id.ToString());
@@ -166,9 +166,6 @@ public record UserDetailDTO(
     string Name,
     string Role,
     string Id,
-    ArtistDTO[] FavoriteArtists,
-    AlbumDTO[] FavoriteAlbums,
-    TrackDTO[] FavoriteTracks,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt
 )
@@ -179,9 +176,6 @@ public record UserDetailDTO(
             user.Name,
             user.Role.ToString(),
             user.Id.ToString(),
-            user.FavoriteArtists.Select(a => ArtistDTO.FromArtist(a)).ToArray(),
-            user.FavoriteAlbums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
-            user.FavoriteTracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
             user.CreatedAt,
             user.UpdatedAt
         );

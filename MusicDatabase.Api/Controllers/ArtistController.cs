@@ -1,23 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
-using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Common;
 
 [ApiController]
 [Route("/[controller]")]
-public class ArtistController : ControllerBase
+public class ArtistController(ArtistService artists, TrackService tracks) : ControllerBase
 {
-    private readonly ArtistService _artists;
-    private readonly TrackService _tracks;
-
-    public ArtistController(ArtistService artists, TrackService tracks)
-    {
-        _artists = artists;
-        _tracks = tracks;
-    }
+    private readonly ArtistService _artists = artists;
+    private readonly TrackService _tracks = tracks;
 
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)

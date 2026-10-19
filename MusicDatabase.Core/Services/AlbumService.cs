@@ -22,7 +22,7 @@ public class AlbumService
         int n = 1;
         foreach (AddTrackRequest trackInfo in info.Tracks)
         {
-            List<Artist> others = new();
+            List<Artist> others = [];
             if (trackInfo.Others != null)
                 foreach (string name in trackInfo.Others)
                     if (!string.IsNullOrEmpty(name))
@@ -37,9 +37,15 @@ public class AlbumService
 
     public async Task<Result> AddTagOnAlbumAsync(AddTagOnAlbumRequest request)
     {
-        Tag tag = await _manager.Tags.EnsureTagCreated(request.TagName);
-        AlbumTagVote trackTag = new(request.AlbumId, tag.Id, request.UserId);
-        if (await _manager.Albums.AddTagOnAlbumAsync(trackTag))
+        if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId))
+            return Result.Fail("Album with this id does not exist");
+
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        if (user == null) return Result.Fail("User does not exist.");
+
+        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
+
+        if (await _manager.Tags.VoteForAlbumTagAsync(request.AlbumId, tag, user))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -47,56 +53,10 @@ public class AlbumService
         return Result.Fail("You've already added this tag.");
     }
 
-    public async Task<Result<AlbumDTO[]>> GetFavoriteAlbumsAsync(Guid userId)
-    {
-        User? user = await _manager.Users.GetUserAsync(userId, true);
-        if (user == null)
-            return Result<AlbumDTO[]>.Fail("User not found");
-
-        var albums = user.FavoriteAlbums.Select(AlbumDTO.FromAlbum).ToArray();
-        return Result<AlbumDTO[]>.Ok(albums);
-    }
-
     public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake))
             .Map(a => AlbumDTO.FromAlbum(a));
-    }
-
-    public async Task<Result> AddAlbumToFavoritesAsync(Guid albumId, Guid userId)
-    {
-        Album? album = await _manager.Albums.GetAlbumAsync(albumId);
-        if (album == null)
-            return Result.Fail("Album not found");
-
-        User? user = await _manager.Users.GetUserAsync(userId, true);
-        if (user == null)
-            return Result.Fail("User not found");
-
-        if (user.AddAlbumToFavorites(album))
-        {
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        return Result.Fail("Album already in favorites");
-    }
-
-    public async Task<Result> RemoveAlbumFromFavoritesAsync(Guid albumId, Guid userId)
-    {
-        Album? album = await _manager.Albums.GetAlbumAsync(albumId);
-        if (album == null)
-            return Result.Fail("Album not found");
-
-        User? user = await _manager.Users.GetUserAsync(userId, true);
-        if (user == null)
-            return Result.Fail("User not found");
-
-        if (user.RemoveAlbumFromFavorites(album))
-        {
-            await _manager.SaveChangesAsync();
-            return Result.Ok();
-        }
-        return Result.Fail("Album not in favorites");
     }
 
     public async Task<Result> RemoveAlbumAsync(Guid id)
@@ -114,7 +74,7 @@ public class AlbumService
         Album? album = await _manager.Albums.GetAlbumDetailAsync(id);
         if (album != null)
         {
-            string[] tags = await _manager.Albums.GetAlbumTags(id, 5);
+            List<Tag> tags = await _manager.Tags.GetAlbumTagsAsync(id, 7);
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album, tags);
             return Result<AlbumDetailDTO?>.Ok(albumDto);
         }
@@ -149,7 +109,7 @@ public class AlbumService
             ArgumentException.ThrowIfNullOrWhiteSpace(trackInfo.Title, nameof(trackInfo.Title));
 
             var others = new List<Artist>();
-            foreach (string name in trackInfo.Others ?? Array.Empty<string>())
+            foreach (string name in trackInfo.Others ?? [])
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(trackInfo.Others));
                 others.Add(await _manager.Artists.EnsureArtistCreated(name));

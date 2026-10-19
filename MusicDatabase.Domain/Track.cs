@@ -11,8 +11,8 @@ public class Track
     public Artist Artist {get; private set;}
     private readonly List<Artist> _others = [];
     public IReadOnlyCollection<Artist> Others => _others.AsReadOnly();
-    public readonly List<TrackTagVote> _tags = [];
-    public IReadOnlyCollection<TrackTagVote> Tags => _tags.AsReadOnly();
+    public readonly List<TrackTagStats> _tagsStats = [];
+    public IReadOnlyCollection<TrackTagStats> TagsStats => _tagsStats.AsReadOnly();
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
@@ -48,11 +48,8 @@ public class Track
 
     public bool AddTag(Tag tag, User user)
     {
-        if (_tags.Any(t => t.TaggedById == user.Id && t.Tag.Id == tag.Id))
-            return false;
-
-        TrackTagVote trackTag = new(user.Id, tag.Id, Id);
-        _tags.Add(trackTag);
+        TrackTagStats trackTag = new(Id, tag.Id);
+        _tagsStats.Add(trackTag);
         return true;
     }
 

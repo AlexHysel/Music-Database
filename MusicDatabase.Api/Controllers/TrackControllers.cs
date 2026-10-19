@@ -1,18 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
-using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Common;
 
 [ApiController]
 [Route("/[controller]")]
-public class TrackController : ControllerBase
+public class TrackController(TrackService tracks) : ControllerBase
 {
-    private readonly TrackService _tracks;
-
-    public TrackController(TrackService tracks) => _tracks = tracks;
+    private readonly TrackService _tracks = tracks;
 
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
@@ -33,19 +31,6 @@ public class TrackController : ControllerBase
         PagedResult<TrackDTO> found = await _tracks.GetMatchingTracksAsync(title, toSkip, toTake);
         return Ok(found);
     }
-
-    /*
-    [HttpDelete]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete([FromQuery] Guid id)
-    {
-        Result result = await _tracks.RemoveTrackAsync(id);
-        if (result.Success)
-            return NoContent();
-        else
-            return NotFound(result.Message);
-    }
-    */
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
@@ -74,6 +59,6 @@ public class TrackController : ControllerBase
         if (result.Success)
             return Ok();
         else
-            return NotFound(result.Message);
+            return NotFound(result);
     }
 }

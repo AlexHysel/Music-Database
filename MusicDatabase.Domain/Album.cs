@@ -8,10 +8,10 @@ public class Album
     public Guid ArtistId { get; private set; }
     public Artist Artist { get; private set; } = null!;
     public string ImageUrl {get; private set;} = "";
-    public List<Track> Tracks {get; private set; } = new List<Track>();
+    public List<Track> Tracks {get; private set; } = [];
     public AlbumType Type {get; private set;}
-    private readonly List<AlbumTagVote> _tags = [];
-    public IReadOnlyCollection<AlbumTagVote> Tags => _tags.AsReadOnly();
+    private readonly List<AlbumTagStats> _tagsStats = [];
+    public IReadOnlyCollection<AlbumTagStats> TagsStats => _tagsStats.AsReadOnly();
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 

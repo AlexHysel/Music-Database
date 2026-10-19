@@ -13,15 +13,6 @@ public class TrackRepository
         _context = context;
     }
 
-    async public Task<bool> AddTagOnTrackAsync(TrackTagVote trackTag)
-    {
-        if (await _context.TrackTagVotes.AnyAsync(t => t == trackTag))
-            return false;
-
-        await _context.TrackTagVotes.AddAsync(trackTag);
-        return true;
-    }
-
     async public Task<PagedResult<Track>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
     {
         return await _context.Tracks.AsNoTracking()
@@ -58,26 +49,6 @@ public class TrackRepository
         if (!tracked) query = query.AsNoTracking();
 
         return await query.FirstOrDefaultAsync(t => t.Id == id);
-    }
-
-    public async Task<string[]> GetTrackTags(Guid id, int count)
-    {
-        var ids = await _context.TrackTagVotes
-            .AsNoTracking()
-            .Where(v => v.TrackId == id)
-            .GroupBy(v => v.TagId)
-            .OrderByDescending(g => g.Count())
-            .Take(count)
-            .Select(g => g.Key)
-            .ToListAsync();
-
-        var tags = await _context.Tags
-            .AsNoTracking()
-            .Where(t => ids.Contains(t.Id))
-            .Select(t => t.Name)
-            .ToArrayAsync();
-
-        return tags;
     }
 
     async public void RemoveTrack(Track track)
