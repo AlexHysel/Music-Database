@@ -31,7 +31,7 @@ public class UserRepository
         return await _context.Users.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id);
     }
-    
+
     async public Task<bool> RemoveUserAsync(Guid id){
         User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 

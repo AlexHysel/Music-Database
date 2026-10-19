@@ -53,6 +53,24 @@ public class AlbumService
         return Result.Fail("You've already added this tag.");
     }
 
+    public async Task<Result<List<TagDetailDTO>>> GetAlbumTagsAsync(Guid albumId, int numberOfTags)
+    {
+        if (!await _manager.Albums.AlbumExistsAsync(albumId)) return Result<List<TagDetailDTO>>.Fail("Album does not exist");
+
+        var tags = await _manager.Tags.GetAlbumTagStatsAsync(albumId, numberOfTags);
+        return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
+    }
+
+    public async Task<Result<List<string>>> GetUserAlbumTagsAsync(Guid albumId, Guid userId)
+    {
+        if (!await _manager.Albums.AlbumExistsAsync(albumId)) return Result<List<string>>.Fail("Album does not exist");
+        User? user = await _manager.Users.GetUserAsync(userId);
+        if (user == null) return Result<List<string>>.Fail("User does not exist");
+
+        var tags = await _manager.Tags.GetUserAlbumTagsAsync(albumId, user);
+        return Result<List<string>>.Ok(tags.Select(t => t.Name).ToList());
+    }
+
     public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake))
@@ -74,8 +92,7 @@ public class AlbumService
         Album? album = await _manager.Albums.GetAlbumDetailAsync(id);
         if (album != null)
         {
-            List<Tag> tags = await _manager.Tags.GetAlbumTagsAsync(id, 7);
-            AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album, tags);
+            AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
             return Result<AlbumDetailDTO?>.Ok(albumDto);
         }
         else

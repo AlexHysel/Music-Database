@@ -41,6 +41,11 @@ public class TrackRepository
         return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<bool> TrackExistsAsync(Guid id)
+    {
+        return await _context.Tracks.AnyAsync(t => t.Id == id);
+    }
+
     async public Task<Track?> GetTrackDetailAsync(Guid id, bool tracked = false){
         IQueryable<Track> query = _context.Tracks
             .Include(t => t.Album)

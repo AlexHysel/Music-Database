@@ -70,24 +70,44 @@ public class TagRepository
         }
     }
 
-    public async Task<List<Tag>> GetAlbumTagsAsync(Guid albumId, int numberOfTags)
+    public async Task<List<AlbumTagStats>> GetAlbumTagStatsAsync(Guid albumId, int numberOfTags)
     {
-        List<Tag> tags = await _context.AlbumTagStats
+        var tags = await _context.AlbumTagStats
             .Where(s => s.AlbumId == albumId)
             .OrderByDescending(s => s.VoteCount)
             .Take(numberOfTags)
+            .ToListAsync();
+        
+        return tags;
+    }
+
+    public async Task<List<TrackTagStats>> GetTrackTagStatsAsync(Guid trackId, int numberOfTags)
+    {
+        var tags = await _context.TrackTagStats
+            .Where(s => s.TrackId == trackId)
+            .OrderByDescending(s => s.VoteCount)
+            .Take(numberOfTags)
+            .ToListAsync();
+        
+        return tags;
+    }
+    
+    public async Task<List<Tag>> GetUserAlbumTagsAsync(Guid albumId, User user)
+    {
+        List<Tag> tags = await _context.AlbumTagStats
+            .Where(s => s.AlbumId == albumId && s.VotedBy.Contains(user))
+            .OrderByDescending(s => s.VoteCount)
             .Select(s => s.Tag)
             .ToListAsync();
         
         return tags;
     }
 
-    public async Task<List<Tag>> GetTrackTagsAsync(Guid trackId, int numberOfTags)
+    public async Task<List<Tag>> GetUserTrackTagsAsync(Guid trackId, User user)
     {
         List<Tag> tags = await _context.TrackTagStats
-            .Where(s => s.TrackId == trackId)
+            .Where(s => s.TrackId == trackId && s.VotedBy.Contains(user))
             .OrderByDescending(s => s.VoteCount)
-            .Take(numberOfTags)
             .Select(s => s.Tag)
             .ToListAsync();
         

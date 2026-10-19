@@ -32,8 +32,25 @@ public class TrackService
         if (track == null)
             return Result<TrackDetailDTO>.Fail("Track not found");
         
-        List<Tag> tags = await _manager.Tags.GetTrackTagsAsync(id, 7);
-        return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track, tags));
+        return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
+    }
+
+    public async Task<Result<List<Tag>>> GetUserTrackTagsAsync(Guid trackId, Guid userId)
+    {
+        if (!await _manager.Tracks.TrackExistsAsync(trackId)) return Result<List<Tag>>.Fail("Track does not exist");
+        User? user = await _manager.Users.GetUserAsync(userId);
+        if (user == null) return Result<List<Tag>>.Fail("User does not exist");
+
+        var tags = await _manager.Tags.GetUserTrackTagsAsync(trackId, user);
+        return Result<List<Tag>>.Ok(tags);
+    }
+
+    public async Task<Result<List<TagDetailDTO>>> GetTrackTagsAsync(Guid trackId, int numberOfTags)
+    {
+        if (!await _manager.Tracks.TrackExistsAsync(trackId)) return Result<List<TagDetailDTO>>.Fail("Track does not exist");
+
+        var tags = await _manager.Tags.GetTrackTagStatsAsync(trackId, numberOfTags);
+        return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
     }
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)

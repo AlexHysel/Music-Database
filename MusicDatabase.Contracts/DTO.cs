@@ -5,6 +5,11 @@ namespace MusicDatabase.Contracts;
 
 // Using flat DTOs unless the field is an array.
 
+public record TagDetailDTO(
+    string Name,
+    int Votes
+);
+
 public record TrackDTO(
     string Title,
     string AlbumTitle,
@@ -24,7 +29,7 @@ public record TrackDTO(
             track.Album?.Id.ToString() ?? "",
             track.Artist?.Name ?? "",
             track.Artist?.Id.ToString() ?? "",
-            track.Others.Select(o => ArtistDTO.FromArtist(o)).ToArray(),
+            track.Others.Select(ArtistDTO.FromArtist).ToArray(),
             track.Id.ToString()
         );
     }
@@ -38,12 +43,11 @@ public record TrackDetailDTO(
     string ArtistName,
     string ArtistId,
     ArtistDTO[] Others,
-    string[] Tags,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     string Id)
 {
-    public static TrackDetailDTO FromTrack(Track track, List<Tag> tags)
+    public static TrackDetailDTO FromTrack(Track track)
     {
         return new TrackDetailDTO(
             track.Title,
@@ -53,7 +57,6 @@ public record TrackDetailDTO(
             track.Artist?.Name ?? "",
             track.Artist?.Id.ToString() ?? "",
             track.Others.Select(ArtistDTO.FromArtist).ToArray(),
-            tags.Select(t => t.Name).ToArray(),
             track.CreatedAt,
             track.UpdatedAt,
             track.Id.ToString());
@@ -88,12 +91,11 @@ public record AlbumDetailDTO(
     TrackDTO[] Tracks,
     int ReleaseYear,
     string Type,
-    string[] Tags,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     string Id)
 {
-    public static AlbumDetailDTO FromAlbum(Album album, List<Tag> tags)
+    public static AlbumDetailDTO FromAlbum(Album album)
     {
         return new AlbumDetailDTO(
             album.Title,
@@ -106,7 +108,6 @@ public record AlbumDetailDTO(
                 .ToArray(),
             album.ReleaseYear,
             album.Type.ToString(),
-            tags.Select(t => t.Name).ToArray(),
             album.CreatedAt,
             album.UpdatedAt,
             album.Id.ToString());
@@ -136,15 +137,15 @@ public record ArtistDetailDTO(
 {
     public static ArtistDetailDTO FromArtist(Artist artist)
     {
-        var albums = artist.Albums ?? new List<Album>();
-        var tracks = artist.Tracks ?? new List<Track>();
-        var appearsOn = artist.AppearsOn ?? new List<Track>();
+        var albums = artist.Albums ?? [];
+        var tracks = artist.Tracks ?? [];
+        var appearsOn = artist.AppearsOn ?? [];
         return new ArtistDetailDTO(
             artist.Name,
             artist.ImageUrl,
-            albums.Select(a => AlbumDTO.FromAlbum(a)).ToArray(),
-            tracks.Select(t => TrackDTO.FromTrack(t)).ToArray(),
-            appearsOn.Select(t => TrackDTO.FromTrack(t)).ToArray(),
+            albums.Select(AlbumDTO.FromAlbum).ToArray(),
+            tracks.Select(TrackDTO.FromTrack).ToArray(),
+            appearsOn.Select(TrackDTO.FromTrack).ToArray(),
             artist.CreatedAt,
             artist.UpdatedAt,
             artist.Id.ToString());

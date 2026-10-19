@@ -82,4 +82,27 @@ public class AlbumController(AlbumService albums) : ControllerBase
         else
             return NotFound(result.Message);
     }
+
+    [HttpGet("mytags")]
+    [Authorize]
+    public async Task<IActionResult> GetUserTags([FromQuery] Guid albumId, Guid userId)
+    {
+        var result = await _albums.GetUserAlbumTagsAsync(albumId, userId);
+        if (result.Success)
+            return Ok(result.Data);
+        else
+            return NotFound(result.Message);
+    }
+
+    [HttpGet("tags")]
+    public async Task<IActionResult> GetUserTags(
+        [FromQuery] Guid albumId,
+        [FromQuery, Range(0, 20)] int numberOfTags)
+    {
+        var result = await _albums.GetAlbumTagsAsync(albumId, numberOfTags);
+        if (result.Success)
+            return Ok(result.Data);
+        else
+            return NotFound(result.Message);
+    }
 }

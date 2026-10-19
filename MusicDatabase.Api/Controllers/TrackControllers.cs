@@ -61,4 +61,27 @@ public class TrackController(TrackService tracks) : ControllerBase
         else
             return NotFound(result);
     }
+
+    [HttpGet("mytags")]
+    [Authorize]
+    public async Task<IActionResult> GetUserTags([FromQuery] Guid trackId, Guid userId)
+    {
+        var result = await _tracks.GetUserTrackTagsAsync(trackId, userId);
+        if (result.Success)
+            return Ok(result.Data);
+        else
+            return NotFound(result.Message);
+    }
+    
+    [HttpGet("tags")]
+    public async Task<IActionResult> GetUserTags(
+        [FromQuery] Guid trackId,
+        [FromQuery, Range(0, 20)] int numberOfTags)
+    {
+        var result = await _tracks.GetTrackTagsAsync(trackId, numberOfTags);
+        if (result.Success)
+            return Ok(result.Data);
+        else
+            return NotFound(result.Message);
+    }
 }
