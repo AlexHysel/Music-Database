@@ -74,6 +74,7 @@ public class TagRepository
     {
         var tags = await _context.AlbumTagStats
             .Where(s => s.AlbumId == albumId)
+            .Include(s => s.Tag)
             .OrderByDescending(s => s.VoteCount)
             .Take(numberOfTags)
             .ToListAsync();
@@ -85,6 +86,7 @@ public class TagRepository
     {
         var tags = await _context.TrackTagStats
             .Where(s => s.TrackId == trackId)
+            .Include(s => s.Tag)
             .OrderByDescending(s => s.VoteCount)
             .Take(numberOfTags)
             .ToListAsync();
@@ -96,6 +98,7 @@ public class TagRepository
     {
         List<Tag> tags = await _context.AlbumTagStats
             .Where(s => s.AlbumId == albumId && s.VotedBy.Contains(user))
+            .Include(s => s.Tag)
             .OrderByDescending(s => s.VoteCount)
             .Select(s => s.Tag)
             .ToListAsync();
@@ -107,6 +110,7 @@ public class TagRepository
     {
         List<Tag> tags = await _context.TrackTagStats
             .Where(s => s.TrackId == trackId && s.VotedBy.Contains(user))
+            .Include(s => s.Tag)
             .OrderByDescending(s => s.VoteCount)
             .Select(s => s.Tag)
             .ToListAsync();
