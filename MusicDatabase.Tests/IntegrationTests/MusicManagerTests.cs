@@ -1,7 +1,7 @@
 using MusicDatabase.Data;
 using MusicDatabase.Domain;
 
-namespace MusicDatabase.Tests.UnitTests;
+namespace MusicDatabase.Tests.IntegrationTests;
 
 [Collection("postgres")]
 public class MusicManagerTests(PostgresFixture pg)
