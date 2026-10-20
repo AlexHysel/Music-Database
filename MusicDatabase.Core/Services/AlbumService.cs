@@ -14,8 +14,10 @@ public class AlbumService
         _manager = manager;
     }
 
-    public async Task CreateAlbumAsync(AddAlbumRequest info)
+    public async Task<Result> CreateAlbumAsync(AddAlbumRequest info)
     {
+        if (info.Tracks.Count() == 0) return Result.Fail("Album without tracks can't exists");
+        
         Artist artist = await _manager.Artists.EnsureArtistCreated(info.ArtistName);
         Album album = new(info.Title, info.ReleaseYear, artist, info.ImageUrl);
 
@@ -33,6 +35,7 @@ public class AlbumService
 
         await _manager.Albums.CreateAlbumAsync(album);
         await _manager.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> AddTagOnAlbumAsync(AddTagOnAlbumRequest request)
