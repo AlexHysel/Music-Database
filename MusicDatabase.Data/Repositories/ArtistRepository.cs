@@ -13,6 +13,11 @@ public class ArtistRepository
         _context = context;
     }
 
+    public async Task<bool> ArtistExistsAsync(Guid id)
+    {
+        return await _context.Artists.AnyAsync(a => a.Id == id);
+    }
+
     public async Task<PagedResult<Artist>> GetMatchingArtistsAsync(string name, int toSkip, int toTake){
         return await _context.Artists
             .AsNoTracking()

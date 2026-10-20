@@ -12,6 +12,21 @@ public class TagRepository
         _context = context;
     }
 
+    public async Task<bool> TagExistsAsync(Guid id)
+    {
+        return await _context.Tags.AnyAsync(t => t.Id == id);
+    }
+    
+    public async Task<bool> TrackTagStatsExistsAsync(Guid id)
+    {
+        return await _context.TrackTagStats.AnyAsync(t => t.Id == id);
+    }
+    
+    public async Task<bool> AlbumTagStatsExistsAsync(Guid id)
+    {
+        return await _context.AlbumTagStats.AnyAsync(t => t.Id == id);
+    }
+
     public async Task<Tag> EnsureTagCreatedAsync(string tagName)
     {
         tagName = tagName.Trim().ToLowerInvariant();
