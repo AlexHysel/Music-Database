@@ -41,4 +41,54 @@ public class MusicManagerTests(PostgresFixture pg)
             Assert.True(result.Items.All(t => t.ArtistId == artistOne.Id));
         }
     }
+
+    [Fact]
+    public async Task CreateAlbumAsync_WithTracks_CreatesArtistsAndTracks()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+        
+        var artist = new Artist("artist");
+        var album = new Album("album", 2025, artist);
+        List<Track> tracks = [
+            new Track("track1", 1, album, artist, []),
+            new Track("track2", 2, album, artist, []),
+            new Track("track3", 3, album, artist, [])
+        ];
+
+        foreach (var t in tracks) album.AddTrack(t);
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            await manager.Albums.CreateAlbumAsync(album);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            
+            var albumResult = await manager.Albums.GetAlbumDetailAsync(album.Id);
+
+            Assert.NotNull(albumResult);
+            Assert.Equal(albumResult.Title, album.Title);
+            Assert.Equal(albumResult.ReleaseYear, album.ReleaseYear);
+
+            Assert.Equal(albumResult.Artist.Name, album.Artist.Name);
+            Assert.Equal(albumResult.Artist.Id, album.Artist.Id);
+
+            var tracksResultSorted = albumResult.Tracks.OrderBy(t => t.NumberInTheAlbum).ToArray();
+            var numberInAlbum = 1;
+
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                var track = tracks[i];
+                var trackResult = tracksResultSorted[i];
+
+                Assert.Equal(trackResult.Title, track.Title);
+                Assert.Equal(numberInAlbum, trackResult.NumberInTheAlbum);
+                numberInAlbum++;
+            }
+        }
+    }
 }
