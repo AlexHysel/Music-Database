@@ -4,7 +4,7 @@ using MusicDatabase.Domain;
 namespace MusicDatabase.Tests.IntegrationTests;
 
 [Collection("postgres")]
-public class MusicManagerTests(PostgresFixture pg)
+public class AlbumRepositoryTests(PostgresFixture pg)
 {
     [Fact]
     public async Task GetArtistTracksAsync_FiltersByArtistAndKeepsStableOrder()
