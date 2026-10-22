@@ -17,6 +17,11 @@ public class ArtistRepository
     {
         return await _context.Artists.AnyAsync(a => a.Id == id);
     }
+    
+    public async Task<bool> ArtistExistsAsync(string name)
+    {
+        return await _context.Artists.AnyAsync(a => a.Name == name);
+    }
 
     public async Task<PagedResult<Artist>> GetMatchingArtistsAsync(string name, int toSkip, int toTake){
         return await _context.Artists
