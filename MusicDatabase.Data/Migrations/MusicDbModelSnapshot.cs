@@ -107,7 +107,8 @@ namespace MusicDatabase.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArtistId");
+                    b.HasIndex("ArtistId", "Title")
+                        .IsUnique();
 
                     b.ToTable("Albums");
                 });

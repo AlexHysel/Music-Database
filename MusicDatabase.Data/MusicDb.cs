@@ -35,6 +35,10 @@ public class MusicDb : DbContext
 
         // ALBUM
         modelBuilder.Entity<Album>()
+            .HasIndex(a => new {a.ArtistId, a.Title})
+            .IsUnique();
+
+        modelBuilder.Entity<Album>()
             .Property(a => a.Type)
             .HasConversion<string>()
             .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
