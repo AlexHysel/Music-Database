@@ -48,7 +48,7 @@ public class UserRepositoryTests(PostgresFixture pg)
 
             await manager.SaveChangesAsync();
         }
-        
+
         await using (var db = newDb())
         {
             var manager = new MusicManager(db);
@@ -57,6 +57,71 @@ public class UserRepositoryTests(PostgresFixture pg)
             Assert.False(created);
 
             await manager.SaveChangesAsync();
+        }
+    }
+
+    [Fact]
+    public async Task RemoveUserAsync_HasTags_TagsRemoved()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        var password = "password";
+        var username = "user";
+        var artist = new Artist("artist"); 
+        var album = new Album("album", 2025, artist);
+        var track = new Track("track", 1, album, artist, []);
+        album.AddTrack(track);
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+
+            var created = await manager.Users.CreateUserAsync(username, UserRole.User, password);
+            Assert.True(created);
+
+            await manager.Albums.CreateAlbumAsync(album);
+
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+
+            var user = await manager.Users.GetUserAsync("user", true);
+            Assert.NotNull(user);
+
+            Tag tag = await manager.Tags.EnsureTagCreatedAsync("tag");
+            Assert.NotNull(tag);
+
+            Assert.True(await manager.Tags.VoteForAlbumTagAsync(album.Id, tag, user));
+            Assert.True(await manager.Tags.VoteForTrackTagAsync(track.Id, tag, user));
+
+            await manager.SaveChangesAsync();
+        }
+
+        Guid albumTagId;
+        Guid trackTagId;
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+
+            var user = await manager.Users.GetUserAsync(username);
+            Assert.NotNull(user);
+            albumTagId = (await manager.Tags.GetAlbumTagStatsAsync(album.Id, 1))[0].Id;
+            trackTagId = (await manager.Tags.GetTrackTagStatsAsync(track.Id, 1))[0].Id;
+
+            var result = await manager.Users.RemoveUserAsync(user.Id);
+            Assert.True(result);
+        }
+        
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+
+            Assert.True(await manager.Tags.AlbumTagStatsExistsAsync(albumTagId));
+            Assert.True(await manager.Tags.TrackTagStatsExistsAsync(trackTagId));
         }
     }
 }

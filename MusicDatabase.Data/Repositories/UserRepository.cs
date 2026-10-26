@@ -27,6 +27,13 @@ public class UserRepository
             return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
     }
 
+    public async Task<User?> GetUserAsync(string name, bool tracked = false){
+        if (tracked)
+            return await _context.Users.FirstOrDefaultAsync(u => u.Name == name);
+        else
+            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
+    }
+
     public async Task<User?> GetUserDetailAsync(Guid id){
         return await _context.Users.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id);
