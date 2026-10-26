@@ -2,6 +2,7 @@
 using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
+using MusicDatabase.Domain;
 
 namespace MusicDatabase.Tests.IntegrationTests;
 
@@ -64,6 +65,49 @@ public class AlbumServiceTests(PostgresFixture pg)
 
             Assert.False(await manager.Artists.ArtistExistsAsync("other1"));
             Assert.True(await manager.Artists.ArtistExistsAsync("other2"));
+        }
+    }
+    
+    [Fact]
+    public async Task UpdateAlbumAsync_ChangeArtist_EmptyArtistRemoved()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        AddTrackRequest[] tracks = [
+                new AddTrackRequest("track1", [])
+            ];
+
+        var album = new AddAlbumRequest("album", "artist", "imageUrl", 2025, tracks);
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var albumService = new AlbumService(manager);
+
+            Assert.True((await albumService.CreateAlbumAsync(album)).Success);
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var albumService = new AlbumService(manager);
+
+            var trackId = (await manager.Tracks.GetMatchingTracksAsync("track1", 0, 1)).Items[0].Id;
+            var albumId = (await manager.Albums.GetMatchingAlbumsAsync("album", 0, 1)).Items[0].Id;
+
+            UpdateTrackInAlbumRequest[] trackRequests = [
+                new UpdateTrackInAlbumRequest("track1", "artistNew", [], 2026, trackId)
+            ];
+
+            var request = new UpdateAlbumRequest("album", "artistNew", "imageUrl", 2025, albumId, trackRequests);
+            Assert.True((await albumService.UpdateAlbumAsync(request)).Success);
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+
+            Assert.False(await manager.Artists.ArtistExistsAsync("artist"));
+            Assert.True(await manager.Artists.ArtistExistsAsync("artistNew"));
         }
     }
 }

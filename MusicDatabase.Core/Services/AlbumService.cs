@@ -144,6 +144,7 @@ public class AlbumService
                 if (!existing.SetTitle(trackInfo.Title)) return Result.Fail("Empty title provided");
                 existing.SetNumberInTheAlbum(trackInfo.NumberInTheAlbum);
                 if (!existing.SetOthers(others)) return Result.Fail("Invalid others provided");
+                if (!existing.SetArtist(artist)) return Result.Fail("Wrong artist provided");
             }
             else
             {

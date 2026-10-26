@@ -53,6 +53,15 @@ public class Track
         return true;
     }
 
+    public bool SetArtist(Artist artist)
+    {
+        ArgumentNullException.ThrowIfNull(artist);
+
+        Artist = artist;
+        ArtistId = artist.Id;
+        return true;
+    }
+
     public bool SetOthers(List<Artist> others)
     {
         ArgumentNullException.ThrowIfNull(others, nameof(others));
