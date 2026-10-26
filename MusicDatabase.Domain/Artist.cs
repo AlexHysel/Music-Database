@@ -6,7 +6,10 @@ namespace MusicDatabase.Domain;
 /// <remarks>
 /// <b>Rules:</b>
 /// <list type="bullet">
-/// <item><description>Artist must have at least 1 album or 1 appearsOn.</description></item>
+/// <item><description>
+/// Artist must have at least 1 album or 1 appearsOn. 
+/// If it's empty after some chages, SQL triggers will delete it automatically.
+/// </description></item>
 /// <item><description>Artist must have a unique name.</description></item>
 /// <item><description>Artist can not have a few albums with the same names.</description></item>
 /// <item><description>CreatedAt can be initialized only once.</description></item>

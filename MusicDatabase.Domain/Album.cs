@@ -6,7 +6,10 @@ namespace MusicDatabase.Domain;
 /// <remarks>
 /// <b>Rules:</b>
 /// <list type="bullet">
-/// <item><description>Album must have at least 1 track.</description></item>
+/// <item><description>
+/// Album must have at least 1 track.
+/// If it's empty after some chages, SQL triggers will delete it automatically.
+/// </description></item>
 /// <item><description>Album must have a title.</description></item>
 /// <item><description>Album must have an artist.</description></item>
 /// <item><description>Album type is defined automatically by SQL triggers depending on the number of tracks.</description></item>
