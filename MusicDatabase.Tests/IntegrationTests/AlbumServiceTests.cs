@@ -2,7 +2,6 @@
 using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
-using MusicDatabase.Domain;
 
 namespace MusicDatabase.Tests.IntegrationTests;
 
@@ -58,6 +57,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var request = new UpdateAlbumRequest("album", "artist", "imageUrl", 2025, albumId, trackRequests);
             Assert.True((await albumService.UpdateAlbumAsync(request)).Success);
         }
+
         await using (var db = newDb())
         {
             var manager = new MusicManager(db);
