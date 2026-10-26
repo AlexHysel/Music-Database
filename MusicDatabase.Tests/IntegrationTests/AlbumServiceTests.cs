@@ -24,7 +24,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             Assert.False(result.Success);
         }
     }
-    
+
     [Fact]
     public async Task CreateAlbumAsync_Duplicate_AlbumNotCreated()
     {
@@ -134,6 +134,57 @@ public class AlbumServiceTests(PostgresFixture pg)
 
             Assert.False(await manager.Artists.ArtistExistsAsync("artist"));
             Assert.True(await manager.Artists.ArtistExistsAsync("artistNew"));
+        }
+    }
+
+    [Fact]
+    public async Task RemoveAlbumAsync_RemovesAlbumAndRelatedEmptyEntities()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+        
+        var artist = new Artist("artist");
+        var album = new Album("album", 2025, artist);
+        List<Track> tracks = [
+            new Track("track1", 1, album, artist, []),
+            new Track("track2", 2, album, artist, []),
+            new Track("track3", 3, album, artist, [])
+        ];
+
+        var user = new User("user", "password", UserRole.User);
+        var tag = new Tag("tag");
+        var albumTagStats = new AlbumTagStats(album.Id, tag.Id);
+        albumTagStats.AddVote(user);
+
+        foreach (var t in tracks) album.AddTrack(t);
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            
+            await manager.Albums.CreateAlbumAsync(album);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var albumService = new AlbumService(manager);
+            
+            Assert.True((await albumService.RemoveAlbumAsync(album.Id)).Success);
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            
+            Assert.False(await manager.Albums.AlbumExistsAsync(album.Id));
+            Assert.False(await manager.Artists.ArtistExistsAsync(artist.Id));
+            foreach (var t in tracks)
+            {
+                Assert.False(await manager.Tracks.TrackExistsAsync(t.Id));
+            }
+            Assert.False(await manager.Tags.TagExistsAsync(tag.Id));
+            Assert.False(await manager.Tags.AlbumTagStatsExistsAsync(albumTagStats.Id));
         }
     }
 }
