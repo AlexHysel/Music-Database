@@ -1,5 +1,17 @@
 namespace MusicDatabase.Domain;
 
+/// <summary>
+/// Represents an artist.
+/// </summary>
+/// <remarks>
+/// <b>Rules:</b>
+/// <list type="bullet">
+/// <item><description>Artist must have at least 1 album or 1 appearsOn.</description></item>
+/// <item><description>Artist must have a unique name.</description></item>
+/// <item><description>Artist can not have a few albums with the same names.</description></item>
+/// <item><description>CreatedAt can be initialized only once.</description></item>
+/// </list>
+/// </remarks>
 public class Artist
 {
     public Guid Id { get; private set; }
