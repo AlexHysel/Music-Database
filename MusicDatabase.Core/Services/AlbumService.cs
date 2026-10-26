@@ -16,7 +16,10 @@ public class AlbumService
 
     public async Task<Result> CreateAlbumAsync(AddAlbumRequest info)
     {
-        if (info.Tracks.Count() == 0) return Result.Fail("Album without tracks can't exists");
+        if (info.Tracks.Count() == 0) return Result.Fail("Album without tracks can't exists.");
+        if (await _manager.Artists.ArtistExistsAsync(info.ArtistName))
+            if (await _manager.Artists.ArtistHasAlbumAsync(info.ArtistName, info.Title))
+                return Result.Fail("Album with this title already exists.");
         
         Artist artist = await _manager.Artists.EnsureArtistCreated(info.ArtistName);
         Album album = new(info.Title, info.ReleaseYear, artist, info.ImageUrl);

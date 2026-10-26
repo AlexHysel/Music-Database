@@ -23,6 +23,11 @@ public class ArtistRepository
         return await _context.Artists.AnyAsync(a => a.Name == name);
     }
 
+    public async Task<bool> ArtistHasAlbumAsync(string artistName, string albumTitle)
+    {
+        return await _context.Artists.AnyAsync(a => a.Name == artistName && a.Albums.Any(a => a.Title == albumTitle));
+    }
+
     public async Task<PagedResult<Artist>> GetMatchingArtistsAsync(string name, int toSkip, int toTake){
         return await _context.Artists
             .AsNoTracking()
