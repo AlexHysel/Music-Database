@@ -84,6 +84,8 @@ public class UserRepositoryTests(PostgresFixture pg)
             await manager.SaveChangesAsync();
         }
 
+        Guid tagId;
+
         await using (var db = newDb())
         {
             var manager = new MusicManager(db);
@@ -93,6 +95,7 @@ public class UserRepositoryTests(PostgresFixture pg)
 
             Tag tag = await manager.Tags.EnsureTagCreatedAsync("tag");
             Assert.NotNull(tag);
+            tagId = tag.Id;
 
             Assert.True(await manager.Tags.VoteForAlbumTagAsync(album.Id, tag, user));
             Assert.True(await manager.Tags.VoteForTrackTagAsync(track.Id, tag, user));
@@ -120,8 +123,9 @@ public class UserRepositoryTests(PostgresFixture pg)
         {
             var manager = new MusicManager(db);
 
-            Assert.True(await manager.Tags.AlbumTagStatsExistsAsync(albumTagId));
-            Assert.True(await manager.Tags.TrackTagStatsExistsAsync(trackTagId));
+            Assert.False(await manager.Tags.AlbumTagStatsExistsAsync(albumTagId));
+            Assert.False(await manager.Tags.TrackTagStatsExistsAsync(trackTagId));
+            Assert.False(await manager.Tags.TagExistsAsync(tagId));
         }
     }
 }
