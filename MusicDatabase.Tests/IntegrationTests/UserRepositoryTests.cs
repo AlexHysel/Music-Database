@@ -117,6 +117,7 @@ public class UserRepositoryTests(PostgresFixture pg)
 
             var result = await manager.Users.RemoveUserAsync(user.Id);
             Assert.True(result);
+            await manager.SaveChangesAsync();
         }
         
         await using (var db = newDb())
