@@ -1,5 +1,16 @@
 namespace MusicDatabase.Domain;
 
+/// <summary>
+/// Represents a user.
+/// </summary>
+/// <remarks>
+/// <b>Rules:</b>
+/// <list type="bullet">
+/// <item><description>Must have a unique Name (3 to 20 chars).</description></item>
+/// <item><description>Must have a Password.</description></item>
+/// <item><description>Must have a Role.</description></item>
+/// </list>
+/// </remarks>
 public class User
 {
     public Guid Id {get; private set;}
