@@ -1,5 +1,20 @@
 namespace MusicDatabase.Domain;
 
+/// <summary>
+/// Represents a track.
+/// </summary>
+/// <remarks>
+/// <b>Rules:</b>
+/// <list type="bullet">
+/// <item><description>Must have an Artist.</description></item>
+/// <item><description>Must have an Album.</description></item>
+/// <item><description>Others must not contain the main Artist.</description></item>
+/// <item><description>Must have a Title (3 to 20 chars).</description></item>
+/// <item><description>Track Title must be unique within the album.</description></item>
+/// <item><description>TagStats must have no duplicates.</description></item>
+/// <item><description>NumberInTheAlbum must be a natural number (>= 1).</description></item>
+/// </list>
+/// </remarks>
 public class Track
 {
     public Guid Id {get; private set;}
