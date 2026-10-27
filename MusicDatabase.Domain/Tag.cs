@@ -1,6 +1,16 @@
 using MusicDatabase.Domain;
 
-// Represents a Tag without any specifics and used for both albums and tracks
+/// <summary>
+/// Represents a tag without any specifics.
+/// </summary>
+/// <remarks>
+/// <b>Rules:</b>
+/// <list type="bullet">
+/// <item><description>Must have a name between 1 and 20 chars.</description></item>
+/// <item><description>Name must be unique.</description></item>
+/// <item><description>Deleted automatically if not used in any TagStats.</description></item>
+/// </list>
+/// </remarks>
 public class Tag
 {
     public Guid Id {get; private set;}
@@ -20,6 +30,17 @@ public class Tag
     }
 }
 
+/// <summary>
+/// One tag with exact attached Track and VoteCount to get the most popular tags easily and without a need to count the votes on each request.
+/// </summary>
+/// <remarks>
+/// <b>Rules:</b>
+/// <list type="bullet">
+/// <item><description>Must have a Track.</description></item>
+/// <item><description>Must have a Tag.</description></item>
+/// <item><description>Deleted automatically if VotedBy is empty.</description></item>
+/// </list>
+/// </remarks>
 public class TrackTagStats
 {
     public Guid Id {get; private set;} = Guid.NewGuid();
@@ -47,6 +68,17 @@ public class TrackTagStats
     }
 }
 
+/// <summary>
+/// One tag with exact attached album and VoteCount to get the most popular tags easily and without a need to count the votes on each request.
+/// </summary>
+/// <remarks>
+/// <b>Rules:</b>
+/// <list type="bullet">
+/// <item><description>Must have a album.</description></item>
+/// <item><description>Must have a Tag.</description></item>
+/// <item><description>Deleted automatically if VotedBy is empty.</description></item>
+/// </list>
+/// </remarks>
 public class AlbumTagStats
 {
     public Guid Id {get; private set;} = Guid.NewGuid();
