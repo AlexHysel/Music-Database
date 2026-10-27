@@ -39,6 +39,7 @@ public class Tag
 /// <item><description>Must have a Track.</description></item>
 /// <item><description>Must have a Tag.</description></item>
 /// <item><description>Deleted automatically if VotedBy is empty.</description></item>
+/// <item><description>VotedBy must contain no duplicates.</description></item>
 /// </list>
 /// </remarks>
 public class TrackTagStats
@@ -77,6 +78,7 @@ public class TrackTagStats
 /// <item><description>Must have a album.</description></item>
 /// <item><description>Must have a Tag.</description></item>
 /// <item><description>Deleted automatically if VotedBy is empty.</description></item>
+/// <item><description>VotedBy must contain no duplicates.</description></item>
 /// </list>
 /// </remarks>
 public class AlbumTagStats
