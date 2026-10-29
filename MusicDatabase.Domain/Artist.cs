@@ -40,13 +40,12 @@ public class Artist
 
     private Artist() { }
 
-    public bool SetName(string name)
+    public void SetName(string name)
     {
         name = name.Trim();
-        if (name.Length < 1) return false;
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         Name = name;
-        return true;
     }
 
     static public bool ValidateName(string? name)
