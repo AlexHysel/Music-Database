@@ -51,48 +51,40 @@ public class Album
 
     private Album () {}
 
-    public bool SetTitle(string title)
+    public void SetTitle(string title)
     {
-        title = title.Trim();
-        if (title.Length < 1) return false;
+        ArgumentException.ThrowIfNullOrEmpty(title);
 
         Title = title;
-        return true;
     }
 
-    public bool SetArtist(Artist artist)
+    public void SetArtist(Artist artist)
     {
         ArgumentNullException.ThrowIfNull(artist);
-        //what if new artist is one of the 'Others' in the track?
 
         Artist = artist;
         ArtistId = artist.Id;
-        return true;
     }
 
-    public bool SetImageUrl(string imageUrl)
+    public void SetImageUrl(string imageUrl)
     {
-        imageUrl = imageUrl.Trim();
-        if (imageUrl.Length < 1) return false;
-
         ImageUrl = imageUrl;
-        return true;
     }
 
-    public bool SetReleaseYear(int releaseYear)
+    public void SetReleaseYear(int releaseYear)
     {
         if (releaseYear < 1900 || releaseYear > DateTimeOffset.UtcNow.Year + 1)
-            return false;
+            throw new ArgumentException($"Invalid ReleaseYear provided: {releaseYear}");
 
         ReleaseYear = releaseYear;
-        return true;
     }
 
-    public bool AddTrack(Track track)
+    public void AddTrack(Track track)
     {
         ArgumentNullException.ThrowIfNull(track, nameof(track));
 
-        if (Tracks.Any(t => t.Id == track.Id)) return false;
+        if (Tracks.Any(t => t.Id == track.Id))
+            throw new ArgumentException($"Track ({track.Id}) already exists in the Album");
 
         int targetIndex = track.NumberInTheAlbum - 1;
         if (targetIndex >= 0 && targetIndex <= Tracks.Count)
@@ -102,24 +94,6 @@ public class Album
 
         for (int i = 0; i < Tracks.Count; i++)
             Tracks[i].SetNumberInTheAlbum(i + 1);
-
-        return true;
-    }
-
-    public bool RemoveTrack(Track track)
-    {
-        ArgumentNullException.ThrowIfNull(track, nameof(track));
-
-        if (!Tracks.Remove(track))
-            return false;
-
-        int i = 1;
-        foreach (var t in Tracks)
-        {
-            t.SetNumberInTheAlbum(i);
-            i++;
-        }
-        return true;
     }
 
     public void UpdateUpdatedAt()
