@@ -115,17 +115,19 @@ public class AlbumService
         if (patch.Tracks == null || patch.Tracks.Length == 0)
             return Result.Validation("Album.NoTracks", "Album must have at least 1 Track");
 
+        //if (Album.ValidateTitle(patch.Title))
+        //    return Result.Validation("Album.InvalidTitle", "Empty title provided");
+
+        //if (Album.ValidateReleaseYear(patch.ReleaseYear))
+        //    return Result.Validation("Album.InvalidReleaseYear", "Invalid release year provided");
+
         Album? album = await _manager.Albums.GetAlbumDetailAsync(patch.Id, true);
         if (album == null)
             return Result.NotFound("Album.NotFound", "Album not found");
             
-        if (!album.SetTitle(patch.Title))
-            return Result.Validation("Album.EmptyTitle", "Empty title provided");
-
+        album.SetTitle(patch.Title);
         album.SetImageUrl(patch.ImageUrl);
-
-        if (!album.SetReleaseYear(patch.ReleaseYear))
-            return Result.Validation("Album.InvalidReleaseYear", "Invalid release year provided");
+        album.SetReleaseYear(patch.ReleaseYear);
 
         if (!Artist.ValidateName(patch.ArtistName))
             return Result.Validation("Artist.InvalidName", "Invalid artist name provided");
