@@ -52,36 +52,29 @@ public class Track
 
     private Track () {}
 
-    public bool SetTitle(string title)
+    public void SetTitle(string title)
     {
         title = title.Trim();
-        if (title.Length < 1) return false;
+        ArgumentException.ThrowIfNullOrEmpty(title);
 
         Title = title;
-        return true;
     }
 
-    public bool AddTag(Tag tag, User user)
-    {
-        TrackTagStats trackTag = new(Id, tag.Id);
-        _tagsStats.Add(trackTag);
-        return true;
-    }
-
-    public bool SetArtist(Artist artist)
+    public void SetArtist(Artist artist)
     {
         ArgumentNullException.ThrowIfNull(artist);
 
         Artist = artist;
         ArtistId = artist.Id;
-        return true;
     }
 
-    public bool SetOthers(List<Artist> others)
+    public void SetOthers(List<Artist> others)
     {
         ArgumentNullException.ThrowIfNull(others, nameof(others));
+
         if (others.Any(a => a == null))
             throw new ArgumentException("Others cannot contain null values.", nameof(others));
+
         if (others.Any(a => a.Id == ArtistId))
             throw new ArgumentException("Main artist cannot be featured", nameof(others));
 
@@ -92,7 +85,6 @@ public class Track
         foreach (var o in others)
             if (!Others.Any(other => other.Id == o.Id))
                 _others.Add(o);
-        return true;
     }
 
     public void UpdateUpdatedAt()
