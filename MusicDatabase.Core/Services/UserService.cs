@@ -56,7 +56,6 @@ public class UserService
             return Result<UserDetailDTO>.Ok(UserDetailDTO.FromUser(user));
     }
 
-    //better use DTO here as a paramater
     public async Task<Result> CreateUserAsync(SignUpRequest request)
     {
         //if (!User.ValidateName(request.Username))
