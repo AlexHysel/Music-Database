@@ -31,25 +31,21 @@ public class User
         Password = password;
     }
 
-    public bool SetName(string name)
+    public void SetName(string name)
     {
-        name = name.Trim();
-        if (name.Length < 1) return false;
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         Name = name;
-        return true;
     }
 
-    public bool SetRole(UserRole role)
+    public void SetRole(UserRole role)
     {
         Role = role;
-        return true;
     }
 
-    public bool SetPassword(string password)
+    public void SetPassword(string password)
     {
         Password = password;
-        return true;
     }
 
     public void InitializeTimestamps()
