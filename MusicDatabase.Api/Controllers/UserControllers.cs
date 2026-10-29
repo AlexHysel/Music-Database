@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using MusicDatabase.Api;
 using MusicDatabase.Common;
 using MusicDatabase.Contracts;
 using MusicDatabase.Core.Services;
@@ -15,11 +15,8 @@ public class UserController(UserService users) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<UserDetailDTO> result = await _users.GetUserDetailAsync(id);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound(result.Message);
+        var result = await _users.GetUserDetailAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("search")]
@@ -36,10 +33,7 @@ public class UserController(UserService users) : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        Result result = await _users.RemoveUserAsync(id);
-        if (result.Success)
-            return NoContent();
-        else
-            return NotFound(result.Message);
+        var result = await _users.RemoveUserAsync(id);
+        return result.ToActionResult(this);
     }
 }

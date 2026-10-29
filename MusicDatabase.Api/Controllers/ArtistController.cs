@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
 using MusicDatabase.Common;
+using MusicDatabase.Api;
 
 [ApiController]
 [Route("/[controller]")]
@@ -16,11 +17,8 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<ArtistDetailDTO> result = await _artists.GetArtistDetailAsync(id);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound();
+        var result = await _artists.GetArtistDetailAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("search")]
@@ -39,29 +37,23 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        Result<PagedResult<TrackDTO>> tracks = await _tracks.GetArtistTracksAsync(id, toSkip, toTake);
-        return Ok(tracks.Data);
+        var result = await _tracks.GetArtistTracksAsync(id, toSkip, toTake);
+        return result.ToActionResult(this);
     }
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        Result result = await _artists.RemoveArtistAsync(id);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result.Message);
+        var result = await _artists.RemoveArtistAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Put([FromBody] UpdateArtistRequest patch)
     {
-        Result result = await _artists.UpdateArtistAsync(patch);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result.Message);
+        var result = await _artists.UpdateArtistAsync(patch);
+        return result.ToActionResult(this);
     }
 }

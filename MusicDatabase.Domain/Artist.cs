@@ -49,13 +49,17 @@ public class Artist
         return true;
     }
 
-    public bool SetImageUrl(string imageUrl)
+    static public bool ValidateName(string? name)
     {
-        imageUrl = imageUrl.Trim();
-        if (imageUrl.Length < 1) return false;
+        if (name == null) return false;
+        if (name.Trim().Count() < 1) return false;
 
-        ImageUrl = imageUrl;
         return true;
+    }
+
+    public void SetImageUrl(string imageUrl)
+    {
+        ImageUrl = imageUrl;
     }
 
     public void UpdateUpdatedAt()

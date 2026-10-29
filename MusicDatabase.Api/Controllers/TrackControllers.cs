@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
 using MusicDatabase.Common;
+using MusicDatabase.Api;
 
 [ApiController]
 [Route("/[controller]")]
@@ -15,11 +16,8 @@ public class TrackController(TrackService tracks) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<TrackDetailDTO> result = await _tracks.GetTrackDetailAsync(id);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound("Track not found");
+        var result = await _tracks.GetTrackDetailAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("search")]
@@ -42,11 +40,8 @@ public class TrackController(TrackService tracks) : ControllerBase
         if (string.IsNullOrWhiteSpace(patch.Title))
             return BadRequest("Title is required.");
 
-        Result result = await _tracks.UpdateTrackAsync(patch);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result.Message);
+        var result = await _tracks.UpdateTrackAsync(patch);
+        return result.ToActionResult(this);
     }
 
     [HttpPut("addtag")]
@@ -55,11 +50,8 @@ public class TrackController(TrackService tracks) : ControllerBase
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
-        Result result = await _tracks.AddTagOnTrackAsync(request);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result);
+        var result = await _tracks.AddTagOnTrackAsync(request);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("mytags")]
@@ -67,10 +59,7 @@ public class TrackController(TrackService tracks) : ControllerBase
     public async Task<IActionResult> GetUserTags([FromQuery] Guid trackId, Guid userId)
     {
         var result = await _tracks.GetUserTrackTagsAsync(trackId, userId);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound(result.Message);
+        return result.ToActionResult(this);
     }
     
     [HttpGet("tags")]
@@ -79,9 +68,6 @@ public class TrackController(TrackService tracks) : ControllerBase
         [FromQuery, Range(0, 20)] int numberOfTags)
     {
         var result = await _tracks.GetTrackTagsAsync(trackId, numberOfTags);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound(result.Message);
+        return result.ToActionResult(this);
     }
 }

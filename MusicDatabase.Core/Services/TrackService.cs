@@ -30,16 +30,19 @@ public class TrackService
     {
         Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
         if (track == null)
-            return Result<TrackDetailDTO>.Fail("Track not found");
+            return Result<TrackDetailDTO>.NotFound("Track.NotFound", "Track not found");
         
         return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
     }
 
     public async Task<Result<List<Tag>>> GetUserTrackTagsAsync(Guid trackId, Guid userId)
     {
-        if (!await _manager.Tracks.TrackExistsAsync(trackId)) return Result<List<Tag>>.Fail("Track does not exist");
+        if (!await _manager.Tracks.TrackExistsAsync(trackId))
+            return Result<List<Tag>>.NotFound("Track.NotFound", "Track not found");
+
         User? user = await _manager.Users.GetUserAsync(userId);
-        if (user == null) return Result<List<Tag>>.Fail("User does not exist");
+        if (user == null)
+            return Result<List<Tag>>.NotFound("User.NotFound", "User not found");
 
         var tags = await _manager.Tags.GetUserTrackTagsAsync(trackId, user);
         return Result<List<Tag>>.Ok(tags);
@@ -47,7 +50,8 @@ public class TrackService
 
     public async Task<Result<List<TagDetailDTO>>> GetTrackTagsAsync(Guid trackId, int numberOfTags)
     {
-        if (!await _manager.Tracks.TrackExistsAsync(trackId)) return Result<List<TagDetailDTO>>.Fail("Track does not exist");
+        if (!await _manager.Tracks.TrackExistsAsync(trackId))
+            return Result<List<TagDetailDTO>>.NotFound("Track.NotFound", "Track not found");
 
         var tags = await _manager.Tags.GetTrackTagStatsAsync(trackId, numberOfTags);
         return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
@@ -55,10 +59,14 @@ public class TrackService
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
     {
-        Track? track = await _manager.Tracks.GetTrackDetailAsync(patch.Id, true);
-        if (track == null) return Result.Fail("Track not found");
+        //if (!Track.ValidateTitle(patch.Title))
+        //    return Result.Validation("Track.InvalidTitle", "Invalid title provided");
 
-        if (!track.SetTitle(patch.Title)) return Result.Fail("Empty Title Provided");
+        Track? track = await _manager.Tracks.GetTrackDetailAsync(patch.Id, true);
+        if (track == null)
+            return Result.NotFound("Track.NotFound", "Track not found");
+
+        track.SetTitle(patch.Title);
 
         var normalizedOthers = (patch.Others ?? Array.Empty<string>())
             .Select(name => name.Trim())
@@ -70,7 +78,7 @@ public class TrackService
         foreach (string name in normalizedOthers)
             others.Add(await _manager.Artists.EnsureArtistCreated(name));
 
-        if (!track.SetOthers(others)) return Result.Fail("Wrong others provided");
+        track.SetOthers(others);
 
         await _manager.SaveChangesAsync();
         return Result.Ok();
@@ -78,15 +86,19 @@ public class TrackService
 
     public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request)
     {
+        //if (!Tag.ValidateName(request.TagName))
+        //    return Result.Validation("Tag.InvalidName", "Invalid tag name provided");
+
         var tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
         User? user = await _manager.Users.GetUserAsync(request.UserId, true);
-        if (user == null) return Result.Fail("User does not exist.");
+        if (user == null)
+            return Result.NotFound("User.NotFound", "User not found");
         
         if (await _manager.Tags.VoteForTrackTagAsync(request.TrackId, tag, user))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        return Result.Fail("You've already added this tag.");
+        return Result.Conflict("TrackTag.VoteDuplicate", "You've already added this tag");
     }
 }

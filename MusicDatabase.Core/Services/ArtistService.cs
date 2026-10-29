@@ -27,7 +27,7 @@ public class ArtistService
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        return Result.Fail("Artist not found");
+        return Result.NotFound("Artist.NotFound", "Artist not found");
     }
 
     public async Task<Result> UpdateArtistAsync(UpdateArtistRequest patch)
@@ -36,11 +36,13 @@ public class ArtistService
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
         in the same request can cause some problems.
         */
+        if (!Artist.ValidateName(patch.Name))
+            return Result.Validation("Artist.InvalidName", $"Invalid name '{patch.Name}' provided");
+
         Artist? artist = await _manager.Artists.GetArtistAsync(patch.Id, true);
 
-        if (artist == null) return Result.Fail("Artist not found");
-        if (!artist.SetName(patch.Name)) return Result.Fail("Empty name provided");
-        if (!artist.SetImageUrl(patch.ImageUrl)) return Result.Fail("Wrong image url");
+        if (artist == null)
+            return Result.NotFound("Artist.NotFound", "Artist not found");
 
         await _manager.SaveChangesAsync();
         return Result.Ok();
@@ -50,7 +52,7 @@ public class ArtistService
     {
         Artist? artist = await _manager.Artists.GetArtistDetailAsync(id);
         if (artist == null)
-            return Result<ArtistDetailDTO>.Fail("Artist not found");
+            return Result<ArtistDetailDTO>.NotFound("Artist.NotFound", "Artist not found");
         else
             return Result<ArtistDetailDTO>.Ok(ArtistDetailDTO.FromArtist(artist));
     }

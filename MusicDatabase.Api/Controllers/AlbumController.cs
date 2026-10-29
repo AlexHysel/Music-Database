@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 using MusicDatabase.Core.Services;
 using MusicDatabase.Contracts;
-using MusicDatabase.Common;
+using MusicDatabase.Api;
 
 [ApiController]
 [Route("/[controller]")]
@@ -15,11 +15,8 @@ public class AlbumController(AlbumService albums) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] Guid id)
     {
-        Result<AlbumDetailDTO?> result = await _albums.GetAlbumDetailAsync(id);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound();
+        var result = await _albums.GetAlbumDetailAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("search")]
@@ -28,7 +25,7 @@ public class AlbumController(AlbumService albums) : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<AlbumDTO> found = await _albums.GetMatchingAlbumsAsync(title, toSkip, toTake);
+        var found = await _albums.GetMatchingAlbumsAsync(title, toSkip, toTake);
         return Ok(found);
     }
 
@@ -44,30 +41,24 @@ public class AlbumController(AlbumService albums) : ControllerBase
         if (info.Tracks.Any(t => t.Title == null || t.Title.Trim().Length == 0)) return BadRequest("All tracks must have a title.");
         if (info.Tracks.Any(t => t.Others != null && t.Others.Any(o => o == null || o.Trim().Length == 0))) return BadRequest("All other artists must have a name.");
 
-        await _albums.CreateAlbumAsync(info);
-        return Created();
+        var result = await _albums.CreateAlbumAsync(info);
+        return result.ToActionResult(this);
     }
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid id)
     {
-        Result result = await _albums.RemoveAlbumAsync(id);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result.Message);
+        var result = await _albums.RemoveAlbumAsync(id);
+        return result.ToActionResult(this);
     }
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Put([FromBody] UpdateAlbumRequest patch)
     {
-        Result result = await _albums.UpdateAlbumAsync(patch);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result.Message);
+        var result = await _albums.UpdateAlbumAsync(patch);
+        return result.ToActionResult(this);
     }
 
     [HttpPut("addtag")]
@@ -76,11 +67,8 @@ public class AlbumController(AlbumService albums) : ControllerBase
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
-        Result result = await _albums.AddTagOnAlbumAsync(request);
-        if (result.Success)
-            return Ok();
-        else
-            return NotFound(result.Message);
+        var result = await _albums.AddTagOnAlbumAsync(request);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("mytags")]
@@ -88,10 +76,7 @@ public class AlbumController(AlbumService albums) : ControllerBase
     public async Task<IActionResult> GetUserTags([FromQuery] Guid albumId, Guid userId)
     {
         var result = await _albums.GetUserAlbumTagsAsync(albumId, userId);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound(result.Message);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("tags")]
@@ -100,9 +85,6 @@ public class AlbumController(AlbumService albums) : ControllerBase
         [FromQuery, Range(0, 20)] int numberOfTags)
     {
         var result = await _albums.GetAlbumTagsAsync(albumId, numberOfTags);
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return NotFound(result.Message);
+        return result.ToActionResult(this);
     }
 }

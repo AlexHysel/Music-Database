@@ -21,7 +21,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var albumService = new AlbumService(manager);
             var result = await albumService.CreateAlbumAsync(album);
-            Assert.False(result.Success);
+            Assert.False(result.IsSuccess);
         }
     }
 
@@ -39,7 +39,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var albumService = new AlbumService(manager);
             var result = await albumService.CreateAlbumAsync(album);
-            Assert.True(result.Success);
+            Assert.True(result.IsSuccess);
         }
 
         await using (var db = newDb())
@@ -47,7 +47,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var albumService = new AlbumService(manager);
             var result = await albumService.CreateAlbumAsync(album);
-            Assert.False(result.Success);
+            Assert.False(result.IsSuccess);
         }
     }
 
@@ -66,7 +66,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var albumService = new AlbumService(manager);
 
-            Assert.True((await albumService.CreateAlbumAsync(album)).Success);
+            Assert.True((await albumService.CreateAlbumAsync(album)).IsSuccess);
         }
 
         await using (var db = newDb())
@@ -82,7 +82,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             ];
 
             var request = new UpdateAlbumRequest("album", "artist", "imageUrl", 2025, albumId, trackRequests);
-            Assert.True((await albumService.UpdateAlbumAsync(request)).Success);
+            Assert.True((await albumService.UpdateAlbumAsync(request)).IsSuccess);
         }
 
         await using (var db = newDb())
@@ -109,7 +109,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var albumService = new AlbumService(manager);
 
-            Assert.True((await albumService.CreateAlbumAsync(album)).Success);
+            Assert.True((await albumService.CreateAlbumAsync(album)).IsSuccess);
         }
 
         await using (var db = newDb())
@@ -125,7 +125,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             ];
 
             var request = new UpdateAlbumRequest("album", "artistNew", "imageUrl", 2025, albumId, trackRequests);
-            Assert.True((await albumService.UpdateAlbumAsync(request)).Success);
+            Assert.True((await albumService.UpdateAlbumAsync(request)).IsSuccess);
         }
 
         await using (var db = newDb())
@@ -170,7 +170,7 @@ public class AlbumServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var albumService = new AlbumService(manager);
             
-            Assert.True((await albumService.RemoveAlbumAsync(album.Id)).Success);
+            Assert.True((await albumService.RemoveAlbumAsync(album.Id)).IsSuccess);
         }
 
         await using (var db = newDb())

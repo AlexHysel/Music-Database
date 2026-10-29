@@ -29,7 +29,7 @@ public class UserService
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        return Result.Fail("User not found");
+        return Result.NotFound("User.NotFound", "User not found");
     }
 
     public async Task<PagedResult<UserDTO>> GetMatchingUsersAsync(string name, int toSkip, int toTake)
@@ -42,7 +42,7 @@ public class UserService
     {
         User? user = await _manager.Users.GetUserAsync(id);
         if (user == null)
-            return Result<UserDTO>.Fail("User not found");
+            return Result<UserDTO>.NotFound("User.NotFound", "User not found");
         else
             return Result<UserDTO>.Ok(UserDTO.FromUser(user));
     }
@@ -51,19 +51,22 @@ public class UserService
     {
         User? user = await _manager.Users.GetUserDetailAsync(id);
         if (user == null)
-            return Result<UserDetailDTO>.Fail("User not found");
+            return Result<UserDetailDTO>.NotFound("User.NotFound", "User not found");
         else
             return Result<UserDetailDTO>.Ok(UserDetailDTO.FromUser(user));
     }
 
+    //better use DTO here as a paramater
     public async Task<Result> CreateUserAsync(string name, UserRole role, string password)
     {
+        //if (!User.ValidateName(name))
+        //    return Result.Validation("User.InvalidName", "Invalid name provided");
         if (await _manager.Users.CreateUserAsync(name, role, password))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
         }
-        return Result.Fail("User already exists");
+        return Result.Conflict("User", "User already exists");
         
     }
 
