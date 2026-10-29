@@ -7,7 +7,6 @@ using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
 using Microsoft.EntityFrameworkCore;
-using MusicDatabase.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,9 +105,9 @@ app.MapGet("/search", async (SearchService search, string searchLine) => await s
 
 app.MapPost("/login", async (UserService users, LogInRequest request) =>
 {
-    AuthDTO? auth = await users.LogInAsync(request.Username, request.Password);
-    if (auth != null)
-        return Results.Ok(auth);
+    var result = await users.LogInAsync(request.Username, request.Password);
+    if (result.IsSuccess)
+        return Results.Ok(result.Value);
     return Results.Unauthorized();
 });
 

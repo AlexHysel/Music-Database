@@ -71,33 +71,34 @@ public class UserService
         
     }
 
-    public async Task<AuthDTO?> LogInAsync(string name, string password)
+    public async Task<Result<AuthDTO>> LogInAsync(string name, string password)
     {
-        AuthDTO? auth = null;
         User? user = await _manager.Users.AuthenticateUser(name, password);
-        if (user != null)
+
+        if (user == null)
+            return Result<AuthDTO>.Unauthorized("User.Unauthorized", "Wrong password or username");
+
+        string role = user.Role.ToString();
+        string key = _config["Jwt:Key"]!;
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            string role = user.Role.ToString();
-            string key = _config["Jwt:Key"]!;
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity([
-                    new Claim(ClaimTypes.Name, name),
-                    new Claim(ClaimTypes.Role, role),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-                ]),
-                Expires = DateTime.UtcNow.AddDays(7),
-                Issuer = "MusicDatabase",
-                Audience = "MusicDatabase",
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-                    SecurityAlgorithms.HmacSha256)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-            auth = new AuthDTO(tokenString);
-        }
-        return auth;
+            Subject = new ClaimsIdentity([
+                new Claim(ClaimTypes.Name, name),
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            ]),
+            Expires = DateTime.UtcNow.AddDays(7),
+            Issuer = "MusicDatabase",
+            Audience = "MusicDatabase",
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                SecurityAlgorithms.HmacSha256)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var tokenString = tokenHandler.WriteToken(token);
+        var auth = new AuthDTO(tokenString);
+
+        return Result<AuthDTO>.Ok(auth);
     }
 }
