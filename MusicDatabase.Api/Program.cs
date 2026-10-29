@@ -114,7 +114,7 @@ app.MapPost("/login", async (UserService users, LogInRequest request) =>
 
 app.MapPost("/signup", async (UserService users, SignUpRequest request) =>
 {
-    var result = await users.CreateUserAsync(request.Username, UserRole.User, request.Password);
+    var result = await users.CreateUserAsync(request);
     if (result.IsSuccess)
         return Results.Created();
     else

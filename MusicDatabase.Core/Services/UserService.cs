@@ -57,11 +57,12 @@ public class UserService
     }
 
     //better use DTO here as a paramater
-    public async Task<Result> CreateUserAsync(string name, UserRole role, string password)
+    public async Task<Result> CreateUserAsync(SignUpRequest request)
     {
-        //if (!User.ValidateName(name))
+        //if (!User.ValidateName(request.Username))
         //    return Result.Validation("User.InvalidName", "Invalid name provided");
-        if (await _manager.Users.CreateUserAsync(name, role, password))
+
+        if (await _manager.Users.CreateUserAsync(request.Username, request.Password))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();

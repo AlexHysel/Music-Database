@@ -15,19 +15,18 @@ public class User
 {
     public Guid Id {get; private set;}
     public string Name {get; private set;}
-    public UserRole Role {get; private set;}
+    public UserRole Role {get; private set;} = UserRole.User;
     public string Password {get; private set;}
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
-    public User(string name, string password, UserRole role)
+    public User(string name, string password)
     {
         name = name.Trim();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         Id = Guid.NewGuid();
         Name = name;
-        Role = role;
         Password = password;
     }
 

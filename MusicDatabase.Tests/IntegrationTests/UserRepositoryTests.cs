@@ -18,7 +18,7 @@ public class UserRepositoryTests(PostgresFixture pg)
         {
             var manager = new MusicManager(db);
 
-            await manager.Users.CreateUserAsync(username, UserRole.User, password);
+            await manager.Users.CreateUserAsync(username, password);
             await manager.SaveChangesAsync();
         }
 
@@ -43,7 +43,7 @@ public class UserRepositoryTests(PostgresFixture pg)
         {
             var manager = new MusicManager(db);
 
-            var created = await manager.Users.CreateUserAsync(username, UserRole.User, password);
+            var created = await manager.Users.CreateUserAsync(username, password);
             Assert.True(created);
 
             await manager.SaveChangesAsync();
@@ -53,7 +53,7 @@ public class UserRepositoryTests(PostgresFixture pg)
         {
             var manager = new MusicManager(db);
 
-            var created = await manager.Users.CreateUserAsync(username, UserRole.User, password);
+            var created = await manager.Users.CreateUserAsync(username, password);
             Assert.False(created);
 
             await manager.SaveChangesAsync();
@@ -76,7 +76,7 @@ public class UserRepositoryTests(PostgresFixture pg)
         {
             var manager = new MusicManager(db);
 
-            var created = await manager.Users.CreateUserAsync(username, UserRole.User, password);
+            var created = await manager.Users.CreateUserAsync(username, password);
             Assert.True(created);
 
             await manager.Albums.CreateAlbumAsync(album);

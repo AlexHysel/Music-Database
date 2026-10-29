@@ -105,7 +105,7 @@ public class AlbumRepositoryTests(PostgresFixture pg)
             new Track("track3", 3, album, artist, [])
         ];
 
-        var user = new User("user", "password", UserRole.User);
+        var user = new User("user", "password");
         var tag = new Tag("tag");
         var albumTagStats = new AlbumTagStats(album.Id, tag.Id);
         albumTagStats.AddVote(user);

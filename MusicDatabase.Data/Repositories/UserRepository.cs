@@ -59,12 +59,12 @@ public class UserRepository
             return null;
     }
 
-    async public Task<bool> CreateUserAsync(string name, UserRole role, string password)
+    async public Task<bool> CreateUserAsync(string name, string password)
     {
         if (await _context.Users.AnyAsync(u => u.Name == name))
             return false;
         
-        User user = new(name, BCrypt.Net.BCrypt.EnhancedHashPassword(password), role);
+        User user = new(name, BCrypt.Net.BCrypt.EnhancedHashPassword(password));
         await _context.Users.AddAsync(user);
         return true;
     }
