@@ -200,6 +200,37 @@ header.app-header nav { display:flex; align-items:center; gap:8px; margin-left:a
   overflow-wrap:anywhere;
 }
 .tag-hash { color:#77b9a5; }
+.tag-chip-removable {
+  padding:0;
+  border:none;
+  background:transparent;
+}
+.tag-chip-button {
+  appearance:none;
+  -webkit-appearance:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:6px 11px;
+  border:1px solid rgba(246,196,98,0.36);
+  border-radius:999px;
+  background:rgba(246,196,98,0.12);
+  color:#fff3c5;
+  font:inherit;
+  font-size:12px;
+  line-height:1.5;
+  cursor:pointer;
+  transition:background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.tag-chip-button:hover:not(:disabled) {
+  background:rgba(246,196,98,0.18);
+  border-color:rgba(246,196,98,0.56);
+}
+.tag-chip-button:focus-visible {
+  outline:2px solid #f6c462;
+  outline-offset:2px;
+}
 .tag-add-button, .tag-cancel-button, .tag-submit-button {
   display:inline-flex;
   align-items:center;

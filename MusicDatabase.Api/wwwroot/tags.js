@@ -57,7 +57,7 @@ function initializeTags(resource, resourceId, initialTags) {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'tag-chip-button';
-            button.textContent = `#${name}`;
+            button.textContent = `# ${name}`;
             button.title = 'Remove this tag';
             button.setAttribute('aria-label', `Remove tag ${name}`);
             button.addEventListener('click', async () => {
