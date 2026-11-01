@@ -77,6 +77,16 @@ public class TrackTagStats
         VoteCount++;
         return true;
     }
+
+    public bool RemoveVote(User user)
+    {
+        var existing = _votedBy.FirstOrDefault(u => u.Id == user.Id);
+        if (existing == null) return false;
+
+        _votedBy.Remove(existing);
+        VoteCount = Math.Max(0, VoteCount - 1);
+        return true;
+    }
 }
 
 /// <summary>
@@ -114,6 +124,16 @@ public class AlbumTagStats
 
         _votedBy.Add(user);
         VoteCount++;
+        return true;
+    }
+
+    public bool RemoveVote(User user)
+    {
+        var existing = _votedBy.FirstOrDefault(u => u.Id == user.Id);
+        if (existing == null) return false;
+
+        _votedBy.Remove(existing);
+        VoteCount = Math.Max(0, VoteCount - 1);
         return true;
     }
 }

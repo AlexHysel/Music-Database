@@ -77,4 +77,42 @@ public class TrackServiceTests(PostgresFixture pg)
             Assert.Equal(ErrorType.Conflict, second.Error!.Type);
         }
     }
+
+    [Fact]
+    public async Task RemoveTagOnTrackAsync_RemovesUserTagVote()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        var artist = new Artist("Artist");
+        var album = new Album("Album", 2025, artist);
+        var track = new Track("Track One", 1, album, artist, []);
+        album.AddTrack(track);
+        var user = new User("user", "password");
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            await db.Artists.AddAsync(artist);
+            await db.Albums.AddAsync(album);
+            await db.Users.AddAsync(user);
+            await db.Tracks.AddAsync(track);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new TrackService(manager);
+
+            var add = await service.AddTagOnTrackAsync(new AddTagOnTrackRequest("tag", track.Id, user.Id));
+            Assert.True(add.IsSuccess);
+
+            var remove = await service.RemoveTagOnTrackAsync(new RemoveTagOnTrackRequest("tag", track.Id, user.Id));
+            Assert.True(remove.IsSuccess);
+
+            var detail = await service.GetTrackDetailAsync(track.Id);
+            Assert.True(detail.IsSuccess);
+            Assert.DoesNotContain(detail.Value.Tags, tag => tag.Name == "tag");
+        }
+    }
 }

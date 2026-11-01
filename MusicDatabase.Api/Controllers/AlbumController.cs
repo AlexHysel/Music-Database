@@ -79,6 +79,14 @@ public class AlbumController(AlbumService albums) : ControllerBase
         return result.ToActionResult(this);
     }
 
+    [HttpDelete("mytags")]
+    [Authorize]
+    public async Task<IActionResult> RemoveUserTag([FromBody] RemoveTagOnAlbumRequest request)
+    {
+        var result = await _albums.RemoveTagOnAlbumAsync(request);
+        return result.ToActionResult(this);
+    }
+
     [HttpGet("tags")]
     public async Task<IActionResult> GetUserTags(
         [FromQuery] Guid albumId,

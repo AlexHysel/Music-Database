@@ -82,6 +82,28 @@ public class AlbumService
         return Result<List<string>>.Ok(tags.Select(t => t.Name).ToList());
     }
 
+    public async Task<Result> RemoveTagOnAlbumAsync(RemoveTagOnAlbumRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.TagName))
+            return Result.Validation("Tag.Empty", "Tag name cannot be empty.");
+
+        if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId))
+            return Result.NotFound("Album.NotFound", "Album not found");
+
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        if (user == null)
+            return Result.NotFound("User.NotFound", "User not found");
+
+        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
+        if (await _manager.Tags.RemoveAlbumTagVoteAsync(request.AlbumId, tag, user))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+
+        return Result.NotFound("AlbumTag.NotFound", "You have not added this tag to this album.");
+    }
+
     public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
     {
         return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake))
@@ -104,6 +126,9 @@ public class AlbumService
         if (album != null)
         {
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
+            var tags = await GetAlbumTagsAsync(id, 20);
+            if (tags.IsSuccess)
+                albumDto = albumDto with { Tags = tags.Value.ToArray() };
             return Result<AlbumDetailDTO?>.Ok(albumDto);
         }
         else

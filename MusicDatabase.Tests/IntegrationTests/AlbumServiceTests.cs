@@ -204,6 +204,44 @@ public class AlbumServiceTests(PostgresFixture pg)
     }
 
     [Fact]
+    public async Task RemoveTagOnAlbumAsync_RemovesUserTagVote()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        var artist = new Artist("artist");
+        var album = new Album("album", 2025, artist);
+        var track = new Track("track1", 1, album, artist, []);
+        album.AddTrack(track);
+        var user = new User("user", "password");
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            await db.Artists.AddAsync(artist);
+            await db.Albums.AddAsync(album);
+            await db.Tracks.AddAsync(track);
+            await db.Users.AddAsync(user);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var albumService = new AlbumService(manager);
+
+            var add = await albumService.AddTagOnAlbumAsync(new AddTagOnAlbumRequest("tag", album.Id, user.Id));
+            Assert.True(add.IsSuccess);
+
+            var remove = await albumService.RemoveTagOnAlbumAsync(new RemoveTagOnAlbumRequest("tag", album.Id, user.Id));
+            Assert.True(remove.IsSuccess);
+
+            var detail = await albumService.GetAlbumDetailAsync(album.Id);
+            Assert.True(detail.IsSuccess);
+            Assert.DoesNotContain(detail.Value.Tags, tag => tag.Name == "tag");
+        }
+    }
+
+    [Fact]
     public async Task RemoveAlbumAsync_RemovesAlbumAndRelatedEmptyEntities()
     {
         var newDb = await pg.CreateDbFactoryAsync();

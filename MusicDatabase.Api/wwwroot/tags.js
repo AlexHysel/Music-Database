@@ -12,9 +12,30 @@ function initializeTags(resource, resourceId, initialTags) {
     const submittedTags = new Set();
     let saving = false;
 
+    const userTagsSection = document.createElement('div');
+    userTagsSection.className = 'user-tags-section mt-3';
+    userTagsSection.hidden = true;
+
+    const userTagsHeading = document.createElement('h3');
+    userTagsHeading.className = 'tag-subheading h6 mb-2';
+    userTagsHeading.textContent = 'Your tags';
+
+    const userTagsList = document.createElement('ul');
+    userTagsList.className = 'tag-list user-tag-list';
+
+    userTagsSection.append(userTagsHeading, userTagsList);
+    list.after(userTagsSection);
+
+    const normalizeTagNames = (tags) =>
+        (Array.isArray(tags) ? tags : [])
+            .map(tag => typeof tag === 'string' ? tag : (tag && typeof tag === 'object' ? (tag.name ?? tag.Name ?? '') : ''))
+            .map(name => String(name).trim())
+            .filter(Boolean);
+
     function renderTags(tags) {
+        const names = normalizeTagNames(tags);
         list.replaceChildren();
-        for (const name of Array.isArray(tags) ? tags : []) {
+        for (const name of names) {
             const chip = document.createElement('li');
             chip.className = 'tag-chip';
             const hash = document.createElement('span');
@@ -25,6 +46,58 @@ function initializeTags(resource, resourceId, initialTags) {
             list.appendChild(chip);
         }
         empty.hidden = list.children.length > 0;
+    }
+
+    function renderUserTags(tags) {
+        const names = normalizeTagNames(tags);
+        userTagsList.replaceChildren();
+        for (const name of names) {
+            const chip = document.createElement('li');
+            chip.className = 'tag-chip tag-chip-removable';
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'tag-chip-button';
+            button.textContent = `#${name}`;
+            button.title = 'Remove this tag';
+            button.setAttribute('aria-label', `Remove tag ${name}`);
+            button.addEventListener('click', async () => {
+                if (saving) return;
+                saving = true;
+                button.disabled = true;
+                setStatus('Removing tag…');
+                try {
+                    const response = await fetch(`${resource}/mytags`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ tagName: name, [`${resource}Id`]: resourceId, userId })
+                    });
+
+                    if (!response.ok) {
+                        setStatus('This tag could not be removed.');
+                        return;
+                    }
+
+                    setStatus(`Removed “${name}” from your tags.`);
+                    await refreshUserTags();
+                    const refreshed = await fetch(`${resource}?id=${encodeURIComponent(resourceId)}`, { cache: 'no-store' });
+                    if (refreshed.ok) {
+                        const detail = await refreshed.json();
+                        renderTags(detail.tags ?? []);
+                    }
+                } catch {
+                    setStatus('Connection interrupted while removing the tag.');
+                } finally {
+                    saving = false;
+                    button.disabled = false;
+                }
+            });
+            chip.appendChild(button);
+            userTagsList.appendChild(chip);
+        }
+        userTagsSection.hidden = names.length === 0;
     }
 
     function setError(message = '') {
@@ -58,6 +131,32 @@ function initializeTags(resource, resourceId, initialTags) {
         }
     }
 
+    async function refreshUserTags() {
+        const payload = getPayload();
+        const userId = payload?.nameid ?? payload?.sub;
+        if (!userId || !payload || (payload.exp && payload.exp * 1000 <= Date.now())) {
+            renderUserTags([]);
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams();
+            params.set(resource === 'album' ? 'albumId' : 'trackId', String(resourceId));
+            params.set('userId', String(userId));
+            const response = await fetch(`${resource}/mytags?${params.toString()}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (!response.ok) {
+                renderUserTags([]);
+                return;
+            }
+            const tags = await response.json();
+            renderUserTags(tags ?? []);
+        } catch {
+            renderUserTags([]);
+        }
+    }
+
     renderTags(initialTags);
     const payload = getPayload();
     const userId = payload?.nameid ?? payload?.sub;
@@ -66,6 +165,7 @@ function initializeTags(resource, resourceId, initialTags) {
     document.getElementById('tagLoginHint').hidden = canTag;
     if (!canTag) return;
 
+    refreshUserTags();
     add.addEventListener('click', () => showForm(true));
     cancel.addEventListener('click', () => showForm(false));
     input.addEventListener('input', () => {
@@ -115,7 +215,6 @@ function initializeTags(resource, resourceId, initialTags) {
 
             if (!response.ok) {
                 const detail = await response.text();
-                // The current API also returns 404 for duplicate votes.
                 if (response.status === 409 || /already added this tag/i.test(detail)) {
                     submittedTags.add(name);
                     setError('You have already added this tag. Try another one.');
@@ -137,8 +236,9 @@ function initializeTags(resource, resourceId, initialTags) {
                 const updated = await fetch(`${resource}?id=${encodeURIComponent(resourceId)}`, { cache: 'no-store' });
                 if (!updated.ok) throw new Error('Tag refresh failed');
                 const detail = await updated.json();
-                renderTags(detail.tags);
-                if (!detail.tags?.includes(name)) {
+                renderTags(detail.tags ?? []);
+                await refreshUserTags();
+                if (!normalizeTagNames(detail.tags ?? []).includes(name)) {
                     setStatus(`Your tag “${name}” was added. Only the community’s top tags appear here.`);
                 }
             } catch {

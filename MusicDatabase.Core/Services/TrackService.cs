@@ -31,8 +31,13 @@ public class TrackService
         Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
         if (track == null)
             return Result<TrackDetailDTO>.NotFound("Track.NotFound", "Track not found");
-        
-        return Result<TrackDetailDTO>.Ok(TrackDetailDTO.FromTrack(track));
+
+        var detail = TrackDetailDTO.FromTrack(track);
+        var tags = await GetTrackTagsAsync(id, 20);
+        if (tags.IsSuccess)
+            detail = detail with { Tags = tags.Value.ToArray() };
+
+        return Result<TrackDetailDTO>.Ok(detail);
     }
 
     public async Task<Result<List<Tag>>> GetUserTrackTagsAsync(Guid trackId, Guid userId)
@@ -55,6 +60,28 @@ public class TrackService
 
         var tags = await _manager.Tags.GetTrackTagStatsAsync(trackId, numberOfTags);
         return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
+    }
+
+    public async Task<Result> RemoveTagOnTrackAsync(RemoveTagOnTrackRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.TagName))
+            return Result.Validation("Tag.Empty", "Tag name cannot be empty.");
+
+        if (!await _manager.Tracks.TrackExistsAsync(request.TrackId))
+            return Result.NotFound("Track.NotFound", "Track not found");
+
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        if (user == null)
+            return Result.NotFound("User.NotFound", "User not found");
+
+        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
+        if (await _manager.Tags.RemoveTrackTagVoteAsync(request.TrackId, tag, user))
+        {
+            await _manager.SaveChangesAsync();
+            return Result.Ok();
+        }
+
+        return Result.NotFound("TrackTag.NotFound", "You have not added this tag to this track.");
     }
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)

@@ -63,3 +63,15 @@ public record AddTagOnAlbumRequest(
     Guid AlbumId,
     Guid UserId
 );
+
+public record RemoveTagOnTrackRequest(
+    string TagName,
+    Guid TrackId,
+    Guid UserId
+);
+
+public record RemoveTagOnAlbumRequest(
+    string TagName,
+    Guid AlbumId,
+    Guid UserId
+);

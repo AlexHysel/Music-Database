@@ -61,6 +61,14 @@ public class TrackController(TrackService tracks) : ControllerBase
         var result = await _tracks.GetUserTrackTagsAsync(trackId, userId);
         return result.ToActionResult(this);
     }
+
+    [HttpDelete("mytags")]
+    [Authorize]
+    public async Task<IActionResult> RemoveUserTag([FromBody] RemoveTagOnTrackRequest request)
+    {
+        var result = await _tracks.RemoveTagOnTrackAsync(request);
+        return result.ToActionResult(this);
+    }
     
     [HttpGet("tags")]
     public async Task<IActionResult> GetUserTags(

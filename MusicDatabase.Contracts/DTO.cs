@@ -5,14 +5,12 @@ namespace MusicDatabase.Contracts;
 
 // Using flat DTOs unless the field is an array.
 
-public record TagDTO(
-    string Name,
-    bool TaggedByCurrentUser
+public record UserTagDTO(
+    string Name
 );
 
 public record TagDetailDTO(
     string Name,
-    bool TaggedByCurrentUser,
     int Votes
 );
 
@@ -51,6 +49,7 @@ public record TrackDetailDTO(
     ArtistDTO[] Others,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
+    TagDetailDTO[] Tags,
     string Id)
 {
     public static TrackDetailDTO FromTrack(Track track)
@@ -65,6 +64,7 @@ public record TrackDetailDTO(
             track.Others.Select(ArtistDTO.FromArtist).ToArray(),
             track.CreatedAt,
             track.UpdatedAt,
+            [],
             track.Id.ToString());
     }
 }
@@ -99,6 +99,7 @@ public record AlbumDetailDTO(
     string Type,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
+    TagDetailDTO[] Tags,
     string Id)
 {
     public static AlbumDetailDTO FromAlbum(Album album)
@@ -116,6 +117,7 @@ public record AlbumDetailDTO(
             album.Type.ToString(),
             album.CreatedAt,
             album.UpdatedAt,
+            [],
             album.Id.ToString());
     }
 }

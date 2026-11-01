@@ -105,6 +105,38 @@ public class TagRepository
         return tags;
     }
 
+    public async Task<bool> RemoveTrackTagVoteAsync(Guid trackId, Tag tag, User user)
+    {
+        var stats = await _context.TrackTagStats
+            .Include(s => s.Tag)
+            .Include(s => s.VotedBy)
+            .FirstOrDefaultAsync(s => s.TrackId == trackId && s.TagId == tag.Id);
+
+        if (stats == null)
+            return false;
+
+        if (!stats.RemoveVote(user))
+            return false;
+
+        return true;
+    }
+
+    public async Task<bool> RemoveAlbumTagVoteAsync(Guid albumId, Tag tag, User user)
+    {
+        var stats = await _context.AlbumTagStats
+            .Include(s => s.Tag)
+            .Include(s => s.VotedBy)
+            .FirstOrDefaultAsync(s => s.AlbumId == albumId && s.TagId == tag.Id);
+
+        if (stats == null)
+            return false;
+
+        if (!stats.RemoveVote(user))
+            return false;
+
+        return true;
+    }
+
     public async Task<List<TrackTagStats>> GetTrackTagStatsAsync(Guid trackId, int numberOfTags)
     {
         var tags = await _context.TrackTagStats
