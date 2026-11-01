@@ -198,6 +198,5 @@ public record AuthDTO(
 public record SearchResultDTO(
     PagedResult<ArtistDTO> Artists,
     PagedResult<AlbumDTO> Albums,
-    PagedResult<TrackDTO> Tracks,
-    PagedResult<UserDTO> Users
+    PagedResult<TrackDTO> Tracks
 );

@@ -6,15 +6,6 @@
         <link rel="stylesheet" href="styling/main.css">
         <h1 id="username"></h1>
         <h2 id="userRole"></h2>
-        <div id="favoriteArtists">
-            <h2>Favorite Artists</h2>
-        </div>
-        <div id="favoriteAlbums">
-            <h2>Favorite Albums</h2>
-        </div>
-        <div id="favoriteTracks">
-            <h2>Favorite Tracks</h2>
-        </div>
         <div id="adminPanel">
             <button id="removeUserBtn">Remove User</button>
         </div>
@@ -50,16 +41,6 @@
                     document.title = user.name;
                     document.getElementById("username").textContent = user.name;
                     document.getElementById("userRole").textContent = user.role;
-
-                    for (let artist of user.favoriteArtists){
-                        document.getElementById("favoriteArtists").appendChild(createArtistElement(artist));
-                    }
-                    for (let album of user.favoriteAlbums){
-                        document.getElementById("favoriteAlbums").appendChild(createAlbumElement(album));
-                    }
-                    for (let track of user.favoriteTracks){
-                        document.getElementById("favoriteTracks").appendChild(createTrackElement(track));
-                    }
 
                     if (user.role == 'Admin'){
                         createRemoveButtonEvent(id);

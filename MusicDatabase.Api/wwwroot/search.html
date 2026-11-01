@@ -15,10 +15,6 @@
         <div id='foundArtists'></div>
         <div id='foundAlbums'></div>
         <div id='foundTracks'></div>
-        <div>
-            <h2>Users</h2>
-            <ul id='foundUsers'></ul>
-        </div>
         <script src="auth.js"></script>
         <script src="trackElement.js"></script>
         <script src="albumElement.js"></script>
@@ -45,6 +41,7 @@
                     tracksEl.innerHTML = '';
                     tracksEl.appendChild(createTrackList(result.tracks, { endpoint: 'track/search', queryParam: 'title', compact: true }));
 
+                    /*
                     let usersEl = document.getElementById('foundUsers');
                     usersEl.innerHTML = '';
                     let users = Array.isArray(result.users) ? result.users : getPagedItems(result.users, []);
@@ -54,6 +51,7 @@
                         userName.href = `user.html?id=${user.id}`;
                         usersEl.appendChild(userName);
                     }
+                    */
                 } else {
                     alert("Something went wrong :(");
                 }

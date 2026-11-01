@@ -23,7 +23,7 @@ public class SearchService
         PagedResult<ArtistDTO> artists = await _artists.GetMatchingArtistsAsync(title, 0, 10);
         PagedResult<AlbumDTO> albums = await _albums.GetMatchingAlbumsAsync(title, 0, 10);
         PagedResult<TrackDTO> tracks = await _tracks.GetMatchingTracksAsync(title, 0, 15);
-        PagedResult<UserDTO> users = await _users.GetMatchingUsersAsync(title, 0, 10);
-        return new SearchResultDTO(artists, albums, tracks, users);
+        //PagedResult<UserDTO> users = await _users.GetMatchingUsersAsync(title, 0, 10);
+        return new SearchResultDTO(artists, albums, tracks);
     }
 }
