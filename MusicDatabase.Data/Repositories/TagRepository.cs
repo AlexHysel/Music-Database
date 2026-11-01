@@ -43,9 +43,15 @@ public class TagRepository
 
     public async Task<bool> VoteForTrackTagAsync(Guid trackId, Tag tag, User user)
     {
-        TrackTagStats? stats = await _context.TrackTagStats
-            .FirstOrDefaultAsync(t => t.TrackId == trackId && t.TagId == tag.Id);
-        
+        TrackTagStats? stats = _context.TrackTagStats.Local
+            .FirstOrDefault(t => t.TrackId == trackId && t.TagId == tag.Id);
+
+        if (stats == null)
+        {
+            stats = await _context.TrackTagStats
+                .FirstOrDefaultAsync(t => t.TrackId == trackId && t.TagId == tag.Id);
+        }
+
         if (stats == null)
         {
             stats = new(trackId, tag.Id);
@@ -54,20 +60,24 @@ public class TagRepository
             return true;
         }
 
-        if (await _context.AlbumTagStats.AnyAsync(t => t.Id == stats.Id && t.VotedBy.Any(u => u.Id == user.Id)))
+        if (stats.VotedBy.Any(u => u.Id == user.Id))
             return false;
-        else
-        {
-            stats.AddVote(user);
-            return true;
-        }
+
+        stats.AddVote(user);
+        return true;
     }
     
     public async Task<bool> VoteForAlbumTagAsync(Guid albumId, Tag tag, User user)
     {
-        AlbumTagStats? stats = await _context.AlbumTagStats
-            .FirstOrDefaultAsync(t => t.AlbumId == albumId && t.TagId == tag.Id);
-        
+        AlbumTagStats? stats = _context.AlbumTagStats.Local
+            .FirstOrDefault(t => t.AlbumId == albumId && t.TagId == tag.Id);
+
+        if (stats == null)
+        {
+            stats = await _context.AlbumTagStats
+                .FirstOrDefaultAsync(t => t.AlbumId == albumId && t.TagId == tag.Id);
+        }
+
         if (stats == null)
         {
             stats = new(albumId, tag.Id);
@@ -76,13 +86,11 @@ public class TagRepository
             return true;
         }
 
-        if (await _context.AlbumTagStats.AnyAsync(t => t.Id == stats.Id && t.VotedBy.Any(u => u.Id == user.Id)))
+        if (stats.VotedBy.Any(u => u.Id == user.Id))
             return false;
-        else
-        {
-            stats.AddVote(user);
-            return true;
-        }
+
+        stats.AddVote(user);
+        return true;
     }
 
     public async Task<List<AlbumTagStats>> GetAlbumTagStatsAsync(Guid albumId, int numberOfTags)
