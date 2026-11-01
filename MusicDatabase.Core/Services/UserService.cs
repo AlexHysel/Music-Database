@@ -58,8 +58,10 @@ public class UserService
 
     public async Task<Result> CreateUserAsync(SignUpRequest request)
     {
-        //if (!User.ValidateName(request.Username))
-        //    return Result.Validation("User.InvalidName", "Invalid name provided");
+        if (!User.ValidateName(request.Username))
+            return Result.Validation("User.InvalidName", "Invalid name provided");
+        if (!User.ValidateRawPassword(request.Password))
+            return Result.Validation("User.InvalidPassword", "Invalid password provided");
 
         if (await _manager.Users.CreateUserAsync(request.Username, request.Password))
         {

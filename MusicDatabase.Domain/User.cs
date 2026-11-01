@@ -7,7 +7,9 @@ namespace MusicDatabase.Domain;
 /// <b>Rules:</b>
 /// <list type="bullet">
 /// <item><description>Must have a unique Name (3 to 20 chars).</description></item>
+/// <item><description>Name must have no whitespaces.</description></item>
 /// <item><description>Must have a Password (4 to 30 chars).</description></item>
+/// <item><description>Password must have no whitespaces.</description></item>
 /// <item><description>Must have a Role.</description></item>
 /// </list>
 /// </remarks>
@@ -42,8 +44,21 @@ public class User
         ArgumentException.ThrowIfNullOrEmpty(name);
         if (name.Length is < 3 or > 20)
             throw new ArgumentOutOfRangeException(nameof(name), "User name must be between 3 and 20 characters.");
+        if (name.ContainsAny(['\n', '\t', ' ']))
+            throw new ArgumentOutOfRangeException(nameof(name), "User name must not include spaces.");
 
         Name = name;
+    }
+
+    public static bool ValidateName(string name)
+    {
+        name = name.Trim();
+        if (name.Length is < 3 or > 20)
+            return false;
+        if (name.ContainsAny(['\n', '\t', ' ']))
+            return false;
+
+        return true;
     }
 
     public void SetRole(UserRole role)
@@ -57,8 +72,21 @@ public class User
             throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
         if (password.Length is < 4 or > 30)
             throw new ArgumentOutOfRangeException(nameof(password), "Password must be between 4 and 30 characters.");
+        if (password.ContainsAny([' ', '\n', '\t']))
+            throw new ArgumentOutOfRangeException(nameof(password), "Password must not include spaces.");
 
         Password = password;
+    }
+
+    public static bool ValidateRawPassword(string password)
+    {
+        password = password.Trim();
+        if (password.Length is < 4 or > 30)
+            return false;
+        if (password.ContainsAny([' ', '\n', '\t']))
+            return false;
+        
+        return true;
     }
 
     public void InitializeTimestamps()
