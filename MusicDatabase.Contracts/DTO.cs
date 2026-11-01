@@ -5,8 +5,14 @@ namespace MusicDatabase.Contracts;
 
 // Using flat DTOs unless the field is an array.
 
+public record TagDTO(
+    string Name,
+    bool TaggedByCurrentUser
+);
+
 public record TagDetailDTO(
     string Name,
+    bool TaggedByCurrentUser,
     int Votes
 );
 
