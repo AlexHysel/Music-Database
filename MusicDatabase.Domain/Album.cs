@@ -58,6 +58,15 @@ public class Album
         Title = title;
     }
 
+    public static bool ValidateTitle(string title)
+    {
+        title = title.Trim();
+        if (title.Length <= 1)
+            return false;
+
+        return true;
+    }
+
     public void SetArtist(Artist artist)
     {
         ArgumentNullException.ThrowIfNull(artist);
@@ -77,6 +86,14 @@ public class Album
             throw new ArgumentException($"Invalid ReleaseYear provided: {releaseYear}");
 
         ReleaseYear = releaseYear;
+    }
+
+    public static bool ValidateReleaseYear(int releaseYear)
+    {
+        if (releaseYear < 1900 || releaseYear > DateTimeOffset.UtcNow.Year + 1)
+            return false;
+
+        return true;
     }
 
     public void AddTrack(Track track)

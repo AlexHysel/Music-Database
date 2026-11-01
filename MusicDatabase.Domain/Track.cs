@@ -64,6 +64,15 @@ public class Track
         Title = title;
     }
 
+    public static bool ValidateTitle(string title)
+    {
+        title = title.Trim();
+        if (title.Length is < 3 or > 20)
+            return false;
+
+        return true;
+    }
+
     public void SetArtist(Artist artist)
     {
         ArgumentNullException.ThrowIfNull(artist);

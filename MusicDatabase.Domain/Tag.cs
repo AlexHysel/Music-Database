@@ -6,7 +6,7 @@ using MusicDatabase.Domain;
 /// <remarks>
 /// <b>Rules:</b>
 /// <list type="bullet">
-/// <item><description>Must have a name between 1 and 20 chars.</description></item>
+/// <item><description>Must have a name between 2 and 20 chars.</description></item>
 /// <item><description>Name must be unique.</description></item>
 /// <item><description>Deleted automatically if not used in any TagStats.</description></item>
 /// </list>
@@ -27,6 +27,16 @@ public class Tag
 
         Id = Guid.NewGuid();
         Name = name.ToLowerInvariant();
+    }
+
+    public static bool ValidateName(string name)
+    {
+        name = name.Trim();
+
+        if  (name.Length is < 2 or > 20)
+            return false;
+        
+        return true;
     }
 }
 

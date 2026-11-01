@@ -59,8 +59,8 @@ public class TrackService
 
     public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
     {
-        //if (!Track.ValidateTitle(patch.Title))
-        //    return Result.Validation("Track.InvalidTitle", "Invalid title provided");
+        if (!Track.ValidateTitle(patch.Title))
+            return Result.Validation("Track.InvalidTitle", "Invalid title provided");
 
         Track? track = await _manager.Tracks.GetTrackDetailAsync(patch.Id, true);
         if (track == null)
@@ -86,8 +86,8 @@ public class TrackService
 
     public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request)
     {
-        //if (!Tag.ValidateName(request.TagName))
-        //    return Result.Validation("Tag.InvalidName", "Invalid tag name provided");
+        if (!Tag.ValidateName(request.TagName))
+            return Result.Validation("Tag.InvalidName", "Invalid tag name provided");
 
         var tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
         User? user = await _manager.Users.GetUserAsync(request.UserId, true);
