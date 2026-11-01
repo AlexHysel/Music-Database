@@ -36,7 +36,9 @@ public class Track
         title = title.Trim();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
-        ArgumentOutOfRangeException.ThrowIfNegative(numberInTheAlbum);
+        if (title.Length is < 3 or > 20)
+            throw new ArgumentOutOfRangeException(nameof(title), "Track title must be between 3 and 20 characters.");
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberInTheAlbum);
         ArgumentNullException.ThrowIfNull(album);
         ArgumentNullException.ThrowIfNull(artist);
 
@@ -56,6 +58,8 @@ public class Track
     {
         title = title.Trim();
         ArgumentException.ThrowIfNullOrEmpty(title);
+        if (title.Length is < 3 or > 20)
+            throw new ArgumentOutOfRangeException(nameof(title), "Track title must be between 3 and 20 characters.");
 
         Title = title;
     }

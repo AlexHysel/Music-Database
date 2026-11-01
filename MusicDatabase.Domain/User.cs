@@ -24,6 +24,12 @@ public class User
     {
         name = name.Trim();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (name.Length is < 3 or > 20)
+            throw new ArgumentOutOfRangeException(nameof(name), "User name must be between 3 and 20 characters.");
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
+        if (password.Length < 4)
+            throw new ArgumentOutOfRangeException(nameof(password), "Password must be > 4 characters.");
 
         Id = Guid.NewGuid();
         Name = name;
@@ -32,7 +38,10 @@ public class User
 
     public void SetName(string name)
     {
+        name = name.Trim();
         ArgumentException.ThrowIfNullOrEmpty(name);
+        if (name.Length is < 3 or > 20)
+            throw new ArgumentOutOfRangeException(nameof(name), "User name must be between 3 and 20 characters.");
 
         Name = name;
     }
@@ -44,6 +53,11 @@ public class User
 
     public void SetPassword(string password)
     {
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
+        if (password.Length is < 4 or > 30)
+            throw new ArgumentOutOfRangeException(nameof(password), "Password must be between 4 and 30 characters.");
+
         Password = password;
     }
 
