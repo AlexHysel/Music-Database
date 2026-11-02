@@ -54,8 +54,8 @@ public class UserRepository
     {
         if (await _context.Users.AnyAsync(u => u.Name == name))
             return false;
-        
-        User user = new(name, passwordHash);
+
+        var user = User.CreatePersisted(name, passwordHash);
         await _context.Users.AddAsync(user);
         return true;
     }

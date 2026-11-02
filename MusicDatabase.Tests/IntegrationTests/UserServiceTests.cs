@@ -79,4 +79,73 @@ public class UserServiceTests(PostgresFixture pg)
             Assert.False(string.IsNullOrWhiteSpace(result.Value.Token));
         }
     }
+
+    [Fact]
+    public async Task LogInAsync_WrongPassword_ReturnsUnauthorized()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Key"] = "supersecretkey1234567890ABCDEF1234"
+            })
+            .Build();
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new UserService(manager, config);
+
+            var created = await service.CreateUserAsync(new SignUpRequest("wrongpassuser", "pass1234"));
+            Assert.True(created.IsSuccess);
+
+            var result = await service.LogInAsync("wrongpassuser", "differentPassword");
+            Assert.False(result.IsSuccess);
+            Assert.Equal(ErrorType.Unauthorized, result.Error!.Type);
+        }
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_NameWithWhitespace_ReturnsValidationError()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Key"] = "supersecretkey1234567890ABCDEF1234"
+            })
+            .Build();
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new UserService(manager, config);
+
+            var result = await service.CreateUserAsync(new SignUpRequest("bad user", "pass1234"));
+            Assert.False(result.IsSuccess);
+            Assert.Equal(ErrorType.Validation, result.Error!.Type);
+        }
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_PasswordWithWhitespace_ReturnsValidationError()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Key"] = "supersecretkey1234567890ABCDEF1234"
+            })
+            .Build();
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new UserService(manager, config);
+
+            var result = await service.CreateUserAsync(new SignUpRequest("spacepassuser", "pass 1234"));
+            Assert.False(result.IsSuccess);
+            Assert.Equal(ErrorType.Validation, result.Error!.Type);
+        }
+    }
 }

@@ -22,18 +22,29 @@ public class User
     public DateTimeOffset CreatedAt {get; private set;}
     public DateTimeOffset UpdatedAt {get; private set;}
 
-    public User(string name, string password)
+    private User(string name)
     {
         name = name.Trim();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (name.Length is < 3 or > 20)
             throw new ArgumentOutOfRangeException(nameof(name), "User name must be between 3 and 20 characters.");
-        if (string.IsNullOrWhiteSpace(password))
-            throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
+        if (name.ContainsAny(['\n', '\t', ' ']))
+            throw new ArgumentOutOfRangeException(nameof(name), "User name must not include spaces.");
 
         Id = Guid.NewGuid();
         Name = name;
-        Password = password;
+    }
+
+    public User(string name, string password) : this(name)
+    {
+        SetPassword(password);
+    }
+
+    public static User CreatePersisted(string name, string passwordHash)
+    {
+        var user = new User(name);
+        user.SetPersistedPassword(passwordHash);
+        return user;
     }
 
     public void SetName(string name)
@@ -68,7 +79,17 @@ public class User
     {
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
+        if (password.Length is < 8 or > 30)
+            throw new ArgumentOutOfRangeException(nameof(password), "Password must be between 8 and 30 characters.");
+        if (password.ContainsAny([' ', '\n', '\t']))
+            throw new ArgumentOutOfRangeException(nameof(password), "Password must not include spaces.");
 
+        Password = password;
+    }
+
+    public void SetPersistedPassword(string password)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(password);
         Password = password;
     }
 
