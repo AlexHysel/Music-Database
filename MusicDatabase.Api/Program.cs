@@ -89,7 +89,9 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception e)
     {
-        Console.WriteLine("Database migration failed: \n" + e.Message);
+        Console.Error.WriteLine("Database migration failed:");
+        Console.Error.WriteLine(e.Message);
+        throw;
     }
 }
 
