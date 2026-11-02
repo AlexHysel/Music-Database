@@ -15,13 +15,21 @@
                     <div class="mb-2">
                         <label class="form-label">Username</label>
                         <input class="form-control" type="text" id="username" required>
+                        <ul id="usernameRules" class="small mt-2 mb-0 ps-3 text-danger">
+                            <li data-username-rule="length">3–20 characters</li>
+                            <li data-username-rule="spaces">No spaces, tabs, or newlines</li>
+                        </ul>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         <input class="form-control" type="password" id="password" required>
+                        <ul id="passwordRules" class="small mt-2 mb-0 ps-3 text-danger">
+                            <li data-rule="length">8–30 characters</li>
+                            <li data-rule="spaces">No spaces, tabs, or newlines</li>
+                        </ul>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary">Sign Up</button>
+                        <button id="signupButton" class="btn btn-primary" type="submit">Sign Up</button>
                         <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='login.html'">Log In</button>
                     </div>
                 </form>
@@ -30,25 +38,94 @@
         <script src="auth.js"></script>
         <script>
             renderAuthHeader();
+
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const signupButton = document.getElementById('signupButton');
+
+            const usernameRules = {
+                length: document.querySelector('[data-username-rule="length"]'),
+                spaces: document.querySelector('[data-username-rule="spaces"]')
+            };
+
+            const passwordRules = {
+                length: document.querySelector('[data-rule="length"]'),
+                spaces: document.querySelector('[data-rule="spaces"]')
+            };
+
+            function applyRuleState(item, isValid, text) {
+                item.classList.toggle('text-success', isValid);
+                item.classList.toggle('text-danger', !isValid);
+                item.textContent = text;
+            }
+
+            function validateUsername(username) {
+                const rules = {
+                    length: username.trim().length >= 3 && username.trim().length <= 20,
+                    spaces: !/[\s\t\n]/.test(username)
+                };
+
+                applyRuleState(usernameRules.length, rules.length, '3–20 characters');
+                applyRuleState(usernameRules.spaces, rules.spaces, 'No spaces, tabs, or newlines');
+
+                return rules.length && rules.spaces;
+            }
+
+            function validatePassword(password) {
+                const rules = {
+                    length: password.length >= 8 && password.length <= 30,
+                    spaces: !/[\s\t\n]/.test(password)
+                };
+
+                applyRuleState(passwordRules.length, rules.length, '8–30 characters');
+                applyRuleState(passwordRules.spaces, rules.spaces, 'No spaces, tabs, or newlines');
+
+                return rules.length && rules.spaces;
+            }
+
+            function updateValidation() {
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const isUsernameValid = validateUsername(username);
+                const isPasswordValid = validatePassword(password);
+                const isValid = isUsernameValid && isPasswordValid;
+
+                signupButton.disabled = !isValid;
+                signupButton.title = isValid ? '' : 'Username must be 3–20 chars with no whitespace. Password must be 8–30 chars with no whitespace.';
+            }
+
+            usernameInput.addEventListener('input', updateValidation);
+            passwordInput.addEventListener('input', updateValidation);
+
             document.getElementById('signupForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
-                let username = document.getElementById('username').value;
-                let password = document.getElementById('password').value;
-                let response = await fetch('signup', {
+
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+
+                if (!validateUsername(username) || !validatePassword(password)) {
+                    alert('Username must be 3–20 characters with no whitespace. Password must be 8–30 characters with no whitespace.');
+                    return;
+                }
+
+                const response = await fetch('signup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({username, password})
-                })
-                if (response.ok){
+                });
+
+                if (response.ok) {
                     alert('You successfully signed up.');
                     window.location.href = 'login.html';
                 } else {
                     let result = await response.json();
                     alert(result);
                 }
-            })
+            });
+
+            updateValidation();
         </script>
     </body>
 </html>
