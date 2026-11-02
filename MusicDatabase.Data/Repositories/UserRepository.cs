@@ -50,21 +50,12 @@ public class UserRepository
         return false;
     }
 
-    async public Task<User?> AuthenticateUser(string name, string password)
-    {
-        User? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
-        if (user != null && BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password))
-            return user;
-        else
-            return null;
-    }
-
-    async public Task<bool> CreateUserAsync(string name, string password)
+    async public Task<bool> CreateUserAsync(string name, string passwordHash)
     {
         if (await _context.Users.AnyAsync(u => u.Name == name))
             return false;
         
-        User user = new(name, BCrypt.Net.BCrypt.EnhancedHashPassword(password));
+        User user = new(name, passwordHash);
         await _context.Users.AddAsync(user);
         return true;
     }

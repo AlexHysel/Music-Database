@@ -63,7 +63,9 @@ public class UserService
         if (!User.ValidateRawPassword(request.Password))
             return Result.Validation("User.InvalidPassword", "Invalid password provided");
 
-        if (await _manager.Users.CreateUserAsync(request.Username, request.Password))
+        var passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
+
+        if (await _manager.Users.CreateUserAsync(request.Username, passwordHash))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -74,9 +76,11 @@ public class UserService
 
     public async Task<Result<AuthDTO>> LogInAsync(string name, string password)
     {
-        User? user = await _manager.Users.AuthenticateUser(name, password);
-
+        User? user = await _manager.Users.GetUserAsync(name);
         if (user == null)
+            return Result<AuthDTO>.NotFound("User.NotFound", "User not found");
+
+        if (!BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password))
             return Result<AuthDTO>.Unauthorized("User.Unauthorized", "Wrong password or username");
 
         string role = user.Role.ToString();

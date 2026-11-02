@@ -30,8 +30,6 @@ public class User
             throw new ArgumentOutOfRangeException(nameof(name), "User name must be between 3 and 20 characters.");
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
-        if (password.Length < 4)
-            throw new ArgumentOutOfRangeException(nameof(password), "Password must be > 4 characters.");
 
         Id = Guid.NewGuid();
         Name = name;
@@ -70,10 +68,6 @@ public class User
     {
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
-        if (password.Length is < 8 or > 30)
-            throw new ArgumentOutOfRangeException(nameof(password), "Password must be between 4 and 30 characters.");
-        if (password.ContainsAny([' ', '\n', '\t']))
-            throw new ArgumentOutOfRangeException(nameof(password), "Password must not include spaces.");
 
         Password = password;
     }

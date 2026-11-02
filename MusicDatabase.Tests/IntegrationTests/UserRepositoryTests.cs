@@ -26,8 +26,9 @@ public class UserRepositoryTests(PostgresFixture pg)
         {
             var manager = new MusicManager(db);
 
-            var result = await manager.Users.AuthenticateUser(username, password);
-            Assert.NotNull(result);
+            var user = await manager.Users.GetUserAsync(username);
+            Assert.NotNull(user);
+            Assert.Equal(password, user.Password);
         }
     }
 
