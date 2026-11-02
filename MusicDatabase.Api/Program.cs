@@ -7,9 +7,12 @@ using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
 using Microsoft.EntityFrameworkCore;
-using MusicDatabase.Api;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("JWT key is missing. Set the 'Jwt:Key' secret before starting the application.");
 
 builder.Services.AddDbContext<MusicDb>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<MusicManager>();
@@ -43,7 +46,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateIssuer = true,
             ValidIssuer = "MusicDatabase",
             ValidateAudience = true,
