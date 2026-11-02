@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var jwtKey = builder.Configuration["Jwt__Key"];
 if (string.IsNullOrWhiteSpace(jwtKey))
-    throw new InvalidOperationException("JWT key is missing. Set the 'Jwt:Key' secret before starting the application.");
+    throw new InvalidOperationException("JWT key is missing. Set the 'Jwt__Key' secret before starting the application.");
 
 builder.Services.AddDbContext<MusicDb>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<MusicManager>();

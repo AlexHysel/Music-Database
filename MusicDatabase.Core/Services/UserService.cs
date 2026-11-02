@@ -84,7 +84,7 @@ public class UserService
             return Result<AuthDTO>.Unauthorized("User.Unauthorized", "Wrong password or username");
 
         string role = user.Role.ToString();
-        string key = _config["Jwt:Key"]!;
+        string key = _config["Jwt__Key"]!;
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor
         {
