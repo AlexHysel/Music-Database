@@ -24,7 +24,7 @@ public class UserServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var service = new UserService(manager, config);
 
-            var result = await service.CreateUserAsync(new SignUpRequest("newuser", "pass123"));
+            var result = await service.CreateUserAsync(new SignUpRequest("newuser", "pass1234"));
             Assert.True(result.IsSuccess);
 
             var user = await manager.Users.GetUserAsync("newuser");
@@ -71,10 +71,10 @@ public class UserServiceTests(PostgresFixture pg)
             var manager = new MusicManager(db);
             var service = new UserService(manager, config);
 
-            var created = await service.CreateUserAsync(new SignUpRequest("loginuser", "pass123"));
+            var created = await service.CreateUserAsync(new SignUpRequest("loginuser", "pass1234"));
             Assert.True(created.IsSuccess);
 
-            var result = await service.LogInAsync("loginuser", "pass123");
+            var result = await service.LogInAsync("loginuser", "pass1234");
             Assert.True(result.IsSuccess);
             Assert.False(string.IsNullOrWhiteSpace(result.Value.Token));
         }
