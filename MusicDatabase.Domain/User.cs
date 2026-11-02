@@ -8,7 +8,7 @@ namespace MusicDatabase.Domain;
 /// <list type="bullet">
 /// <item><description>Must have a unique Name (3 to 20 chars).</description></item>
 /// <item><description>Name must have no whitespaces.</description></item>
-/// <item><description>Must have a Password (4 to 30 chars).</description></item>
+/// <item><description>Must have a Password (8 to 30 chars).</description></item>
 /// <item><description>Password must have no whitespaces.</description></item>
 /// <item><description>Must have a Role.</description></item>
 /// </list>
@@ -70,7 +70,7 @@ public class User
     {
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be null or whitespace.", nameof(password));
-        if (password.Length is < 4 or > 30)
+        if (password.Length is < 8 or > 30)
             throw new ArgumentOutOfRangeException(nameof(password), "Password must be between 4 and 30 characters.");
         if (password.ContainsAny([' ', '\n', '\t']))
             throw new ArgumentOutOfRangeException(nameof(password), "Password must not include spaces.");
@@ -81,7 +81,7 @@ public class User
     public static bool ValidateRawPassword(string password)
     {
         password = password.Trim();
-        if (password.Length is < 4 or > 30)
+        if (password.Length is < 8 or > 30)
             return false;
         if (password.ContainsAny([' ', '\n', '\t']))
             return false;

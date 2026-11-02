@@ -7,6 +7,7 @@ using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
 using Microsoft.EntityFrameworkCore;
+using MusicDatabase.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -111,8 +112,17 @@ app.MapPost("/login", async (UserService users, LogInRequest request) =>
     return Results.Unauthorized();
 });
 
-app.MapPost("/signup", async (UserService users, SignUpRequest request) =>
+app.MapPost("/signup", async Task<IResult> (UserService users, SignUpRequest request) =>
 {
+    if (request.Username.Trim().Length is < 3 or > 20)
+        return Results.BadRequest("Username must be between 3 and 20 chars long.");
+    if (request.Username.Trim().ContainsAny([' ', '\n', '\t']))
+        return Results.BadRequest("Username must contain no whitespaces.");
+    if (request.Password.Trim().Length is < 8 or > 30)
+        return Results.BadRequest("Password must be between 8 and 30 chars long.");
+    if (request.Password.Trim().ContainsAny([' ', '\n', '\t']))
+        return Results.BadRequest("Password must contain no whitespaces.");
+    
     var result = await users.CreateUserAsync(request);
     if (result.IsSuccess)
         return Results.Created();
