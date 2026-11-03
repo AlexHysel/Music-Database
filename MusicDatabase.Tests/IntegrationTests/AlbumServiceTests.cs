@@ -138,6 +138,53 @@ public class AlbumServiceTests(PostgresFixture pg)
     }
 
     [Fact]
+    public async Task UpdateAlbumAsync_ReorderExistingTracks_SucceedsWithoutDuplicateNumbers()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        var artist = new Artist("artist");
+        var album = new Album("album", 2025, artist);
+        var track1 = new Track("track1", 1, album, artist, []);
+        var track2 = new Track("track2", 2, album, artist, []);
+        album.AddTrack(track1);
+        album.AddTrack(track2);
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            await db.Artists.AddAsync(artist);
+            await db.Albums.AddAsync(album);
+            await db.Tracks.AddAsync(track1);
+            await db.Tracks.AddAsync(track2);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var albumService = new AlbumService(manager);
+
+            var request = new UpdateAlbumRequest(
+                "album",
+                "artist",
+                "imageUrl",
+                2025,
+                album.Id,
+                [
+                    new UpdateTrackInAlbumRequest("track2", "artist", [], 1, track2.Id),
+                    new UpdateTrackInAlbumRequest("track1", "artist", [], 2, track1.Id)
+                ]);
+
+            var result = await albumService.UpdateAlbumAsync(request);
+            Assert.True(result.IsSuccess);
+
+            var updated = await manager.Albums.GetAlbumDetailAsync(album.Id, true);
+            Assert.NotNull(updated);
+            Assert.Equal(new[] { "track2", "track1" }, updated!.Tracks.OrderBy(t => t.NumberInTheAlbum).Select(t => t.Title).ToArray());
+        }
+    }
+
+    [Fact]
     public async Task AddTagOnAlbumAsync_DuplicateTag_ReturnsConflict()
     {
         var newDb = await pg.CreateDbFactoryAsync();
