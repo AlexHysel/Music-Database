@@ -115,4 +115,45 @@ public class TrackServiceTests(PostgresFixture pg)
             Assert.DoesNotContain(detail.Value.Tags, tag => tag.Name == "tag");
         }
     }
+
+    [Fact]
+    public async Task AddTagOnTrackAsync_AfterRemove_AllowsAddingSameTagAgain()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        var artist = new Artist("Artist");
+        var album = new Album("Album", 2025, artist);
+        var track = new Track("Track One", 1, album, artist, []);
+        album.AddTrack(track);
+        var user = new User("user", "password");
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            await db.Artists.AddAsync(artist);
+            await db.Albums.AddAsync(album);
+            await db.Users.AddAsync(user);
+            await db.Tracks.AddAsync(track);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new TrackService(manager);
+
+            var firstAdd = await service.AddTagOnTrackAsync(new AddTagOnTrackRequest("tag", track.Id, user.Id));
+            Assert.True(firstAdd.IsSuccess);
+
+            var remove = await service.RemoveTagOnTrackAsync(new RemoveTagOnTrackRequest("tag", track.Id, user.Id));
+            Assert.True(remove.IsSuccess);
+
+            var secondAdd = await service.AddTagOnTrackAsync(new AddTagOnTrackRequest("tag", track.Id, user.Id));
+            Assert.True(secondAdd.IsSuccess);
+
+            var detail = await service.GetTrackDetailAsync(track.Id);
+            Assert.True(detail.IsSuccess);
+            Assert.Contains(detail.Value.Tags, tag => tag.Name == "tag");
+        }
+    }
 }
