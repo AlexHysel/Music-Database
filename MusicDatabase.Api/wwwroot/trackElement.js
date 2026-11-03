@@ -83,15 +83,19 @@ function createTrackElement(track, options = {}) {
         const artistRow = document.createElement('div');
         artistRow.className = 'track-album-artist';
 
-        const artistLinks = [];
-        if (artistName) artistLinks.push(artistName);
-        if (others.length > 0) artistLinks.push(`feat. ${others.map(o => o.name).join(', ')}`);
-
-        if (artistLinks.length > 0) {
-            const labelText = artistLinks.join(' • ');
-            const artistLink = document.createElement('span');
-            artistLink.textContent = labelText;
+        if (artistName) {
+            const artistLink = document.createElement('a');
+            artistLink.href = artistId ? `artist.html?id=${artistId}` : '#';
+            artistLink.textContent = artistName;
+            artistLink.className = 'track-album-artist-link';
             artistRow.appendChild(artistLink);
+        }
+
+        if (others.length > 0) {
+            const featured = document.createElement('span');
+            featured.className = 'track-album-featured';
+            featured.textContent = `feat. ${others.map(o => o.name).join(', ')}`;
+            artistRow.appendChild(featured);
         }
 
         info.appendChild(titleLink);

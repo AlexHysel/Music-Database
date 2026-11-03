@@ -115,7 +115,7 @@ public record AlbumDetailDTO(
     string ImageUrl,
     string ArtistName,
     string ArtistId,
-    TrackDTO[] Tracks,
+    TrackInAlbumDTO[] Tracks,
     int ReleaseYear,
     string Type,
     DateTimeOffset CreatedAt,
@@ -132,7 +132,7 @@ public record AlbumDetailDTO(
             album.Artist?.Id.ToString() ?? "",
             album.Tracks == null ? [] : album.Tracks
                 .OrderBy(t => t.NumberInTheAlbum)
-                .Select(TrackDTO.FromTrack)
+                .Select(TrackInAlbumDTO.FromTrack)
                 .ToArray(),
             album.ReleaseYear,
             album.Type.ToString(),
