@@ -44,6 +44,9 @@ public class ArtistService
         if (artist == null)
             return Result.NotFound("Artist.NotFound", "Artist not found");
 
+        artist.SetImageUrl(patch.ImageUrl);
+        artist.SetName(patch.Name);
+
         await _manager.SaveChangesAsync();
         return Result.Ok();
     }
