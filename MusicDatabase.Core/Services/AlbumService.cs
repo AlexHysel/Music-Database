@@ -160,6 +160,16 @@ public class AlbumService
         var artist = await _manager.Artists.EnsureArtistCreated(patch.ArtistName);
         album.SetArtist(artist);
 
+        var duplicateTrackNumbers = patch.Tracks
+            .GroupBy(t => t.NumberInTheAlbum)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateTrackNumbers.Count > 0)
+            return Result.Validation("Track.DuplicateNumberInTheAlbum",
+                $"Duplicate track numbers in album update: {string.Join(", ", duplicateTrackNumbers)}");
+
         var requestTrackIds = patch.Tracks.Select(t => t.Id).ToHashSet();
 
         var tracksToRemove = album.Tracks.Where(t => !requestTrackIds.Contains(t.Id)).ToList();
@@ -168,6 +178,8 @@ public class AlbumService
             album.Tracks.Remove(track);
             _manager.Tracks.RemoveTrack(track);
         }
+
+        var reorderedExistingTracks = new List<(Track Track, int FinalNumber)>();
 
         foreach (UpdateTrackInAlbumRequest trackInfo in patch.Tracks)
         {
@@ -197,15 +209,26 @@ public class AlbumService
             if (existing != null)
             {
                 existing.SetTitle(trackInfo.Title);
-                existing.SetNumberInTheAlbum(trackInfo.NumberInTheAlbum);
                 existing.SetOthers(others);
                 existing.SetArtist(artist);
+                reorderedExistingTracks.Add((existing, trackInfo.NumberInTheAlbum));
             }
             else
             {
                 var newTrack = new Track(trackInfo.Title, trackInfo.NumberInTheAlbum, album, album.Artist, others);
                 album.AddTrack(newTrack);
             }
+        }
+
+        if (reorderedExistingTracks.Count > 0)
+        {
+            for (var i = 0; i < reorderedExistingTracks.Count; i++)
+                reorderedExistingTracks[i].Track.SetNumberInTheAlbum(100_000 + i + 1);
+
+            await _manager.SaveChangesAsync();
+
+            foreach (var (track, finalNumber) in reorderedExistingTracks)
+                track.SetNumberInTheAlbum(finalNumber);
         }
 
         await _manager.SaveChangesAsync();
