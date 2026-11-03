@@ -122,7 +122,7 @@
                     document.getElementById('albumArtist').href = `artist.html?id=${album.artistId}`;
                     initializeTags('album', album.id, album.tags);
                     renderDetailMeta('albumMeta', album.createdAt, album.updatedAt);
-                    document.getElementById('trackList').appendChild(createTrackList(album.tracks, { showMore: false, compact: true }));
+                    document.getElementById('trackList').appendChild(createTrackList(album.tracks, { showMore: false, compact: true, variant: 'album' }));
                     let role = getRole();
                     if (role == 'Admin')
                     {

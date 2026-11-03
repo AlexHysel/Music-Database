@@ -106,6 +106,58 @@ header.app-header nav { display:flex; align-items:center; gap:8px; margin-left:a
 .track .meta-separator { color: rgba(255,255,255,0.6); }
 .track .meta-link { white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
 
+.track-album {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 12px;
+  background: linear-gradient(180deg,#2e2c33 0%, #221f25 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.track-number-badge {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1;
+}
+.track-album-info {
+  display:flex;
+  flex: 1 1 auto;
+  flex-direction:column;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+}
+.track-album-title {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-decoration: none;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.track-album-title:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+.track-album-artist {
+  color: #dfe9e3;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
 .actions { margin-left: auto; display:flex; gap:8px; align-items:center; flex-shrink:0; }
 
 /* compact track style for dense lists */

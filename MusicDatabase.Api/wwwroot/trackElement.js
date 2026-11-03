@@ -51,7 +51,8 @@ function getTrackOthers(track) {
     }));
 }
 
-function createTrackElement(track) {
+function createTrackElement(track, options = {}) {
+    const variant = options.variant || 'default';
     const id = track?.id ?? track?.Id;
     const title = track?.title ?? track?.Title ?? '';
     const albumTitle = track?.albumTitle ?? track?.AlbumTitle ?? track?.album?.title ?? track?.album?.Title ?? '';
@@ -59,10 +60,45 @@ function createTrackElement(track) {
     const artistName = track?.artistName ?? track?.ArtistName ?? track?.artist?.name ?? track?.artist?.Name ?? '';
     const albumId = track?.albumId ?? track?.AlbumId ?? track?.album?.id ?? track?.album?.Id ?? '';
     const artistId = track?.artistId ?? track?.ArtistId ?? track?.artist?.id ?? track?.artist?.Id ?? '';
+    const numberInTheAlbum = track?.numberInTheAlbum ?? track?.NumberInTheAlbum ?? 0;
     const others = getTrackOthers(track);
 
-    let trackElement = document.createElement('li');
-    trackElement.className = 'track'
+    const trackElement = document.createElement('li');
+    trackElement.className = variant === 'album' ? 'track track-album' : 'track';
+
+    if (variant === 'album') {
+        const numberBadge = document.createElement('div');
+        numberBadge.className = 'track-number-badge';
+        numberBadge.textContent = numberInTheAlbum || 1;
+        trackElement.appendChild(numberBadge);
+
+        const info = document.createElement('div');
+        info.className = 'track-album-info';
+
+        const titleLink = document.createElement('a');
+        titleLink.className = 'track-album-title';
+        titleLink.href = id ? `track.html?id=${id}` : '#';
+        titleLink.textContent = title;
+
+        const artistRow = document.createElement('div');
+        artistRow.className = 'track-album-artist';
+
+        const artistLinks = [];
+        if (artistName) artistLinks.push(artistName);
+        if (others.length > 0) artistLinks.push(`feat. ${others.map(o => o.name).join(', ')}`);
+
+        if (artistLinks.length > 0) {
+            const labelText = artistLinks.join(' • ');
+            const artistLink = document.createElement('span');
+            artistLink.textContent = labelText;
+            artistRow.appendChild(artistLink);
+        }
+
+        info.appendChild(titleLink);
+        info.appendChild(artistRow);
+        trackElement.appendChild(info);
+        return trackElement;
+    }
 
     let trackImage = document.createElement('img');
     trackImage.src = albumImageUrl || '/placeholder.png';
@@ -142,7 +178,7 @@ function createTrackList(pageResult, options = {})
         for (let track of tracks) {
             const id = track?.id ?? track?.Id;
             if (id && existingTrackIds.has(String(id))) continue;
-            const element = createTrackElement(track);
+            const element = createTrackElement(track, { variant: options.variant || 'default' });
             if (id) {
                 element.dataset.trackId = String(id);
                 existingTrackIds.add(String(id));
