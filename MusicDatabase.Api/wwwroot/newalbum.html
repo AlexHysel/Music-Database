@@ -158,23 +158,6 @@
                 trackTitleWrap.appendChild(trackTitleLabel);
                 trackTitleWrap.appendChild(trackTitle);
 
-                const genreWrap = document.createElement('div');
-                genreWrap.className = 'mb-2';
-                const genreLabel = document.createElement('label');
-                genreLabel.className = 'form-label';
-                genreLabel.textContent = 'Genre';
-                const genreSelect = document.createElement('select');
-                genreSelect.className = 'form-select';
-                genreSelect.required = true;
-                genreSelect.innerHTML = `
-                    <option value="Rock">Rock</option>
-                    <option value="Metal">Metal</option>
-                    <option value="Darksynth">Darksynth</option>
-                    <option value="Ambient">Ambient</option>
-                `;
-                genreWrap.appendChild(genreLabel);
-                genreWrap.appendChild(genreSelect);
-
                 const othersWrap = document.createElement('div');
                 othersWrap.className = 'mb-2';
                 const othersHeader = document.createElement('div');
@@ -197,11 +180,10 @@
 
                 trackCard.appendChild(header);
                 trackCard.appendChild(trackTitleWrap);
-                trackCard.appendChild(genreWrap);
                 trackCard.appendChild(othersWrap);
                 tracksContainer.appendChild(trackCard);
 
-                return { trackTitle, genreSelect, othersList };
+                return { trackTitle, othersList };
             }
 
             function updateCoverPreview() {
@@ -234,17 +216,15 @@
                 const tracks = trackCards.map((card) => {
                     const inputs = card.querySelectorAll('input[type="text"]');
                     const titleInput = inputs[0];
-                    const genreSelect = card.querySelector('select');
                     const otherArtists = Array.from(card.querySelectorAll('.album-other-row input'))
                         .map(input => input.value.trim())
                         .filter(Boolean);
 
                     return {
                         title: titleInput.value.trim(),
-                        genre: genreSelect.value,
                         others: otherArtists
                     };
-                }).filter(track => track.title && track.genre);
+                }).filter(track => track.title);
 
                 const response = await fetch('album', {
                     method: 'POST',

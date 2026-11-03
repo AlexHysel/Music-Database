@@ -25,10 +25,10 @@ public record AddAlbumRequest(
 
 public record UpdateTrackInAlbumRequest(
     string Title,
-    string ArtistName,
-    string[]? Others,
-    int NumberInTheAlbum,
-    Guid? Id
+    string? ArtistName = null,
+    string[]? Others = null,
+    int NumberInTheAlbum = 0,
+    Guid? Id = null
 );
 
 public record UpdateTrackRequest(

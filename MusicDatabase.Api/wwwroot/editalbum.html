@@ -130,7 +130,7 @@
                 const tracks = Array.from(tracksContainer.children).map((card, i) => {
                     const titleInput = card.querySelector('.track-title-input');
                     const others = Array.from(card.querySelectorAll('.album-other-row input')).map(inp => inp.value.trim()).filter(Boolean);
-                    return { Title: titleInput.value.trim(), Others: others, NumberInTheAlbum: i + 1, Id: card.dataset.trackId ?? '' };
+                    return { Title: titleInput.value.trim(), ArtistName: artistName, Others: others, NumberInTheAlbum: i + 1, Id: card.dataset.trackId || null };
                 });
 
                 const body = { Title: title, ArtistName: artistName, ImageUrl: imageUrl, ReleaseYear: releaseYear, Id: id, Tracks: tracks };

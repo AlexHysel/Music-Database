@@ -174,8 +174,11 @@ public class AlbumService
             if (trackInfo.NumberInTheAlbum < 1)
                 return Result.Validation("Track.WrongNumberInTheAlbum",
                 $"Invalid number of the track '{trackInfo.Title}': {trackInfo.NumberInTheAlbum}. Must be a natural number (>=1)");
-            
-            // add validation: Track title
+
+            var trackArtistName = string.IsNullOrWhiteSpace(trackInfo.ArtistName) ? patch.ArtistName : trackInfo.ArtistName;
+            if (!Artist.ValidateName(trackArtistName))
+                return Result.Validation("Track.InvalidArtistName",
+                    $"Invalid artist name '{trackArtistName}' for track '{trackInfo.Title}'");
 
             var others = new List<Artist>();
             foreach (string name in trackInfo.Others ?? [])
