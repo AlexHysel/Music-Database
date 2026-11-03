@@ -44,6 +44,43 @@
         <script>
             let params = new URLSearchParams(window.location.search);
             let id = params.get('id');
+            const artistImageInput = document.getElementById('newImageUrl');
+            const artistMainImage = document.getElementById('artistImage');
+
+            function isImageLoadable(url) {
+                return new Promise((resolve) => {
+                    if (!url) {
+                        resolve(true);
+                        return;
+                    }
+
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                });
+            }
+
+            function updateArtistImagePreview() {
+                const value = artistImageInput.value.trim();
+
+                if (!value) {
+                    artistMainImage.removeAttribute('src');
+                    artistMainImage.style.opacity = '0.2';
+                    return;
+                }
+
+                const img = new Image();
+                img.onload = () => {
+                    artistMainImage.src = value;
+                    artistMainImage.style.opacity = '1';
+                };
+                img.onerror = () => {
+                    artistMainImage.removeAttribute('src');
+                    artistMainImage.style.opacity = '0.2';
+                };
+                img.src = value;
+            }
 
             function editMode(){
                 document.getElementById('newName').style.display = 'inline';
@@ -86,7 +123,13 @@
                 document.getElementById('saveButton').addEventListener('click', async (event) => {
                     event.preventDefault();
                     let name = document.getElementById('newName').value;
-                    let imageUrl = document.getElementById('newImageUrl').value;
+                    let imageUrl = document.getElementById('newImageUrl').value.trim();
+
+                    if (imageUrl && !(await isImageLoadable(imageUrl))) {
+                        alert('The artist image URL could not be loaded. Please use a valid image URL.');
+                        return;
+                    }
+
                     let body = { Name: name, ImageUrl: imageUrl, Id: id };
                     let response = await fetch('artist', {
                         method: 'PUT',
@@ -124,6 +167,7 @@
             function fillArtistForm(artist){
                 document.getElementById('newName').value = artist.name;
                 document.getElementById('newImageUrl').value = artist.imageUrl ?? '';
+                updateArtistImagePreview();
             }
 
             function renderDetailMeta(containerId, createdAt, updatedAt) {
@@ -155,6 +199,8 @@
                 document.getElementById('trackList').innerHTML = '';
                 document.getElementById('trackList').appendChild(tracksList);
             }
+
+            artistImageInput.addEventListener('input', updateArtistImagePreview);
 
             window.onload = async () => {
                 let response = await fetch(`artist?id=${id}`);

@@ -186,6 +186,20 @@
                 return { trackTitle, othersList };
             }
 
+            function isImageLoadable(url) {
+                return new Promise((resolve) => {
+                    if (!url) {
+                        resolve(true);
+                        return;
+                    }
+
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                });
+            }
+
             function updateCoverPreview() {
                 const value = imageUrlInput.value.trim();
                 if (!value) {
@@ -194,8 +208,16 @@
                     return;
                 }
 
-                coverPreview.src = value;
-                coverPreview.style.opacity = '1';
+                const img = new Image();
+                img.onload = () => {
+                    coverPreview.src = value;
+                    coverPreview.style.opacity = '1';
+                };
+                img.onerror = () => {
+                    coverPreview.removeAttribute('src');
+                    coverPreview.style.opacity = '0.2';
+                };
+                img.src = value;
             }
 
             imageUrlInput.addEventListener('input', updateCoverPreview);
@@ -211,6 +233,11 @@
                 const artistName = document.getElementById('artistName').value.trim();
                 const imageUrl = imageUrlInput.value.trim();
                 const releaseYear = Number(document.getElementById('releaseYear').value);
+
+                if (imageUrl && !(await isImageLoadable(imageUrl))) {
+                    alert('The cover image URL could not be loaded. Please use a valid image URL.');
+                    return;
+                }
 
                 const trackCards = Array.from(tracksContainer.children);
                 const tracks = trackCards.map((card) => {
