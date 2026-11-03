@@ -78,7 +78,9 @@ function renderAuthHeader(){
     const username = getUsername();
 
     if (username) {
+        const isAdmin = String(getRole() ?? '').toLowerCase() === 'admin';
         wrapper.innerHTML = `
+            ${isAdmin ? '<a href="newalbum.html" class="btn btn-outline-light btn-sm">New Album</a>' : ''}
             <a href="user.html" class="auth-user-pill">${username}</a>
             <button type="button" class="btn btn-outline-light btn-sm auth-logout-btn" onclick="logout()">Logout</button>
         `;
