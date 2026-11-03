@@ -60,6 +60,52 @@ public class ArtistServiceTests(PostgresFixture pg)
     }
 
     [Fact]
+    public async Task UpdateArtistAsync_UpdatesNameAndImageUrl()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+        var artist = new Artist("Artist");
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            await db.Artists.AddAsync(artist);
+            await manager.SaveChangesAsync();
+        }
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new ArtistService(manager);
+
+            var result = await service.UpdateArtistAsync(new UpdateArtistRequest("Updated Artist", "https://example.com/image.jpg", artist.Id));
+
+            Assert.True(result.IsSuccess);
+
+            var updated = await manager.Artists.GetArtistAsync(artist.Id);
+            Assert.NotNull(updated);
+            Assert.Equal("Updated Artist", updated!.Name);
+            Assert.Equal("https://example.com/image.jpg", updated.ImageUrl);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateArtistAsync_MissingArtist_ReturnsNotFound()
+    {
+        var newDb = await pg.CreateDbFactoryAsync();
+
+        await using (var db = newDb())
+        {
+            var manager = new MusicManager(db);
+            var service = new ArtistService(manager);
+
+            var result = await service.UpdateArtistAsync(new UpdateArtistRequest("Updated Artist", "https://example.com/image.jpg", Guid.NewGuid()));
+
+            Assert.False(result.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, result.Error!.Type);
+        }
+    }
+
+    [Fact]
     public async Task GetArtistDetailAsync_ReturnsAlbumAndTrackInfo()
     {
         var newDb = await pg.CreateDbFactoryAsync();
