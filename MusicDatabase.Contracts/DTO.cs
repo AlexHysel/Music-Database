@@ -39,6 +39,27 @@ public record TrackDTO(
     }
 }
 
+public record TrackInAlbumDTO(
+    string Title,
+    string ArtistName,
+    string ArtistId,
+    ArtistDTO[] Others,
+    int numberInTheAlbum,
+    string Id)
+{
+    public static TrackInAlbumDTO FromTrack(Track track)
+    {
+        return new TrackInAlbumDTO(
+            track.Title,
+            track.Artist?.Name ?? "",
+            track.Artist?.Id.ToString() ?? "",
+            track.Others.Select(ArtistDTO.FromArtist).ToArray(),
+            track.NumberInTheAlbum,
+            track.Id.ToString()
+        );
+    }
+}
+
 public record TrackDetailDTO(
     string Title,
     string AlbumTitle,
