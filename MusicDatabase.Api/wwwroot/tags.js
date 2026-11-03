@@ -9,7 +9,7 @@ function initializeTags(resource, resourceId, initialTags) {
     const submit = document.getElementById('submitTagButton');
     const error = document.getElementById('tagError');
     const status = document.getElementById('tagStatus');
-    const submittedTags = new Set();
+    let submittedTags = new Set();
     let saving = false;
 
     const userTagsSection = document.createElement('div');
@@ -50,6 +50,7 @@ function initializeTags(resource, resourceId, initialTags) {
 
     function renderUserTags(tags) {
         const names = normalizeTagNames(tags);
+        submittedTags = new Set(names);
         userTagsList.replaceChildren();
         for (const name of names) {
             const chip = document.createElement('li');
@@ -147,12 +148,14 @@ function initializeTags(resource, resourceId, initialTags) {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             if (!response.ok) {
+                submittedTags = new Set();
                 renderUserTags([]);
                 return;
             }
             const tags = await response.json();
             renderUserTags(tags ?? []);
         } catch {
+            submittedTags = new Set();
             renderUserTags([]);
         }
     }
