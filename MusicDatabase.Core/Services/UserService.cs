@@ -22,9 +22,9 @@ public class UserService
         _config = config;
     }
 
-    public async Task<Result> RemoveUserAsync(Guid id)
+    public async Task<Result> RemoveUserAsync(Guid id, CancellationToken ctg = default)
     {
-        if (await _manager.Users.RemoveUserAsync(id))
+        if (await _manager.Users.RemoveUserAsync(id, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -32,31 +32,31 @@ public class UserService
         return Result.NotFound("User.NotFound", "User not found");
     }
 
-    public async Task<PagedResult<UserDTO>> GetMatchingUsersAsync(string name, int toSkip, int toTake)
+    public async Task<PagedResult<UserDTO>> GetMatchingUsersAsync(string name, int toSkip, int toTake, CancellationToken ctg = default)
     {
-        return (await _manager.Users.GetMatchingUsersAsync(name, toSkip, toTake))
+        return (await _manager.Users.GetMatchingUsersAsync(name, toSkip, toTake, ctg))
             .Map(u => UserDTO.FromUser(u));
     }
 
-    public async Task<Result<UserDTO>> GetUserAsync(Guid id)
+    public async Task<Result<UserDTO>> GetUserAsync(Guid id, CancellationToken ctg)
     {
-        User? user = await _manager.Users.GetUserAsync(id);
+        User? user = await _manager.Users.GetUserAsync(id, false, ctg);
         if (user == null)
             return Result<UserDTO>.NotFound("User.NotFound", "User not found");
         else
             return Result<UserDTO>.Ok(UserDTO.FromUser(user));
     }
 
-    public async Task<Result<UserDetailDTO>> GetUserDetailAsync(Guid id)
+    public async Task<Result<UserDetailDTO>> GetUserDetailAsync(Guid id, CancellationToken ctg = default)
     {
-        User? user = await _manager.Users.GetUserDetailAsync(id);
+        User? user = await _manager.Users.GetUserDetailAsync(id, ctg);
         if (user == null)
             return Result<UserDetailDTO>.NotFound("User.NotFound", "User not found");
         else
             return Result<UserDetailDTO>.Ok(UserDetailDTO.FromUser(user));
     }
 
-    public async Task<Result> CreateUserAsync(SignUpRequest request)
+    public async Task<Result> CreateUserAsync(SignUpRequest request, CancellationToken ctg = default)
     {
         if (!User.ValidateName(request.Username))
             return Result.Validation("User.InvalidName", "Invalid name provided");
@@ -65,7 +65,7 @@ public class UserService
 
         var passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password);
 
-        if (await _manager.Users.CreateUserAsync(request.Username, passwordHash))
+        if (await _manager.Users.CreateUserAsync(request.Username, passwordHash, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -74,9 +74,9 @@ public class UserService
         
     }
 
-    public async Task<Result<AuthDTO>> LogInAsync(string name, string password)
+    public async Task<Result<AuthDTO>> LogInAsync(string name, string password, CancellationToken ctg = default)
     {
-        User? user = await _manager.Users.GetUserAsync(name);
+        User? user = await _manager.Users.GetUserAsync(name, false, ctg);
         if (user == null)
             return Result<AuthDTO>.NotFound("User.NotFound", "User not found");
 

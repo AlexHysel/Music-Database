@@ -77,7 +77,7 @@
                         alert('Removed successfully');
                         window.location.href = '/';
                     } else {
-                        alert('Album was not removed');
+                        alert(await readErrorMessage(response, 'Album was not removed'));
                     }
                 });
             }

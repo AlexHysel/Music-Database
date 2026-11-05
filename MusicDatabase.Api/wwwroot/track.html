@@ -110,7 +110,7 @@
                     if (response.ok){
                         alert('Removed successfully');
                     } else {
-                        alert('Track was not removed');
+                        alert(await readErrorMessage(response, 'Track was not removed'));
                     }
                 });
             }
@@ -193,7 +193,7 @@
                         alert('Updated successfully');
                         window.location.reload();
                     } else {
-                        alert('Track was not updated');
+                        alert(await readErrorMessage(response, 'Track was not updated'));
                     }
                 });
             }

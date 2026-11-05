@@ -6,9 +6,9 @@ namespace MusicDatabase.Data;
 public static class IQueryableExtensions
 {
     public static async Task<PagedResult<T>> ToPagedResultAsync<T>(
-        this IQueryable<T> query, int skip, int take)
+        this IQueryable<T> query, int skip, int take, CancellationToken ctg = default)
     {
-        var items = await query.Skip(skip).Take(take + 1).ToListAsync();
+        var items = await query.Skip(skip).Take(take + 1).ToListAsync(ctg);
         bool hasMore = items.Count > take;
         if (hasMore) items.RemoveAt(items.Count - 1);
         return new PagedResult<T>(items, hasMore);

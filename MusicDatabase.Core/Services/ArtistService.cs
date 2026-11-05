@@ -14,15 +14,15 @@ public class ArtistService
         _manager = manager;
     }
 
-    public async Task<PagedResult<ArtistDTO>> GetMatchingArtistsAsync(string name, int toSkip, int toTake)
+    public async Task<PagedResult<ArtistDTO>> GetMatchingArtistsAsync(string name, int toSkip, int toTake, CancellationToken ctg = default)
     {
-        return (await _manager.Artists.GetMatchingArtistsAsync(name, toSkip, toTake))
+        return (await _manager.Artists.GetMatchingArtistsAsync(name, toSkip, toTake, ctg))
             .Map(a => ArtistDTO.FromArtist(a));
     }
 
-    public async Task<Result> RemoveArtistAsync(Guid id)
+    public async Task<Result> RemoveArtistAsync(Guid id, CancellationToken ctg = default)
     {
-        if (await _manager.Artists.RemoveArtistAsync(id))
+        if (await _manager.Artists.RemoveArtistAsync(id, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -30,7 +30,7 @@ public class ArtistService
         return Result.NotFound("Artist.NotFound", "Artist not found");
     }
 
-    public async Task<Result> UpdateArtistAsync(UpdateArtistRequest patch)
+    public async Task<Result> UpdateArtistAsync(UpdateArtistRequest patch, CancellationToken ctg = default)
     {
         /*
         IMPORTANT: This code works since the MusicDb is SCOPED, but adding one more SaveChanges
@@ -39,7 +39,7 @@ public class ArtistService
         if (!Artist.ValidateName(patch.Name))
             return Result.Validation("Artist.InvalidName", $"Invalid name '{patch.Name}' provided");
 
-        Artist? artist = await _manager.Artists.GetArtistAsync(patch.Id, true);
+        Artist? artist = await _manager.Artists.GetArtistAsync(patch.Id, true, ctg);
 
         if (artist == null)
             return Result.NotFound("Artist.NotFound", "Artist not found");
@@ -51,9 +51,9 @@ public class ArtistService
         return Result.Ok();
     }
 
-    public async Task<Result<ArtistDetailDTO>> GetArtistDetailAsync(Guid id)
+    public async Task<Result<ArtistDetailDTO>> GetArtistDetailAsync(Guid id, CancellationToken ctg = default)
     {
-        Artist? artist = await _manager.Artists.GetArtistDetailAsync(id);
+        Artist? artist = await _manager.Artists.GetArtistDetailAsync(id, ctg);
         if (artist == null)
             return Result<ArtistDetailDTO>.NotFound("Artist.NotFound", "Artist not found");
         else

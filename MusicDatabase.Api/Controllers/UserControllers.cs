@@ -13,7 +13,9 @@ public class UserController(UserService users) : ControllerBase
     private readonly UserService _users = users;
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] Guid id)
+    public async Task<IActionResult> Get(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _users.GetUserDetailAsync(id);
         return result.ToActionResult(this);
@@ -21,6 +23,7 @@ public class UserController(UserService users) : ControllerBase
 
     [HttpGet("search")]
     public async Task<IActionResult> Search(
+        CancellationToken ctg,
         [FromQuery] string name = "",
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
@@ -31,7 +34,9 @@ public class UserController(UserService users) : ControllerBase
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete([FromQuery] Guid id)
+    public async Task<IActionResult> Delete(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _users.RemoveUserAsync(id);
         return result.ToActionResult(this);

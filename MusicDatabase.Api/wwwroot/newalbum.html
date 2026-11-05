@@ -272,8 +272,7 @@
                     alert('Album created successfully!');
                     window.location.href = '/';
                 } else {
-                    const text = await response.text();
-                    alert(`Failed to create album: ${text || 'Please try again.'}`);
+                    alert(await readErrorMessage(response, 'Failed to create album. Please try again.'));
                 }
             });
 

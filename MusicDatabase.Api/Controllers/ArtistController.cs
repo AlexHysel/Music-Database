@@ -15,7 +15,9 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
     private readonly TrackService _tracks = tracks;
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] Guid id)
+    public async Task<IActionResult> Get(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _artists.GetArtistDetailAsync(id);
         return result.ToActionResult(this);
@@ -23,6 +25,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
 
     [HttpGet("search")]
     public async Task<IActionResult> Search(
+        CancellationToken ctg,
         [FromQuery] string name = "",
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
@@ -33,6 +36,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
 
     [HttpGet("tracks")]
     public async Task<IActionResult> GetTracks(
+        CancellationToken ctg,
         [FromQuery] Guid id,
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
@@ -43,7 +47,9 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete([FromQuery] Guid id)
+    public async Task<IActionResult> Delete(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _artists.RemoveArtistAsync(id);
         return result.ToActionResult(this);
@@ -51,7 +57,9 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] UpdateArtistRequest patch)
+    public async Task<IActionResult> Put(
+        CancellationToken ctg,
+        [FromBody] UpdateArtistRequest patch)
     {
         var result = await _artists.UpdateArtistAsync(patch);
         return result.ToActionResult(this);

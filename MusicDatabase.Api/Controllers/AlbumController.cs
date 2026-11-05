@@ -13,7 +13,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
     private readonly AlbumService _albums = albums;
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] Guid id)
+    public async Task<IActionResult> Get(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _albums.GetAlbumDetailAsync(id);
         return result.ToActionResult(this);
@@ -21,9 +23,11 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpGet("search")]
     public async Task<IActionResult> Search(
+        CancellationToken ctg,
         [FromQuery] string title = "",
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
+        
     {
         var found = await _albums.GetMatchingAlbumsAsync(title, toSkip, toTake);
         return Ok(found);
@@ -31,7 +35,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Post([FromBody] AddAlbumRequest info)
+    public async Task<IActionResult> Post(
+        CancellationToken ctg,
+        [FromBody] AddAlbumRequest info)
     {
         if (info == null) return BadRequest("Request body is null.");
         if (info.Title == null || info.Title.Trim().Length == 0) return BadRequest("Title is required.");
@@ -47,7 +53,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete([FromQuery] Guid id)
+    public async Task<IActionResult> Delete(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _albums.RemoveAlbumAsync(id);
         return result.ToActionResult(this);
@@ -55,7 +63,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] UpdateAlbumRequest patch)
+    public async Task<IActionResult> Put(
+        CancellationToken ctg,
+        [FromBody] UpdateAlbumRequest patch)
     {
         var result = await _albums.UpdateAlbumAsync(patch);
         return result.ToActionResult(this);
@@ -63,7 +73,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpPut("addtag")]
     [Authorize]
-    public async Task<IActionResult> AddTag([FromBody] AddTagOnAlbumRequest request)
+    public async Task<IActionResult> AddTag(
+        CancellationToken ctg,
+        [FromBody] AddTagOnAlbumRequest request)
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
@@ -73,7 +85,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpGet("mytags")]
     [Authorize]
-    public async Task<IActionResult> GetUserTags([FromQuery] Guid albumId, Guid userId)
+    public async Task<IActionResult> GetUserTags(
+        CancellationToken ctg,
+        [FromQuery] Guid albumId, Guid userId)
     {
         var result = await _albums.GetUserAlbumTagsAsync(albumId, userId);
         return result.ToActionResult(this);
@@ -81,7 +95,9 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpDelete("mytags")]
     [Authorize]
-    public async Task<IActionResult> RemoveUserTag([FromBody] RemoveTagOnAlbumRequest request)
+    public async Task<IActionResult> RemoveUserTag(
+        CancellationToken ctg,
+        [FromBody] RemoveTagOnAlbumRequest request)
     {
         var result = await _albums.RemoveTagOnAlbumAsync(request);
         return result.ToActionResult(this);
@@ -89,6 +105,7 @@ public class AlbumController(AlbumService albums) : ControllerBase
 
     [HttpGet("tags")]
     public async Task<IActionResult> GetUserTags(
+        CancellationToken ctg,
         [FromQuery] Guid albumId,
         [FromQuery, Range(0, 20)] int numberOfTags)
     {
