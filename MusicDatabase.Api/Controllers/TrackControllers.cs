@@ -14,7 +14,9 @@ public class TrackController(TrackService tracks) : ControllerBase
     private readonly TrackService _tracks = tracks;
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] Guid id)
+    public async Task<IActionResult> Get(
+        CancellationToken ctg,
+        [FromQuery] Guid id)
     {
         var result = await _tracks.GetTrackDetailAsync(id);
         return result.ToActionResult(this);
@@ -22,6 +24,7 @@ public class TrackController(TrackService tracks) : ControllerBase
 
     [HttpGet("search")]
     public async Task<IActionResult> Search(
+        CancellationToken ctg,
         [FromQuery] string title = "",
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
@@ -32,7 +35,9 @@ public class TrackController(TrackService tracks) : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Put([FromBody] UpdateTrackRequest patch)
+    public async Task<IActionResult> Put(
+        CancellationToken ctg,
+        [FromBody] UpdateTrackRequest patch)
     {
         if (patch == null)
             return BadRequest("Request body is required.");
@@ -46,7 +51,9 @@ public class TrackController(TrackService tracks) : ControllerBase
 
     [HttpPut("addtag")]
     [Authorize]
-    public async Task<IActionResult> AddTag([FromBody] AddTagOnTrackRequest request)
+    public async Task<IActionResult> AddTag(
+        CancellationToken ctg,
+        [FromBody] AddTagOnTrackRequest request)
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
@@ -56,7 +63,9 @@ public class TrackController(TrackService tracks) : ControllerBase
 
     [HttpGet("mytags")]
     [Authorize]
-    public async Task<IActionResult> GetUserTags([FromQuery] Guid trackId, Guid userId)
+    public async Task<IActionResult> GetUserTags(
+        CancellationToken ctg,
+        [FromQuery] Guid trackId, Guid userId)
     {
         var result = await _tracks.GetUserTrackTagsAsync(trackId, userId);
         return result.ToActionResult(this);
@@ -64,7 +73,9 @@ public class TrackController(TrackService tracks) : ControllerBase
 
     [HttpDelete("mytags")]
     [Authorize]
-    public async Task<IActionResult> RemoveUserTag([FromBody] RemoveTagOnTrackRequest request)
+    public async Task<IActionResult> RemoveUserTag(
+        CancellationToken ctg,
+        [FromBody] RemoveTagOnTrackRequest request)
     {
         var result = await _tracks.RemoveTagOnTrackAsync(request);
         return result.ToActionResult(this);
@@ -72,6 +83,7 @@ public class TrackController(TrackService tracks) : ControllerBase
     
     [HttpGet("tags")]
     public async Task<IActionResult> GetUserTags(
+        CancellationToken ctg,
         [FromQuery] Guid trackId,
         [FromQuery, Range(0, 20)] int numberOfTags)
     {

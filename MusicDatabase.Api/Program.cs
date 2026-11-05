@@ -105,9 +105,12 @@ app.MapGet("/", async context =>
     await Task.CompletedTask;
 });
 
-app.MapGet("/search", async (SearchService search, string searchLine) => await search.Search(searchLine));
+app.MapGet("/search", async (SearchService search, string searchLine, CancellationToken ctg) =>
+{
+    await search.Search(searchLine);
+});
 
-app.MapPost("/login", async (UserService users, LogInRequest request) =>
+app.MapPost("/login", async (UserService users, LogInRequest request, CancellationToken ctg) =>
 {
     var result = await users.LogInAsync(request.Username, request.Password);
     if (result.IsSuccess)
@@ -115,7 +118,7 @@ app.MapPost("/login", async (UserService users, LogInRequest request) =>
     return Results.Unauthorized();
 });
 
-app.MapPost("/signup", async Task<IResult> (UserService users, SignUpRequest request) =>
+app.MapPost("/signup", async Task<IResult> (UserService users, SignUpRequest request, CancellationToken ctg) =>
 {
     if (request.Username.Trim().Length is < 3 or > 20)
         return Results.BadRequest("Username must be between 3 and 20 chars long.");
