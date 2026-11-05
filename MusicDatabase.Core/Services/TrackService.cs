@@ -16,19 +16,19 @@ public class TrackService
 
     public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake, CancellationToken ctg = default)
     {
-        PagedResult<Track> tracks = await _manager.Tracks.GetArtistTracksAsync(artistId, toSkip, toTake);
+        PagedResult<Track> tracks = await _manager.Tracks.GetArtistTracksAsync(artistId, toSkip, toTake, ctg);
         return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(TrackDTO.FromTrack));
     }
 
     public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake, CancellationToken ctg = default)
     {
-        return (await _manager.Tracks.GetMatchingTracksAsync(title, toSkip, toTake))
+        return (await _manager.Tracks.GetMatchingTracksAsync(title, toSkip, toTake, ctg))
             .Map(TrackDTO.FromTrack);
     }
     
     public async Task<Result<TrackDetailDTO>> GetTrackDetailAsync(Guid id, CancellationToken ctg = default)
     {
-        Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
+        Track? track = await _manager.Tracks.GetTrackDetailAsync(id, false, ctg);
         if (track == null)
             return Result<TrackDetailDTO>.NotFound("Track.NotFound", "Track not found");
 
@@ -42,23 +42,23 @@ public class TrackService
 
     public async Task<Result<List<Tag>>> GetUserTrackTagsAsync(Guid trackId, Guid userId, CancellationToken ctg = default)
     {
-        if (!await _manager.Tracks.TrackExistsAsync(trackId))
+        if (!await _manager.Tracks.TrackExistsAsync(trackId, ctg))
             return Result<List<Tag>>.NotFound("Track.NotFound", "Track not found");
 
-        User? user = await _manager.Users.GetUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, false, ctg);
         if (user == null)
             return Result<List<Tag>>.NotFound("User.NotFound", "User not found");
 
-        var tags = await _manager.Tags.GetUserTrackTagsAsync(trackId, user);
+        var tags = await _manager.Tags.GetUserTrackTagsAsync(trackId, user, ctg);
         return Result<List<Tag>>.Ok(tags);
     }
 
     public async Task<Result<List<TagDetailDTO>>> GetTrackTagsAsync(Guid trackId, int numberOfTags, CancellationToken ctg = default)
     {
-        if (!await _manager.Tracks.TrackExistsAsync(trackId))
+        if (!await _manager.Tracks.TrackExistsAsync(trackId, ctg))
             return Result<List<TagDetailDTO>>.NotFound("Track.NotFound", "Track not found");
 
-        var tags = await _manager.Tags.GetTrackTagStatsAsync(trackId, numberOfTags);
+        var tags = await _manager.Tags.GetTrackTagStatsAsync(trackId, numberOfTags, ctg);
         return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
     }
 
@@ -67,15 +67,15 @@ public class TrackService
         if (string.IsNullOrWhiteSpace(request.TagName))
             return Result.Validation("Tag.Empty", "Tag name cannot be empty.");
 
-        if (!await _manager.Tracks.TrackExistsAsync(request.TrackId))
+        if (!await _manager.Tracks.TrackExistsAsync(request.TrackId, ctg))
             return Result.NotFound("Track.NotFound", "Track not found");
 
-        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true, ctg);
         if (user == null)
             return Result.NotFound("User.NotFound", "User not found");
 
-        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
-        if (await _manager.Tags.RemoveTrackTagVoteAsync(request.TrackId, tag, user))
+        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName, ctg);
+        if (await _manager.Tags.RemoveTrackTagVoteAsync(request.TrackId, tag, user, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -89,7 +89,7 @@ public class TrackService
         if (!Track.ValidateTitle(patch.Title))
             return Result.Validation("Track.InvalidTitle", "Invalid title provided");
 
-        Track? track = await _manager.Tracks.GetTrackDetailAsync(patch.Id, true);
+        Track? track = await _manager.Tracks.GetTrackDetailAsync(patch.Id, true, ctg);
         if (track == null)
             return Result.NotFound("Track.NotFound", "Track not found");
 
@@ -103,7 +103,7 @@ public class TrackService
 
         var others = new List<Artist>();
         foreach (string name in normalizedOthers)
-            others.Add(await _manager.Artists.EnsureArtistCreated(name));
+            others.Add(await _manager.Artists.EnsureArtistCreated(name, ctg));
 
         track.SetOthers(others);
 
@@ -116,12 +116,12 @@ public class TrackService
         if (!Tag.ValidateName(request.TagName))
             return Result.Validation("Tag.InvalidName", "Invalid tag name provided");
 
-        var tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
-        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        var tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName, ctg);
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true, ctg);
         if (user == null)
             return Result.NotFound("User.NotFound", "User not found");
         
-        if (await _manager.Tags.VoteForTrackTagAsync(request.TrackId, tag, user))
+        if (await _manager.Tags.VoteForTrackTagAsync(request.TrackId, tag, user, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();

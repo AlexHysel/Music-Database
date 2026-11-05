@@ -18,11 +18,11 @@ public class AlbumService
     {
         if (info.Tracks.Count() == 0) return Result.Validation("Album.NoTracks", "Album must have at least 1 Track.");
 
-        if (await _manager.Artists.ArtistExistsAsync(info.ArtistName))
-            if (await _manager.Artists.ArtistHasAlbumAsync(info.ArtistName, info.Title))
+        if (await _manager.Artists.ArtistExistsAsync(info.ArtistName, ctg))
+            if (await _manager.Artists.ArtistHasAlbumAsync(info.ArtistName, info.Title, ctg))
                 return Result.Conflict("Album.TitleDuplicate", "Album with this title already exists.");
         
-        Artist artist = await _manager.Artists.EnsureArtistCreated(info.ArtistName);
+        Artist artist = await _manager.Artists.EnsureArtistCreated(info.ArtistName, ctg);
         Album album = new(info.Title, info.ReleaseYear, artist, info.ImageUrl);
 
         int n = 1;
@@ -32,27 +32,27 @@ public class AlbumService
             if (trackInfo.Others != null)
                 foreach (string name in trackInfo.Others)
                     if (!string.IsNullOrEmpty(name))
-                        others.Add(await _manager.Artists.EnsureArtistCreated(name));
+                        others.Add(await _manager.Artists.EnsureArtistCreated(name, ctg));
             Track track = new(trackInfo.Title, n++, album, artist, others);
             album.Tracks.Add(track);
         }
 
-        await _manager.Albums.CreateAlbumAsync(album);
+        await _manager.Albums.CreateAlbumAsync(album, ctg);
         await _manager.SaveChangesAsync();
         return Result.Ok();
     }
 
     public async Task<Result> AddTagOnAlbumAsync(AddTagOnAlbumRequest request, CancellationToken ctg = default)
     {
-        if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId))
+        if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId, ctg))
             return Result.NotFound("Album.NotFound", "Album with this id does not exist");
 
-        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true, ctg);
         if (user == null) return Result.NotFound("User.NotFound", "User does not exist.");
 
         Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
 
-        if (await _manager.Tags.VoteForAlbumTagAsync(request.AlbumId, tag, user))
+        if (await _manager.Tags.VoteForAlbumTagAsync(request.AlbumId, tag, user, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -62,23 +62,23 @@ public class AlbumService
 
     public async Task<Result<List<TagDetailDTO>>> GetAlbumTagsAsync(Guid albumId, int numberOfTags, CancellationToken ctg = default)
     {
-        if (!await _manager.Albums.AlbumExistsAsync(albumId))
+        if (!await _manager.Albums.AlbumExistsAsync(albumId, ctg))
             return Result<List<TagDetailDTO>>.NotFound("Album.NotFound","Album not found");
 
-        var tags = await _manager.Tags.GetAlbumTagStatsAsync(albumId, numberOfTags);
+        var tags = await _manager.Tags.GetAlbumTagStatsAsync(albumId, numberOfTags, ctg);
         return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
     }
 
     public async Task<Result<List<string>>> GetUserAlbumTagsAsync(Guid albumId, Guid userId, CancellationToken ctg = default)
     {
-        if (!await _manager.Albums.AlbumExistsAsync(albumId))
+        if (!await _manager.Albums.AlbumExistsAsync(albumId, ctg))
             return Result<List<string>>.NotFound("Album.NotFound", "Album not found");
 
-        User? user = await _manager.Users.GetUserAsync(userId);
+        User? user = await _manager.Users.GetUserAsync(userId, false, ctg);
         if (user == null)
             return Result<List<string>>.NotFound("User.NotFound", "User not found");
 
-        var tags = await _manager.Tags.GetUserAlbumTagsAsync(albumId, user);
+        var tags = await _manager.Tags.GetUserAlbumTagsAsync(albumId, user, ctg);
         return Result<List<string>>.Ok(tags.Select(t => t.Name).ToList());
     }
 
@@ -87,15 +87,15 @@ public class AlbumService
         if (string.IsNullOrWhiteSpace(request.TagName))
             return Result.Validation("Tag.Empty", "Tag name cannot be empty.");
 
-        if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId))
+        if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId, ctg))
             return Result.NotFound("Album.NotFound", "Album not found");
 
-        User? user = await _manager.Users.GetUserAsync(request.UserId, true);
+        User? user = await _manager.Users.GetUserAsync(request.UserId, true, ctg);
         if (user == null)
             return Result.NotFound("User.NotFound", "User not found");
 
-        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName);
-        if (await _manager.Tags.RemoveAlbumTagVoteAsync(request.AlbumId, tag, user))
+        Tag tag = await _manager.Tags.EnsureTagCreatedAsync(request.TagName, ctg);
+        if (await _manager.Tags.RemoveAlbumTagVoteAsync(request.AlbumId, tag, user, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -106,13 +106,13 @@ public class AlbumService
 
     public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake, CancellationToken ctg = default)
     {
-        return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake))
+        return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake, ctg))
             .Map(a => AlbumDTO.FromAlbum(a));
     }
 
     public async Task<Result> RemoveAlbumAsync(Guid id, CancellationToken ctg = default)
     {
-        if (await _manager.Albums.RemoveAlbumAsync(id))
+        if (await _manager.Albums.RemoveAlbumAsync(id, ctg))
         {
             await _manager.SaveChangesAsync();
             return Result.Ok();
@@ -122,7 +122,7 @@ public class AlbumService
 
     public async Task<Result<AlbumDetailDTO?>> GetAlbumDetailAsync(Guid id, CancellationToken ctg = default)
     {
-        Album? album = await _manager.Albums.GetAlbumDetailAsync(id);
+        Album? album = await _manager.Albums.GetAlbumDetailAsync(id, false, ctg);
         if (album != null)
         {
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
@@ -146,7 +146,7 @@ public class AlbumService
         if (!Album.ValidateReleaseYear(patch.ReleaseYear))
             return Result.Validation("Album.InvalidReleaseYear", "Invalid release year provided");
 
-        Album? album = await _manager.Albums.GetAlbumDetailAsync(patch.Id, true);
+        Album? album = await _manager.Albums.GetAlbumDetailAsync(patch.Id, true, ctg);
         if (album == null)
             return Result.NotFound("Album.NotFound", "Album not found");
             
@@ -157,7 +157,7 @@ public class AlbumService
         if (!Artist.ValidateName(patch.ArtistName))
             return Result.Validation("Artist.InvalidName", "Invalid artist name provided");
 
-        var artist = await _manager.Artists.EnsureArtistCreated(patch.ArtistName);
+        var artist = await _manager.Artists.EnsureArtistCreated(patch.ArtistName, ctg);
         album.SetArtist(artist);
 
         var duplicateTrackNumbers = patch.Tracks
@@ -199,7 +199,7 @@ public class AlbumService
                     return Result.Validation("Track.InvalidOtherName",
                     $"Invalid name of the 'other' artist: {name} on track '{trackInfo.Title}'");
 
-                others.Add(await _manager.Artists.EnsureArtistCreated(name));
+                others.Add(await _manager.Artists.EnsureArtistCreated(name, ctg));
             }
 
             Track? existing = null;
