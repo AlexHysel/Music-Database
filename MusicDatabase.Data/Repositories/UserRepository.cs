@@ -13,34 +13,34 @@ public class UserRepository
         _context = context;
     }
 
-    public async Task<PagedResult<User>> GetMatchingUsersAsync(string name, int toSkip, int toTake){
+    public async Task<PagedResult<User>> GetMatchingUsersAsync(string name, int toSkip, int toTake, CancellationToken ctg = default){
         return await _context.Users
             .AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Name, $"%{name}%"))
-            .ToPagedResultAsync(toSkip, toTake);
+            .ToPagedResultAsync(toSkip, toTake, ctg);
     }
 
-    public async Task<User?> GetUserAsync(Guid id, bool tracked = false){
+    public async Task<User?> GetUserAsync(Guid id, bool tracked = false, CancellationToken ctg = default){
         if (tracked)
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         else
-            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ctg);
     }
 
-    public async Task<User?> GetUserAsync(string name, bool tracked = false){
+    public async Task<User?> GetUserAsync(string name, bool tracked = false, CancellationToken ctg = default){
         if (tracked)
             return await _context.Users.FirstOrDefaultAsync(u => u.Name == name);
         else
-            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name);
+            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == name, ctg);
     }
 
-    public async Task<User?> GetUserDetailAsync(Guid id){
+    public async Task<User?> GetUserDetailAsync(Guid id, CancellationToken ctg = default){
         return await _context.Users.AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Id == id, ctg);
     }
 
-    async public Task<bool> RemoveUserAsync(Guid id){
-        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+    async public Task<bool> RemoveUserAsync(Guid id, CancellationToken ctg = default){
+        User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id, ctg);
 
         if (user != null)
         {
@@ -50,13 +50,13 @@ public class UserRepository
         return false;
     }
 
-    async public Task<bool> CreateUserAsync(string name, string passwordHash)
+    async public Task<bool> CreateUserAsync(string name, string passwordHash, CancellationToken ctg = default)
     {
-        if (await _context.Users.AnyAsync(u => u.Name == name))
+        if (await _context.Users.AnyAsync(u => u.Name == name, ctg))
             return false;
 
         var user = User.CreatePersisted(name, passwordHash);
-        await _context.Users.AddAsync(user);
+        await _context.Users.AddAsync(user, ctg);
         return true;
     }
 }

@@ -13,7 +13,7 @@ public class TrackRepository
         _context = context;
     }
 
-    async public Task<PagedResult<Track>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
+    async public Task<PagedResult<Track>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake, CancellationToken ctg = default)
     {
         return await _context.Tracks.AsNoTracking()
             .Where(t => t.ArtistId == artistId)
@@ -22,10 +22,10 @@ public class TrackRepository
             .Include(t => t.Album)
             .Include(t => t.Artist)
             .Include(t => t.Others)
-            .ToPagedResultAsync(toSkip, toTake);
+            .ToPagedResultAsync(toSkip, toTake, ctg);
     }
 
-    async public Task<PagedResult<Track>> GetMatchingTracksAsync(string title, int toSkip, int toTake){
+    async public Task<PagedResult<Track>> GetMatchingTracksAsync(string title, int toSkip, int toTake, CancellationToken ctg = default){
         return await _context.Tracks.AsNoTracking()
             .Where(t => EF.Functions.ILike(t.Title, $"%{title}%"))
             .OrderBy(t => t.Title)
@@ -33,27 +33,27 @@ public class TrackRepository
             .Include(t => t.Album)
             .Include(t => t.Artist)
             .Include(t => t.Others)
-            .ToPagedResultAsync(toSkip, toTake);
+            .ToPagedResultAsync(toSkip, toTake, ctg);
     }
 
-    async public Task<Track?> GetTrackAsync(Guid id)
+    async public Task<Track?> GetTrackAsync(Guid id, CancellationToken ctg = default)
     {
-        return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Tracks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id, ctg);
     }
 
-    public async Task<bool> TrackExistsAsync(Guid id)
+    public async Task<bool> TrackExistsAsync(Guid id, CancellationToken ctg = default)
     {
-        return await _context.Tracks.AnyAsync(t => t.Id == id);
+        return await _context.Tracks.AnyAsync(t => t.Id == id, ctg);
     }
 
-    async public Task<Track?> GetTrackDetailAsync(Guid id, bool tracked = false){
+    async public Task<Track?> GetTrackDetailAsync(Guid id, bool tracked = false, CancellationToken ctg = default){
         IQueryable<Track> query = _context.Tracks
             .Include(t => t.Album)
             .Include(t => t.Artist)
             .Include(t => t.Others);
         if (!tracked) query = query.AsNoTracking();
 
-        return await query.FirstOrDefaultAsync(t => t.Id == id);
+        return await query.FirstOrDefaultAsync(t => t.Id == id, ctg);
     }
 
     async public void RemoveTrack(Track track)

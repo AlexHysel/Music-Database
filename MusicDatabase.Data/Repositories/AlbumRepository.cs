@@ -13,11 +13,11 @@ public class AlbumRepository
         _context = context;
     }
 
-    async public Task<bool> AlbumExistsAsync(Guid id){
-        return await _context.Albums.AnyAsync(a => a.Id == id);
+    async public Task<bool> AlbumExistsAsync(Guid id, CancellationToken ctg = default){
+        return await _context.Albums.AnyAsync(a => a.Id == id, ctg);
     }
 
-    async public Task<PagedResult<Album>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
+    async public Task<PagedResult<Album>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake, CancellationToken ctg = default)
     {
         return await _context.Albums
             .AsNoTracking()
@@ -25,18 +25,18 @@ public class AlbumRepository
             .Include(a => a.Artist)
             .OrderBy(a => a.Title)
             .ThenBy(a => a.Id)
-            .ToPagedResultAsync(toSkip, toTake);
+            .ToPagedResultAsync(toSkip, toTake, ctg);
     }
 
-    async public Task<bool> CreateAlbumAsync(Album album)
+    async public Task<bool> CreateAlbumAsync(Album album, CancellationToken ctg = default)
     {
-        await _context.Albums.AddAsync(album);
+        await _context.Albums.AddAsync(album, ctg);
         return true;
     }
 
-    async public Task<bool> RemoveAlbumAsync(Guid id)
+    async public Task<bool> RemoveAlbumAsync(Guid id, CancellationToken ctg = default)
     {
-        Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Id == id);
+        Album? album = await _context.Albums.FirstOrDefaultAsync(a => a.Id == id, ctg);
         if (album != null)
         {
             _context.Albums.Remove(album);
@@ -45,14 +45,14 @@ public class AlbumRepository
         return false;
     }
 
-    public async Task<Album?> GetAlbumAsync(Guid id)
+    public async Task<Album?> GetAlbumAsync(Guid id, CancellationToken ctg = default)
     {
         Album? album = await _context.Albums.AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == id);
+            .FirstOrDefaultAsync(a => a.Id == id, ctg);
         return album;
     }
 
-    public async Task<Album?> GetAlbumDetailAsync(Guid id, bool tracked = false)
+    public async Task<Album?> GetAlbumDetailAsync(Guid id, bool tracked = false, CancellationToken ctg = default)
     {
         IQueryable<Album> query = _context.Albums
             .Include(a => a.Artist)
@@ -60,6 +60,6 @@ public class AlbumRepository
             .Include(a => a.Tracks).ThenInclude(t => t.Others);
         if (!tracked) query = query.AsNoTracking();
 
-        return await query.FirstOrDefaultAsync(a => a.Id == id);
+        return await query.FirstOrDefaultAsync(a => a.Id == id, ctg);
     }
 }
