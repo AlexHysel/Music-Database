@@ -23,7 +23,7 @@ function getRole(){
 async function readErrorMessage(response, fallback = 'Something went wrong.') {
     try {
         const text = await response.clone().text();
-        if (!text) return fallback;
+        if (!text || !text.trim()) return fallback;
 
         try {
             const data = JSON.parse(text);
@@ -36,6 +36,16 @@ async function readErrorMessage(response, fallback = 'Something went wrong.') {
         }
 
         return text;
+    } catch {
+        return fallback;
+    }
+}
+
+async function readJsonOrDefault(response, fallback = null) {
+    try {
+        const text = await response.text();
+        if (!text || !text.trim()) return fallback;
+        return JSON.parse(text);
     } catch {
         return fallback;
     }
@@ -134,6 +144,7 @@ window.getUsername = getUsername;
 window.getPayload = getPayload;
 window.getRole = getRole;
 window.readErrorMessage = readErrorMessage;
+window.readJsonOrDefault = readJsonOrDefault;
 window.renderAuthHeader = renderAuthHeader;
 
 document.addEventListener('DOMContentLoaded', renderAuthHeader);

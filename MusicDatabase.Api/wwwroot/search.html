@@ -25,21 +25,21 @@
                 let searchLine = document.getElementById('searchLine').value;
                 let response = await fetch(`search?searchLine=${searchLine}`);
                 if (response.ok){
-                    let result = await response.json();
+                    const result = await readJsonOrDefault(response, { artists: [], albums: [], tracks: [] });
 
                     let artistsEl = document.getElementById('foundArtists');
                     artistsEl.innerHTML = '';
-                    let artistsList = createArtistListWithMore(result.artists, { endpoint: 'artist/search', queryParam: 'name' });
+                    let artistsList = createArtistListWithMore(result?.artists ?? [], { endpoint: 'artist/search', queryParam: 'name' });
                     artistsEl.appendChild(artistsList);
 
                     let albumsEl = document.getElementById('foundAlbums');
                     albumsEl.innerHTML = '';
-                    let albumsList = createAlbumListWithMore(result.albums, { endpoint: 'album/search', queryParam: 'title' });
+                    let albumsList = createAlbumListWithMore(result?.albums ?? [], { endpoint: 'album/search', queryParam: 'title' });
                     albumsEl.appendChild(albumsList);
 
                     let tracksEl = document.getElementById('foundTracks');
                     tracksEl.innerHTML = '';
-                    tracksEl.appendChild(createTrackList(result.tracks, { endpoint: 'track/search', queryParam: 'title', compact: true }));
+                    tracksEl.appendChild(createTrackList(result?.tracks ?? [], { endpoint: 'track/search', queryParam: 'title', compact: true }));
 
                     /*
                     let usersEl = document.getElementById('foundUsers');
