@@ -32,20 +32,29 @@
 
                     const artistsEl = document.getElementById('foundArtists');
                     artistsEl.innerHTML = '';
-                    const artistItems = Array.isArray(safeResult.artists) ? safeResult.artists : getPagedItems(safeResult.artists, []);
-                    const artistsList = createArtistListWithMore(artistItems, { endpoint: 'artist/search', queryParam: 'name' });
+                    const artistsPage = safeResult.artists && typeof safeResult.artists === 'object'
+                        ? safeResult.artists
+                        : { items: Array.isArray(safeResult.artists) ? safeResult.artists : [], hasMore: false };
+                    const artistItems = getPagedItems(artistsPage, []);
+                    const artistsList = createArtistListWithMore(artistsPage, { endpoint: 'artist/search', queryParam: 'name' });
                     artistsEl.appendChild(artistsList);
 
                     const albumsEl = document.getElementById('foundAlbums');
                     albumsEl.innerHTML = '';
-                    const albumItems = Array.isArray(safeResult.albums) ? safeResult.albums : getPagedItems(safeResult.albums, []);
-                    const albumsList = createAlbumListWithMore(albumItems, { endpoint: 'album/search', queryParam: 'title' });
+                    const albumsPage = safeResult.albums && typeof safeResult.albums === 'object'
+                        ? safeResult.albums
+                        : { items: Array.isArray(safeResult.albums) ? safeResult.albums : [], hasMore: false };
+                    const albumItems = getPagedItems(albumsPage, []);
+                    const albumsList = createAlbumListWithMore(albumsPage, { endpoint: 'album/search', queryParam: 'title' });
                     albumsEl.appendChild(albumsList);
 
                     const tracksEl = document.getElementById('foundTracks');
                     tracksEl.innerHTML = '';
-                    const trackItems = Array.isArray(safeResult.tracks) ? safeResult.tracks : getPagedItems(safeResult.tracks, []);
-                    tracksEl.appendChild(createTrackList(trackItems, { endpoint: 'track/search', queryParam: 'title', compact: true }));
+                    const tracksPage = safeResult.tracks && typeof safeResult.tracks === 'object'
+                        ? safeResult.tracks
+                        : { items: Array.isArray(safeResult.tracks) ? safeResult.tracks : [], hasMore: false };
+                    const trackItems = getPagedItems(tracksPage, []);
+                    tracksEl.appendChild(createTrackList(tracksPage, { endpoint: 'track/search', queryParam: 'title', compact: true }));
 
                     const hasAnyResults = (artistItems.length > 0) || (albumItems.length > 0) || (trackItems.length > 0);
                     if (!hasAnyResults) {
