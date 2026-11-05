@@ -107,7 +107,9 @@ app.MapGet("/", async context =>
 
 app.MapGet("/search", async (SearchService search, string searchLine, CancellationToken ctg) =>
 {
-    await search.Search(searchLine);
+    var query = searchLine?.Trim() ?? string.Empty;
+    var result = await search.Search(query, ctg);
+    return Results.Ok(result);
 });
 
 app.MapPost("/login", async (UserService users, LogInRequest request, CancellationToken ctg) =>

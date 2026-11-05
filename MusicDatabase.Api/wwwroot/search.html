@@ -26,32 +26,34 @@
                 let response = await fetch(`search?searchLine=${searchLine}`);
                 if (response.ok){
                     const result = await readJsonOrDefault(response, { artists: [], albums: [], tracks: [] });
+                    const safeResult = result && typeof result === 'object'
+                        ? result
+                        : { artists: [], albums: [], tracks: [] };
 
-                    let artistsEl = document.getElementById('foundArtists');
+                    const artistsEl = document.getElementById('foundArtists');
                     artistsEl.innerHTML = '';
-                    let artistsList = createArtistListWithMore(result?.artists ?? [], { endpoint: 'artist/search', queryParam: 'name' });
+                    const artistItems = Array.isArray(safeResult.artists) ? safeResult.artists : getPagedItems(safeResult.artists, []);
+                    const artistsList = createArtistListWithMore(artistItems, { endpoint: 'artist/search', queryParam: 'name' });
                     artistsEl.appendChild(artistsList);
 
-                    let albumsEl = document.getElementById('foundAlbums');
+                    const albumsEl = document.getElementById('foundAlbums');
                     albumsEl.innerHTML = '';
-                    let albumsList = createAlbumListWithMore(result?.albums ?? [], { endpoint: 'album/search', queryParam: 'title' });
+                    const albumItems = Array.isArray(safeResult.albums) ? safeResult.albums : getPagedItems(safeResult.albums, []);
+                    const albumsList = createAlbumListWithMore(albumItems, { endpoint: 'album/search', queryParam: 'title' });
                     albumsEl.appendChild(albumsList);
 
-                    let tracksEl = document.getElementById('foundTracks');
+                    const tracksEl = document.getElementById('foundTracks');
                     tracksEl.innerHTML = '';
-                    tracksEl.appendChild(createTrackList(result?.tracks ?? [], { endpoint: 'track/search', queryParam: 'title', compact: true }));
+                    const trackItems = Array.isArray(safeResult.tracks) ? safeResult.tracks : getPagedItems(safeResult.tracks, []);
+                    tracksEl.appendChild(createTrackList(trackItems, { endpoint: 'track/search', queryParam: 'title', compact: true }));
 
-                    /*
-                    let usersEl = document.getElementById('foundUsers');
-                    usersEl.innerHTML = '';
-                    let users = Array.isArray(result.users) ? result.users : getPagedItems(result.users, []);
-                    for (let user of users){
-                        let userName = document.createElement('a');
-                        userName.textContent = user.name;
-                        userName.href = `user.html?id=${user.id}`;
-                        usersEl.appendChild(userName);
+                    const hasAnyResults = (artistItems.length > 0) || (albumItems.length > 0) || (trackItems.length > 0);
+                    if (!hasAnyResults) {
+                        const emptyNotice = document.createElement('p');
+                        emptyNotice.className = 'text-muted mt-2';
+                        emptyNotice.textContent = 'No results found.';
+                        tracksEl.appendChild(emptyNotice);
                     }
-                    */
                 } else {
                     alert(await readErrorMessage(response, 'Something went wrong :('));
                 }
