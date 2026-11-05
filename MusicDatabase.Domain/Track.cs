@@ -9,7 +9,7 @@ namespace MusicDatabase.Domain;
 /// <item><description>Must have an Artist.</description></item>
 /// <item><description>Must have an Album.</description></item>
 /// <item><description>Others must not contain the main Artist.</description></item>
-/// <item><description>Must have a Title (3 to 50 chars).</description></item>
+/// <item><description>Must have a Title (1 to 50 chars).</description></item>
 /// <item><description>Track Title must be unique within the album.</description></item>
 /// <item><description>TagStats must have no duplicates.</description></item>
 /// <item><description>NumberInTheAlbum must be a natural number (>= 1).</description></item>
@@ -36,8 +36,8 @@ public class Track
         title = title.Trim();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
-        if (title.Length is < 3 or > 50)
-            throw new ArgumentOutOfRangeException(nameof(title), "Track title must be between 3 and 50 characters.");
+        if (title.Length is < 1 or > 50)
+            throw new ArgumentOutOfRangeException(nameof(title), "Track title must be between 1 and 50 characters.");
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberInTheAlbum);
         ArgumentNullException.ThrowIfNull(album);
         ArgumentNullException.ThrowIfNull(artist);
@@ -58,8 +58,8 @@ public class Track
     {
         title = title.Trim();
         ArgumentException.ThrowIfNullOrEmpty(title);
-        if (title.Length is < 3 or > 50)
-            throw new ArgumentOutOfRangeException(nameof(title), "Track title must be between 3 and 50 characters.");
+        if (title.Length is < 1 or > 50)
+            throw new ArgumentOutOfRangeException(nameof(title), "Track title must be between 1 and 50 characters.");
 
         Title = title;
     }
@@ -67,7 +67,7 @@ public class Track
     public static bool ValidateTitle(string title)
     {
         title = title.Trim();
-        if (title.Length is < 3 or > 50)
+        if (title.Length is < 1 or > 50)
             return false;
 
         return true;
