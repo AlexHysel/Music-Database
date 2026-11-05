@@ -58,17 +58,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
                 return Task.CompletedTask;
             },
             OnTokenValidated = context =>
             {
-                Console.WriteLine("Token validated successfully");
                 return Task.CompletedTask;
             },
             OnChallenge = context =>
             {
-                Console.WriteLine("Authentication challenge triggered");
                 return Task.CompletedTask;
             }
         };
