@@ -196,7 +196,8 @@
                     body: JSON.stringify(body)
                 });
                 if (response.ok) { alert('Saved'); window.location.href = `album.html?id=${id}`; }
-                else { alert('Save failed'); }
+                else { alert(await readErrorMessage(response, 'Save failed'));
+                }
             });
 
             load();

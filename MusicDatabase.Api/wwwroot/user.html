@@ -26,7 +26,7 @@
                     if (response.ok){
                         alert('Removed successfully.');
                     } else {
-                        alert('NotFound');
+                        alert(await readErrorMessage(response, 'User removal failed'));
                     }
                 });
             }

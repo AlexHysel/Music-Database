@@ -120,8 +120,7 @@
                     alert('You successfully signed up.');
                     window.location.href = 'login.html';
                 } else {
-                    let result = await response.json();
-                    alert(result);
+                    alert(await readErrorMessage(response, 'Sign up failed. Please try again.'));
                 }
             });
 

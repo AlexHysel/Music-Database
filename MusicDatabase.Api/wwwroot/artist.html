@@ -114,7 +114,7 @@
                         alert('Removed successfully');
                         window.location.href = '/';
                     } else {
-                        alert('Artist was not removed');
+                        alert(await readErrorMessage(response, 'Artist was not removed'));
                     }
                 });
             }
@@ -145,7 +145,7 @@
                         window.location.reload();
                     }
                     else{
-                        alert('Artist not found');
+                        alert(await readErrorMessage(response, 'Artist update failed'));
                     }
                 });
             }

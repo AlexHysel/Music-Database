@@ -20,6 +20,27 @@ function getRole(){
     return payload.role ?? payload.Role ?? null;
 }
 
+async function readErrorMessage(response, fallback = 'Something went wrong.') {
+    try {
+        const text = await response.clone().text();
+        if (!text) return fallback;
+
+        try {
+            const data = JSON.parse(text);
+            if (typeof data === 'string') return data;
+            if (data?.detail) return data.detail;
+            if (data?.message) return data.message;
+            if (data?.title) return data.title;
+        } catch {
+            // If body is plain text, return it as-is.
+        }
+
+        return text;
+    } catch {
+        return fallback;
+    }
+}
+
 function logout(){
     localStorage.removeItem('token');
     window.location.reload();
@@ -112,6 +133,7 @@ window.logout = logout;
 window.getUsername = getUsername;
 window.getPayload = getPayload;
 window.getRole = getRole;
+window.readErrorMessage = readErrorMessage;
 window.renderAuthHeader = renderAuthHeader;
 
 document.addEventListener('DOMContentLoaded', renderAuthHeader);
