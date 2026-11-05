@@ -14,33 +14,33 @@ public class TrackService
         _manager = manager;
     }
 
-    public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake)
+    public async Task<Result<PagedResult<TrackDTO>>> GetArtistTracksAsync(Guid artistId, int toSkip, int toTake, CancellationToken ctg = default)
     {
         PagedResult<Track> tracks = await _manager.Tracks.GetArtistTracksAsync(artistId, toSkip, toTake);
         return Result<PagedResult<TrackDTO>>.Ok(tracks.Map(TrackDTO.FromTrack));
     }
 
-    public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake)
+    public async Task<PagedResult<TrackDTO>> GetMatchingTracksAsync(string title, int toSkip, int toTake, CancellationToken ctg = default)
     {
         return (await _manager.Tracks.GetMatchingTracksAsync(title, toSkip, toTake))
             .Map(TrackDTO.FromTrack);
     }
     
-    public async Task<Result<TrackDetailDTO>> GetTrackDetailAsync(Guid id)
+    public async Task<Result<TrackDetailDTO>> GetTrackDetailAsync(Guid id, CancellationToken ctg = default)
     {
         Track? track = await _manager.Tracks.GetTrackDetailAsync(id);
         if (track == null)
             return Result<TrackDetailDTO>.NotFound("Track.NotFound", "Track not found");
 
         var detail = TrackDetailDTO.FromTrack(track);
-        var tags = await GetTrackTagsAsync(id, 20);
+        var tags = await GetTrackTagsAsync(id, 20, ctg);
         if (tags.IsSuccess)
             detail = detail with { Tags = tags.Value.ToArray() };
 
         return Result<TrackDetailDTO>.Ok(detail);
     }
 
-    public async Task<Result<List<Tag>>> GetUserTrackTagsAsync(Guid trackId, Guid userId)
+    public async Task<Result<List<Tag>>> GetUserTrackTagsAsync(Guid trackId, Guid userId, CancellationToken ctg = default)
     {
         if (!await _manager.Tracks.TrackExistsAsync(trackId))
             return Result<List<Tag>>.NotFound("Track.NotFound", "Track not found");
@@ -53,7 +53,7 @@ public class TrackService
         return Result<List<Tag>>.Ok(tags);
     }
 
-    public async Task<Result<List<TagDetailDTO>>> GetTrackTagsAsync(Guid trackId, int numberOfTags)
+    public async Task<Result<List<TagDetailDTO>>> GetTrackTagsAsync(Guid trackId, int numberOfTags, CancellationToken ctg = default)
     {
         if (!await _manager.Tracks.TrackExistsAsync(trackId))
             return Result<List<TagDetailDTO>>.NotFound("Track.NotFound", "Track not found");
@@ -62,7 +62,7 @@ public class TrackService
         return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
     }
 
-    public async Task<Result> RemoveTagOnTrackAsync(RemoveTagOnTrackRequest request)
+    public async Task<Result> RemoveTagOnTrackAsync(RemoveTagOnTrackRequest request, CancellationToken ctg = default)
     {
         if (string.IsNullOrWhiteSpace(request.TagName))
             return Result.Validation("Tag.Empty", "Tag name cannot be empty.");
@@ -84,7 +84,7 @@ public class TrackService
         return Result.NotFound("TrackTag.NotFound", "You have not added this tag to this track.");
     }
 
-    public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch)
+    public async Task<Result> UpdateTrackAsync(UpdateTrackRequest patch, CancellationToken ctg = default)
     {
         if (!Track.ValidateTitle(patch.Title))
             return Result.Validation("Track.InvalidTitle", "Invalid title provided");
@@ -111,7 +111,7 @@ public class TrackService
         return Result.Ok();
     }
 
-    public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request)
+    public async Task<Result> AddTagOnTrackAsync(AddTagOnTrackRequest request, CancellationToken ctg = default)
     {
         if (!Tag.ValidateName(request.TagName))
             return Result.Validation("Tag.InvalidName", "Invalid tag name provided");

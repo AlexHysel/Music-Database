@@ -14,7 +14,7 @@ public class AlbumService
         _manager = manager;
     }
 
-    public async Task<Result> CreateAlbumAsync(AddAlbumRequest info)
+    public async Task<Result> CreateAlbumAsync(AddAlbumRequest info, CancellationToken ctg = default)
     {
         if (info.Tracks.Count() == 0) return Result.Validation("Album.NoTracks", "Album must have at least 1 Track.");
 
@@ -42,7 +42,7 @@ public class AlbumService
         return Result.Ok();
     }
 
-    public async Task<Result> AddTagOnAlbumAsync(AddTagOnAlbumRequest request)
+    public async Task<Result> AddTagOnAlbumAsync(AddTagOnAlbumRequest request, CancellationToken ctg = default)
     {
         if (!await _manager.Albums.AlbumExistsAsync(request.AlbumId))
             return Result.NotFound("Album.NotFound", "Album with this id does not exist");
@@ -60,7 +60,7 @@ public class AlbumService
         return Result.Conflict("AlbumTag.VoteDuplicate","You've already added this tag.");
     }
 
-    public async Task<Result<List<TagDetailDTO>>> GetAlbumTagsAsync(Guid albumId, int numberOfTags)
+    public async Task<Result<List<TagDetailDTO>>> GetAlbumTagsAsync(Guid albumId, int numberOfTags, CancellationToken ctg = default)
     {
         if (!await _manager.Albums.AlbumExistsAsync(albumId))
             return Result<List<TagDetailDTO>>.NotFound("Album.NotFound","Album not found");
@@ -69,7 +69,7 @@ public class AlbumService
         return Result<List<TagDetailDTO>>.Ok(tags.Select(t => new TagDetailDTO(t.Tag.Name, t.VoteCount)).ToList());
     }
 
-    public async Task<Result<List<string>>> GetUserAlbumTagsAsync(Guid albumId, Guid userId)
+    public async Task<Result<List<string>>> GetUserAlbumTagsAsync(Guid albumId, Guid userId, CancellationToken ctg = default)
     {
         if (!await _manager.Albums.AlbumExistsAsync(albumId))
             return Result<List<string>>.NotFound("Album.NotFound", "Album not found");
@@ -82,7 +82,7 @@ public class AlbumService
         return Result<List<string>>.Ok(tags.Select(t => t.Name).ToList());
     }
 
-    public async Task<Result> RemoveTagOnAlbumAsync(RemoveTagOnAlbumRequest request)
+    public async Task<Result> RemoveTagOnAlbumAsync(RemoveTagOnAlbumRequest request, CancellationToken ctg = default)
     {
         if (string.IsNullOrWhiteSpace(request.TagName))
             return Result.Validation("Tag.Empty", "Tag name cannot be empty.");
@@ -104,13 +104,13 @@ public class AlbumService
         return Result.NotFound("AlbumTag.NotFound", "You have not added this tag to this album.");
     }
 
-    public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake)
+    public async Task<PagedResult<AlbumDTO>> GetMatchingAlbumsAsync(string title, int toSkip, int toTake, CancellationToken ctg = default)
     {
         return (await _manager.Albums.GetMatchingAlbumsAsync(title, toSkip, toTake))
             .Map(a => AlbumDTO.FromAlbum(a));
     }
 
-    public async Task<Result> RemoveAlbumAsync(Guid id)
+    public async Task<Result> RemoveAlbumAsync(Guid id, CancellationToken ctg = default)
     {
         if (await _manager.Albums.RemoveAlbumAsync(id))
         {
@@ -120,13 +120,13 @@ public class AlbumService
         return Result.NotFound("", "Album not found");
     }
 
-    public async Task<Result<AlbumDetailDTO?>> GetAlbumDetailAsync(Guid id)
+    public async Task<Result<AlbumDetailDTO?>> GetAlbumDetailAsync(Guid id, CancellationToken ctg = default)
     {
         Album? album = await _manager.Albums.GetAlbumDetailAsync(id);
         if (album != null)
         {
             AlbumDetailDTO albumDto = AlbumDetailDTO.FromAlbum(album);
-            var tags = await GetAlbumTagsAsync(id, 20);
+            var tags = await GetAlbumTagsAsync(id, 20, ctg);
             if (tags.IsSuccess)
                 albumDto = albumDto with { Tags = tags.Value.ToArray() };
             return Result<AlbumDetailDTO?>.Ok(albumDto);
@@ -135,7 +135,7 @@ public class AlbumService
             return Result<AlbumDetailDTO?>.NotFound("Album.NotFound", "Album not found");
     }
 
-    public async Task<Result> UpdateAlbumAsync(UpdateAlbumRequest patch)
+    public async Task<Result> UpdateAlbumAsync(UpdateAlbumRequest patch, CancellationToken ctg = default)
     {
         if (patch.Tracks == null || patch.Tracks.Length == 0)
             return Result.Validation("Album.NoTracks", "Album must have at least 1 Track");

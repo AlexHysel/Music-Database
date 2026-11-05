@@ -18,12 +18,12 @@ public class SearchService
         _users = users;
     }
 
-    public async Task<SearchResultDTO> Search(string title)
+    public async Task<SearchResultDTO> Search(string title, CancellationToken ctg = default)
     {
-        PagedResult<ArtistDTO> artists = await _artists.GetMatchingArtistsAsync(title, 0, 10);
-        PagedResult<AlbumDTO> albums = await _albums.GetMatchingAlbumsAsync(title, 0, 10);
-        PagedResult<TrackDTO> tracks = await _tracks.GetMatchingTracksAsync(title, 0, 15);
-        //PagedResult<UserDTO> users = await _users.GetMatchingUsersAsync(title, 0, 10);
+        PagedResult<ArtistDTO> artists = await _artists.GetMatchingArtistsAsync(title, 0, 10, ctg);
+        PagedResult<AlbumDTO> albums = await _albums.GetMatchingAlbumsAsync(title, 0, 10, ctg);
+        PagedResult<TrackDTO> tracks = await _tracks.GetMatchingTracksAsync(title, 0, 15, ctg);
+        //PagedResult<UserDTO> users = await _users.GetMatchingUsersAsync(title, 0, 10, ctg);
         return new SearchResultDTO(artists, albums, tracks);
     }
 }
