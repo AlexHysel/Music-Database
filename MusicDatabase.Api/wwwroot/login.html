@@ -41,9 +41,13 @@
                     body: JSON.stringify({ username, password })
                 });
                 if (response.ok) {
-                    let result = await response.json();
-                    localStorage.setItem('token', result.token);
-                    window.location.href = '/';
+                    let result = await readJsonOrDefault(response, {});
+                    if (result?.token) {
+                        localStorage.setItem('token', result.token);
+                        window.location.href = '/';
+                    } else {
+                        alert('Login succeeded but no token was returned.');
+                    }
                 } else {
                     alert(await readErrorMessage(response, 'Login failed. Please check your credentials and try again.'));
                 }
