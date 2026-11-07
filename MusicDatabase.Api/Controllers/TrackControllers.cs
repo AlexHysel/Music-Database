@@ -18,7 +18,7 @@ public class TrackController(TrackService tracks) : ControllerBase
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _tracks.GetTrackDetailAsync(id);
+        var result = await _tracks.GetTrackDetailAsync(id, ctg);
         return result.ToActionResult(this);
     }
 
@@ -29,7 +29,7 @@ public class TrackController(TrackService tracks) : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<TrackDTO> found = await _tracks.GetMatchingTracksAsync(title, toSkip, toTake);
+        PagedResult<TrackDTO> found = await _tracks.GetMatchingTracksAsync(title, toSkip, toTake, ctg);
         return Ok(found);
     }
 
