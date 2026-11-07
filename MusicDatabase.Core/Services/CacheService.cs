@@ -30,4 +30,9 @@ public class CacheService
             await _db.StringSetAsync(url, json, TimeSpan.FromMinutes(5));
         }
     }
+
+    public async Task DeleteKey(string url)
+    {
+        await _db.KeyDeleteAsync(url);
+    }
 }
