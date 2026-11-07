@@ -7,6 +7,7 @@ using MusicDatabase.Core.Services;
 using MusicDatabase.Data;
 using MusicDatabase.Contracts;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,11 @@ builder.Services.AddScoped<AlbumService>();
 builder.Services.AddScoped<TrackService>();
 builder.Services.AddScoped<ArtistService>();
 builder.Services.AddScoped<UserService>();
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
+    ConnectionMultiplexer.Connect(redisConnectionString));
 builder.Services.AddScoped<SearchService>();
+builder.Services.AddSingleton<CacheService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(options =>
