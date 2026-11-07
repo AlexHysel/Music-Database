@@ -62,6 +62,7 @@ public class ArtistController(ArtistService artists, TrackService tracks, CacheS
         [FromQuery] Guid id)
     {
         var result = await _artists.RemoveArtistAsync(id, ctg);
+        await _cache.DeleteKey($"artist/{id}");
         return result.ToActionResult(this);
     }
 

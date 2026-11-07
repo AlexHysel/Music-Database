@@ -68,6 +68,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         [FromQuery] Guid id)
     {
         var result = await _albums.RemoveAlbumAsync(id, ctg);
+        await _cache.DeleteKey($"album/{id}");
         return result.ToActionResult(this);
     }
 
