@@ -9,17 +9,27 @@ using MusicDatabase.Api;
 
 [ApiController]
 [Route("/[controller]")]
-public class TrackController(TrackService tracks) : ControllerBase
+public class TrackController(TrackService tracks, CacheService cache) : ControllerBase
 {
     private readonly TrackService _tracks = tracks;
+    private readonly CacheService _cache = cache;
 
     [HttpGet]
     public async Task<IActionResult> Get(
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _tracks.GetTrackDetailAsync(id, ctg);
-        return result.ToActionResult(this);
+        var url = "track/" + id.ToString();
+        var track = await _cache.GetCachedResult<TrackDetailDTO>(url);
+        
+        if (track == null)
+        {
+            var result = await _tracks.GetTrackDetailAsync(id, ctg);
+            await _cache.SetCachedResult(url, track);
+            return result.ToActionResult(this);
+        }
+
+        return Result<TrackDetailDTO>.Ok(track).ToActionResult(this);
     }
 
     [HttpGet("search")]
