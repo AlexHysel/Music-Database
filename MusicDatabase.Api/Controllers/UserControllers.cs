@@ -17,7 +17,7 @@ public class UserController(UserService users) : ControllerBase
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _users.GetUserDetailAsync(id);
+        var result = await _users.GetUserDetailAsync(id, ctg);
         return result.ToActionResult(this);
     }
 
@@ -28,7 +28,7 @@ public class UserController(UserService users) : ControllerBase
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<UserDTO> found = await _users.GetMatchingUsersAsync(name, toSkip, toTake);
+        PagedResult<UserDTO> found = await _users.GetMatchingUsersAsync(name, toSkip, toTake, ctg);
         return Ok(found);
     }
 
@@ -38,7 +38,7 @@ public class UserController(UserService users) : ControllerBase
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _users.RemoveUserAsync(id);
+        var result = await _users.RemoveUserAsync(id, ctg);
         return result.ToActionResult(this);
     }
 }

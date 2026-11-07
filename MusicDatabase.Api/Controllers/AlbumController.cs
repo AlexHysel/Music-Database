@@ -23,7 +23,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         
         if (album == null)
         {
-            var result = await _albums.GetAlbumDetailAsync(id);
+            var result = await _albums.GetAlbumDetailAsync(id, ctg);
             if (result.IsSuccess) await _cache.SetCachedResult(url, result.Value);
             return result.ToActionResult(this);
         }
@@ -39,7 +39,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         [FromQuery, Range(1, 50)] int toTake = 5)
         
     {
-        var found = await _albums.GetMatchingAlbumsAsync(title, toSkip, toTake);
+        var found = await _albums.GetMatchingAlbumsAsync(title, toSkip, toTake, ctg);
         return Ok(found);
     }
 
@@ -57,7 +57,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         if (info.Tracks.Any(t => t.Title == null || t.Title.Trim().Length == 0)) return BadRequest("All tracks must have a title.");
         if (info.Tracks.Any(t => t.Others != null && t.Others.Any(o => o == null || o.Trim().Length == 0))) return BadRequest("All other artists must have a name.");
 
-        var result = await _albums.CreateAlbumAsync(info);
+        var result = await _albums.CreateAlbumAsync(info, ctg);
         return result.ToActionResult(this);
     }
 
@@ -67,7 +67,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _albums.RemoveAlbumAsync(id);
+        var result = await _albums.RemoveAlbumAsync(id, ctg);
         return result.ToActionResult(this);
     }
 
@@ -77,7 +77,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         CancellationToken ctg,
         [FromBody] UpdateAlbumRequest patch)
     {
-        var result = await _albums.UpdateAlbumAsync(patch);
+        var result = await _albums.UpdateAlbumAsync(patch, ctg);
         return result.ToActionResult(this);
     }
 
@@ -89,7 +89,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
-        var result = await _albums.AddTagOnAlbumAsync(request);
+        var result = await _albums.AddTagOnAlbumAsync(request, ctg);
         return result.ToActionResult(this);
     }
 
@@ -99,7 +99,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         CancellationToken ctg,
         [FromQuery] Guid albumId, Guid userId)
     {
-        var result = await _albums.GetUserAlbumTagsAsync(albumId, userId);
+        var result = await _albums.GetUserAlbumTagsAsync(albumId, userId, ctg);
         return result.ToActionResult(this);
     }
 
@@ -109,7 +109,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         CancellationToken ctg,
         [FromBody] RemoveTagOnAlbumRequest request)
     {
-        var result = await _albums.RemoveTagOnAlbumAsync(request);
+        var result = await _albums.RemoveTagOnAlbumAsync(request, ctg);
         return result.ToActionResult(this);
     }
 
@@ -119,7 +119,7 @@ public class AlbumController(AlbumService albums, CacheService cache) : Controll
         [FromQuery] Guid albumId,
         [FromQuery, Range(0, 20)] int numberOfTags)
     {
-        var result = await _albums.GetAlbumTagsAsync(albumId, numberOfTags);
+        var result = await _albums.GetAlbumTagsAsync(albumId, numberOfTags, ctg);
         return result.ToActionResult(this);
     }
 }

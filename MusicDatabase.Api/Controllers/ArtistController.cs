@@ -19,7 +19,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _artists.GetArtistDetailAsync(id);
+        var result = await _artists.GetArtistDetailAsync(id, ctg);
         return result.ToActionResult(this);
     }
 
@@ -30,7 +30,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        PagedResult<ArtistDTO> found = await _artists.GetMatchingArtistsAsync(name, toSkip, toTake);
+        PagedResult<ArtistDTO> found = await _artists.GetMatchingArtistsAsync(name, toSkip, toTake, ctg);
         return Ok(found);
     }
 
@@ -41,7 +41,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
         [FromQuery, Range(0, int.MaxValue)] int toSkip = 0,
         [FromQuery, Range(1, 50)] int toTake = 5)
     {
-        var result = await _tracks.GetArtistTracksAsync(id, toSkip, toTake);
+        var result = await _tracks.GetArtistTracksAsync(id, toSkip, toTake, ctg);
         return result.ToActionResult(this);
     }
 
@@ -51,7 +51,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _artists.RemoveArtistAsync(id);
+        var result = await _artists.RemoveArtistAsync(id, ctg);
         return result.ToActionResult(this);
     }
 
@@ -61,7 +61,7 @@ public class ArtistController(ArtistService artists, TrackService tracks) : Cont
         CancellationToken ctg,
         [FromBody] UpdateArtistRequest patch)
     {
-        var result = await _artists.UpdateArtistAsync(patch);
+        var result = await _artists.UpdateArtistAsync(patch, ctg);
         return result.ToActionResult(this);
     }
 }

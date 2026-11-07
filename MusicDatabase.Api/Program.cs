@@ -117,7 +117,7 @@ app.MapGet("/search", async (SearchService search, string searchLine, CacheServi
     var cachedResult = await cache.GetCachedResult<SearchResultDTO>(url);
     if (cachedResult == null)
     {
-        cachedResult = await search.Search(searchLine);
+        cachedResult = await search.Search(searchLine, ctg);
         await cache.SetCachedResult(url, cachedResult);
     }
 
@@ -126,7 +126,7 @@ app.MapGet("/search", async (SearchService search, string searchLine, CacheServi
 
 app.MapPost("/login", async (UserService users, LogInRequest request, CancellationToken ctg) =>
 {
-    var result = await users.LogInAsync(request.Username, request.Password);
+    var result = await users.LogInAsync(request.Username, request.Password, ctg);
     if (result.IsSuccess)
         return Results.Ok(result.Value);
     return Results.Unauthorized();
@@ -143,7 +143,7 @@ app.MapPost("/signup", async Task<IResult> (UserService users, SignUpRequest req
     if (request.Password.Trim().ContainsAny([' ', '\n', '\t']))
         return Results.BadRequest("Password must contain no whitespaces.");
     
-    var result = await users.CreateUserAsync(request);
+    var result = await users.CreateUserAsync(request, ctg);
     if (result.IsSuccess)
         return Results.Created();
     else

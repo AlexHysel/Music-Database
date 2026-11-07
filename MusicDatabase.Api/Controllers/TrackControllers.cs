@@ -45,7 +45,7 @@ public class TrackController(TrackService tracks) : ControllerBase
         if (string.IsNullOrWhiteSpace(patch.Title))
             return BadRequest("Title is required.");
 
-        var result = await _tracks.UpdateTrackAsync(patch);
+        var result = await _tracks.UpdateTrackAsync(patch, ctg);
         return result.ToActionResult(this);
     }
 
@@ -57,7 +57,7 @@ public class TrackController(TrackService tracks) : ControllerBase
     {
         if (request.TagName.IsWhiteSpace()) return BadRequest("Empty tag provided");
 
-        var result = await _tracks.AddTagOnTrackAsync(request);
+        var result = await _tracks.AddTagOnTrackAsync(request, ctg);
         return result.ToActionResult(this);
     }
 
@@ -67,7 +67,7 @@ public class TrackController(TrackService tracks) : ControllerBase
         CancellationToken ctg,
         [FromQuery] Guid trackId, Guid userId)
     {
-        var result = await _tracks.GetUserTrackTagsAsync(trackId, userId);
+        var result = await _tracks.GetUserTrackTagsAsync(trackId, userId, ctg);
         return result.ToActionResult(this);
     }
 
@@ -77,7 +77,7 @@ public class TrackController(TrackService tracks) : ControllerBase
         CancellationToken ctg,
         [FromBody] RemoveTagOnTrackRequest request)
     {
-        var result = await _tracks.RemoveTagOnTrackAsync(request);
+        var result = await _tracks.RemoveTagOnTrackAsync(request, ctg);
         return result.ToActionResult(this);
     }
     
@@ -87,7 +87,7 @@ public class TrackController(TrackService tracks) : ControllerBase
         [FromQuery] Guid trackId,
         [FromQuery, Range(0, 20)] int numberOfTags)
     {
-        var result = await _tracks.GetTrackTagsAsync(trackId, numberOfTags);
+        var result = await _tracks.GetTrackTagsAsync(trackId, numberOfTags, ctg);
         return result.ToActionResult(this);
     }
 }
