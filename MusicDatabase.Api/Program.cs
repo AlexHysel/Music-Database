@@ -110,9 +110,18 @@ app.MapGet("/", async context =>
     await Task.CompletedTask;
 });
 
-app.MapGet("/search", async (SearchService search, string searchLine, CancellationToken ctg) =>
+app.MapGet("/search", async (SearchService search, string searchLine, CacheService cache, CancellationToken ctg) =>
 {
-    await search.Search(searchLine);
+    string url = "/search/" + searchLine;
+
+    var cachedResult = await cache.GetCachedResult<SearchResultDTO>(url);
+    if (cachedResult == null)
+    {
+        cachedResult = await search.Search(searchLine);
+        await cache.SetCachedResult(url, cachedResult);
+    }
+
+    return cachedResult;
 });
 
 app.MapPost("/login", async (UserService users, LogInRequest request, CancellationToken ctg) =>

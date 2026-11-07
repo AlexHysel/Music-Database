@@ -8,17 +8,27 @@ using MusicDatabase.Api;
 
 [ApiController]
 [Route("/[controller]")]
-public class AlbumController(AlbumService albums) : ControllerBase
+public class AlbumController(AlbumService albums, CacheService cache) : ControllerBase
 {
     private readonly AlbumService _albums = albums;
+    private readonly CacheService _cache = cache;
 
     [HttpGet]
     public async Task<IActionResult> Get(
         CancellationToken ctg,
         [FromQuery] Guid id)
     {
-        var result = await _albums.GetAlbumDetailAsync(id);
-        return result.ToActionResult(this);
+        var url = "album/" + id.ToString();
+        var album = await _cache.GetCachedResult<AlbumDetailDTO>(url);
+        
+        if (album == null)
+        {
+            var result = await _albums.GetAlbumDetailAsync(id);
+            if (result.IsSuccess) await _cache.SetCachedResult(url, result.Value);
+            return result.ToActionResult(this);
+        }
+
+        return Result<AlbumDetailDTO>.Ok(album).ToActionResult(this);
     }
 
     [HttpGet("search")]
