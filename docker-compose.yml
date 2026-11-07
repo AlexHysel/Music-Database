@@ -2,25 +2,12 @@ services:
   redis:
     image: redis:7-alpine
     container_name: musicdatabase-redis
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: musicdatabase-postgres
-    environment:
-      POSTGRES_DB: musicdatabase
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d musicdatabase"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,18 +18,15 @@ services:
       dockerfile: Dockerfile
     container_name: musicdatabase-api
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
-      ConnectionStrings__Default: "Host=postgres;Database=musicdatabase;Username=postgres;Password=postgres"
-      ConnectionStrings__Redis: "redis:6379"
-      Jwt__Key: "super-secret-key-change-me-in-production-123"
+      ConnectionStrings__Default: ${ConnectionStrings__Default:-Host=prod-db.example.com;Database=musicdatabase;Username=postgres;Password=postgres}
+      ConnectionStrings__Redis: ${ConnectionStrings__Redis:-redis:6379}
+      Jwt__Key: ${Jwt__Key:-super-secret-key-change-me-in-production-123}
     ports:
       - "8080:8080"
     restart: unless-stopped
 
 volumes:
   redis_data:
-  postgres_data:

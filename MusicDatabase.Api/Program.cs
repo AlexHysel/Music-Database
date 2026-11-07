@@ -22,8 +22,8 @@ builder.Services.AddScoped<TrackService>();
 builder.Services.AddScoped<ArtistService>();
 builder.Services.AddScoped<UserService>();
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
-    ConnectionMultiplexer.Connect(redisConnectionString));
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(CacheService.CreateConfiguration(redisConnectionString)));
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddSingleton<CacheService>();
 builder.Services.AddEndpointsApiExplorer();
